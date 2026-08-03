@@ -47,6 +47,10 @@ export async function GET(_request: Request, { params }: RouteContext) {
   try {
     const file = await fs.readFile(resolveStoragePath(document.storage_key));
     const safeName = safeDownloadName(document.original_name);
+    const asciiName = safeName
+      .normalize("NFKD")
+      .replace(/[^\x20-\x7E]/g, "_")
+      .replace(/[\\/]/g, "_") || "dokument";
     const encodedName = encodeURIComponent(safeName);
 
     return new Response(new Uint8Array(file), {
@@ -54,7 +58,7 @@ export async function GET(_request: Request, { params }: RouteContext) {
       headers: {
         "Content-Type": document.mime_type,
         "Content-Length": String(file.byteLength),
-        "Content-Disposition": `attachment; filename="${safeName}"; filename*=UTF-8''${encodedName}`,
+        "Content-Disposition": `attachment; filename="${asciiName}"; filename*=UTF-8''${encodedName}`,
         "Cache-Control": "private, no-store",
         "X-Content-Type-Options": "nosniff"
       }
