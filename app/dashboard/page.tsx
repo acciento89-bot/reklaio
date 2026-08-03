@@ -57,7 +57,7 @@ export default async function DashboardPage() {
         <nav>
           <Link className="active" href="/dashboard">Meine Fälle</Link>
           <Link href="/neuer-fall">Neuer Fall</Link>
-          <a href="#">Dokumente</a>
+          <Link href="/dokumente">Dokumente</Link>
           <a href="#">Einstellungen</a>
         </nav>
         <div className="sidebar-account">
