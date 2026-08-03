@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { caseTypes } from "@/lib/case-types";
+import { requireUser } from "@/lib/auth";
 
-export default function NewCasePage() {
+export default async function NewCasePage() {
+  await requireUser();
+
   return (
     <main className="form-page container">
       <Link className="brand" href="/"><span className="brand-mark">R</span><span>Reklaio</span></Link>
