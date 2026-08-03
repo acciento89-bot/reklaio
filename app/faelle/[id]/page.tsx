@@ -11,6 +11,11 @@ import {
   type CaseStatus
 } from "@/lib/cases";
 import { getCaseTypeByValue, type CaseTypeValue } from "@/lib/case-types";
+import {
+  documentTypes,
+  formatFileSize,
+  getDocumentTypeLabel
+} from "@/lib/documents";
 
 type CaseDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -47,6 +52,15 @@ type CaseDeadline = {
   completed_at: string | null;
 };
 
+type CaseDocument = {
+  id: string;
+  original_name: string;
+  mime_type: string;
+  size_bytes: string;
+  document_type: string | null;
+  created_at: string;
+};
+
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export default async function CaseDetailPage({ params, searchParams }: CaseDetailPageProps) {
@@ -72,7 +86,7 @@ export default async function CaseDetailPage({ params, searchParams }: CaseDetai
     notFound();
   }
 
-  const [eventResult, deadlineResult] = await Promise.all([
+  const [eventResult, deadlineResult, documentResult] = await Promise.all([
     query<CaseEvent>(
       `SELECT id, event_type, title, details, occurred_at
        FROM case_events
@@ -85,6 +99,13 @@ export default async function CaseDetailPage({ params, searchParams }: CaseDetai
        FROM case_deadlines
        WHERE case_id = $1
        ORDER BY (completed_at IS NOT NULL), due_at ASC`,
+      [id]
+    ),
+    query<CaseDocument>(
+      `SELECT id, original_name, mime_type, size_bytes, document_type, created_at
+       FROM case_documents
+       WHERE case_id = $1
+       ORDER BY created_at DESC`,
       [id]
     )
   ]);
@@ -133,6 +154,65 @@ export default async function CaseDetailPage({ params, searchParams }: CaseDetai
             <div className="case-summary">
               <h3>Zusammenfassung</h3>
               <p>{currentCase.summary || "Noch keine Zusammenfassung erfasst."}</p>
+            </div>
+          </article>
+
+          <article className="detail-panel">
+            <div className="detail-panel-header">
+              <div>
+                <span className="eyebrow">Belege</span>
+                <h2>Dokumente</h2>
+              </div>
+              <span>{documentResult.rows.length} {documentResult.rows.length === 1 ? "Datei" : "Dateien"}</span>
+            </div>
+
+            <form
+              className="document-upload-form"
+              action={`/api/cases/${id}/documents`}
+              method="post"
+              encType="multipart/form-data"
+            >
+              <label className="field">
+                Dokumentart
+                <select name="documentType" defaultValue="other">
+                  {documentTypes.map((item) => (
+                    <option value={item.value} key={item.value}>{item.label}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="field field-full">
+                Datei auswählen
+                <input
+                  name="document"
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,application/pdf,image/jpeg,image/png,image/webp,image/heic,image/heif"
+                  required
+                />
+                <small>PDF oder Bild, maximal 15 MB. Die Datei bleibt privat in deinem Fall.</small>
+              </label>
+              <button className="button button-secondary" type="submit">Dokument hochladen</button>
+            </form>
+
+            <div className="document-list">
+              {documentResult.rows.length === 0 ? (
+                <p className="muted-copy">Noch keine Dokumente hochgeladen.</p>
+              ) : documentResult.rows.map((document) => (
+                <article className="document-item" key={document.id}>
+                  <div className="document-icon" aria-hidden="true">▤</div>
+                  <div className="document-main">
+                    <strong>{document.original_name}</strong>
+                    <span>
+                      {getDocumentTypeLabel(document.document_type)} · {formatFileSize(document.size_bytes)} · {formatDateTime(document.created_at)}
+                    </span>
+                  </div>
+                  <div className="document-actions">
+                    <a href={`/api/cases/${id}/documents/${document.id}/download`}>Herunterladen</a>
+                    <form action={`/api/cases/${id}/documents/${document.id}/delete`} method="post">
+                      <button type="submit">Löschen</button>
+                    </form>
+                  </div>
+                </article>
+              ))}
             </div>
           </article>
 
