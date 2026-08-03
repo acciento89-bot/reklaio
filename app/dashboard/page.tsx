@@ -1,15 +1,54 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
+import { query } from "@/lib/db";
+import { formatCurrency, formatDate, getCaseStatus, type CaseStatus } from "@/lib/cases";
+import { getCaseTypeByValue, type CaseTypeValue } from "@/lib/case-types";
 
-const demoCases = [
-  { title: "Rückzahlung Möbelhaus", company: "Beispiel GmbH", amount: "329,00 €", status: "Frist in 3 Tagen", tone: "warning" },
-  { title: "Paket nicht angekommen", company: "Online-Shop", amount: "84,50 €", status: "Antwort ausstehend", tone: "neutral" },
-  { title: "Fitnessstudio Kündigung", company: "FitPlus", amount: "39,90 €", status: "Eskalation prüfen", tone: "danger" }
-];
+type DashboardCase = {
+  id: string;
+  type: CaseTypeValue;
+  status: CaseStatus;
+  title: string;
+  company_name: string | null;
+  amount_cents: number | null;
+  currency: string;
+  updated_at: string;
+  next_due_at: string | null;
+};
 
 export default async function DashboardPage() {
   const user = await requireUser();
   const accountName = user.displayName || user.email;
+
+  const result = await query<DashboardCase>(
+    `SELECT
+       c.id,
+       c.type,
+       c.status,
+       c.title,
+       c.company_name,
+       c.amount_cents,
+       c.currency,
+       c.updated_at,
+       (
+         SELECT MIN(d.due_at)
+         FROM case_deadlines d
+         WHERE d.case_id = c.id
+           AND d.completed_at IS NULL
+       ) AS next_due_at
+     FROM cases c
+     WHERE c.user_id = $1
+     ORDER BY c.updated_at DESC`,
+    [user.id]
+  );
+
+  const cases = result.rows;
+  const activeCases = cases.filter((item) => !["resolved", "closed"].includes(item.status));
+  const openAmount = activeCases.reduce((sum, item) => sum + (item.amount_cents ?? 0), 0);
+  const nextDeadline = cases
+    .map((item) => item.next_due_at)
+    .filter((value): value is string => Boolean(value))
+    .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())[0] ?? null;
 
   return (
     <main className="app-shell">
@@ -40,32 +79,60 @@ export default async function DashboardPage() {
           <Link className="button button-primary" href="/neuer-fall">+ Neuer Fall</Link>
         </header>
 
-        <div className="notice-card">
-          <strong>Dein Konto ist aktiv.</strong>
-          <span>Die unten sichtbaren Fälle sind noch Beispieldaten. Im nächsten Schritt werden echte Fälle gespeichert.</span>
-        </div>
-
         <div className="stats-grid">
-          <div className="stat-card"><span>Aktive Fälle</span><strong>3</strong><small>Beispieldaten</small></div>
-          <div className="stat-card"><span>Offener Betrag</span><strong>453,40 €</strong><small>Beispieldaten</small></div>
-          <div className="stat-card"><span>Nächste Frist</span><strong>3 Tage</strong><small>Beispieldaten</small></div>
+          <div className="stat-card">
+            <span>Aktive Fälle</span>
+            <strong>{activeCases.length}</strong>
+            <small>{cases.length} insgesamt</small>
+          </div>
+          <div className="stat-card">
+            <span>Offener Betrag</span>
+            <strong>{formatCurrency(openAmount)}</strong>
+            <small>über aktive Fälle</small>
+          </div>
+          <div className="stat-card">
+            <span>Nächste Frist</span>
+            <strong>{nextDeadline ? formatDate(nextDeadline) : "Keine"}</strong>
+            <small>{nextDeadline ? "offene Frist" : "noch keine Frist erfasst"}</small>
+          </div>
         </div>
 
         <div className="panel">
-          <div className="panel-header"><h2>Beispiel-Fälle</h2><span>Vorschau</span></div>
-          <div className="case-list">
-            {demoCases.map((item) => (
-              <article className="case-row" key={item.title}>
-                <div className="case-row-main">
-                  <div className="case-avatar">{item.title.charAt(0)}</div>
-                  <div><h3>{item.title}</h3><p>{item.company}</p></div>
-                </div>
-                <strong>{item.amount}</strong>
-                <span className={`status status-${item.tone}`}>{item.status}</span>
-                <button type="button" aria-label={`${item.title} öffnen`}>→</button>
-              </article>
-            ))}
+          <div className="panel-header">
+            <h2>Deine Fälle</h2>
+            <span>{cases.length} {cases.length === 1 ? "Fall" : "Fälle"}</span>
           </div>
+
+          {cases.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-state-icon">+</div>
+              <h3>Noch kein Fall angelegt</h3>
+              <p>Lege deinen ersten Fall an und sammle Anbieter, Betrag, Chronik und Fristen an einem Ort.</p>
+              <Link className="button button-primary" href="/neuer-fall">Ersten Fall anlegen</Link>
+            </div>
+          ) : (
+            <div className="case-list">
+              {cases.map((item) => {
+                const status = getCaseStatus(item.status);
+                const type = getCaseTypeByValue(item.type);
+
+                return (
+                  <Link className="case-row" href={`/faelle/${item.id}`} key={item.id}>
+                    <div className="case-row-main">
+                      <div className="case-avatar">{type?.icon ?? item.title.charAt(0)}</div>
+                      <div>
+                        <h3>{item.title}</h3>
+                        <p>{item.company_name || type?.title || "Ohne Anbieter"}</p>
+                      </div>
+                    </div>
+                    <strong>{formatCurrency(item.amount_cents, item.currency)}</strong>
+                    <span className={`status status-${status.tone}`}>{status.label}</span>
+                    <span className="case-row-arrow" aria-hidden="true">→</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
     </main>
