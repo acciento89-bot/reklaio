@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CaseManagementPanel } from "@/components/case-management-panel";
 import { requireUser } from "@/lib/auth";
 import { query } from "@/lib/db";
 import {
@@ -155,6 +156,7 @@ export default async function CaseDetailPage({ params, searchParams }: CaseDetai
                 <span className="eyebrow">Überblick</span>
                 <h2>Falldaten</h2>
               </div>
+              <Link className="button button-secondary" href={`/faelle/${id}/bearbeiten`}>Bearbeiten</Link>
             </div>
 
             <dl className="case-facts">
@@ -362,6 +364,8 @@ export default async function CaseDetailPage({ params, searchParams }: CaseDetai
               ))}
             </div>
           </article>
+
+          <CaseManagementPanel caseId={id} />
         </aside>
       </div>
     </main>
