@@ -81,6 +81,13 @@
   line-height: 1.45;
 }
 
+.document-case-link {
+  width: fit-content;
+  color: var(--accent-2);
+  font-size: .8rem;
+  font-weight: 700;
+}
+
 .document-actions {
   display: flex;
   align-items: center;
@@ -106,6 +113,15 @@
   color: #ffc0c8;
   border-color: rgba(255,123,138,.28);
   background: rgba(255,123,138,.08);
+}
+
+.document-overview-panel {
+  margin-top: 34px;
+}
+
+.document-overview-list {
+  margin: 0;
+  padding: 16px;
 }
 
 @media (max-width: 760px) {
