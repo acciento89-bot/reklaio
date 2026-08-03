@@ -4,6 +4,7 @@ import "./account.css";
 import "./cases.css";
 import "./documents.css";
 import "./selects.css";
+import "./letters.css";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
 
 export const metadata: Metadata = {
