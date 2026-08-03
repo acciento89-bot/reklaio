@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { query } from "@/lib/db";
 import { verifyPassword } from "@/lib/password";
+import { publicUrl } from "@/lib/public-url";
 import { createSession } from "@/lib/session";
 
 export const runtime = "nodejs";
@@ -11,8 +12,8 @@ const loginSchema = z.object({
   password: z.string().min(1).max(128)
 });
 
-function invalidLogin(request: Request) {
-  const url = new URL("/anmelden", request.url);
+function invalidLogin() {
+  const url = publicUrl("/anmelden");
   url.searchParams.set("error", "E-Mail-Adresse oder Passwort ist nicht korrekt.");
   return NextResponse.redirect(url, 303);
 }
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
   });
 
   if (!parsed.success) {
-    return invalidLogin(request);
+    return invalidLogin();
   }
 
   const result = await query<{
@@ -41,14 +42,14 @@ export async function POST(request: Request) {
 
   const user = result.rows[0];
   if (!user?.password_hash) {
-    return invalidLogin(request);
+    return invalidLogin();
   }
 
   const valid = await verifyPassword(parsed.data.password, user.password_hash);
   if (!valid) {
-    return invalidLogin(request);
+    return invalidLogin();
   }
 
   await createSession(user.id);
-  return NextResponse.redirect(new URL("/dashboard", request.url), 303);
+  return NextResponse.redirect(publicUrl("/dashboard"), 303);
 }
