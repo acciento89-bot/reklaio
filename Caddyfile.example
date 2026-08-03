@@ -1,4 +1,4 @@
-reklaio.kamilunavo.com {
+reklaio.de, www.reklaio.de {
     encode zstd gzip
     reverse_proxy reklaio:3000
 }
