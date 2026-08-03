@@ -97,6 +97,18 @@
 .deadline-complete strong { text-decoration: line-through; }
 .deadline-done { color: var(--accent-2) !important; font-weight: 750; }
 
+.case-edit-button { width: 100%; margin-top: 18px; }
+.case-management-panel { border-color: rgba(255,123,138,.16); }
+.danger-zone { margin-top: 18px; border: 1px solid rgba(255,123,138,.22); border-radius: 14px; background: rgba(255,123,138,.045); overflow: hidden; }
+.danger-zone summary { padding: 13px 14px; color: #ffc0c8; font-weight: 750; cursor: pointer; list-style-position: inside; }
+.danger-zone[open] summary { border-bottom: 1px solid rgba(255,123,138,.18); }
+.danger-zone-content { padding: 14px; }
+.danger-zone-content p { margin: 0 0 14px; color: var(--muted); font-size: .85rem; line-height: 1.55; }
+.danger-zone-content form { display: grid; gap: 12px; }
+.danger-zone-content .field { font-size: .85rem; }
+.danger-button { min-height: 44px; padding: 0 14px; border: 1px solid rgba(255,123,138,.35); border-radius: 12px; color: #ffd0d6; background: rgba(255,123,138,.12); font-weight: 800; cursor: pointer; }
+.danger-button:hover { border-color: rgba(255,123,138,.7); background: rgba(255,123,138,.2); }
+
 @media (max-width: 980px) {
   .case-detail-grid { grid-template-columns: 1fr; }
   .case-side-column { position: static; grid-template-columns: repeat(2, minmax(0, 1fr)); }
