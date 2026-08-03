@@ -3,6 +3,7 @@ import "./globals.css";
 import "./account.css";
 import "./cases.css";
 import "./documents.css";
+import "./selects.css";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
 
 export const metadata: Metadata = {
