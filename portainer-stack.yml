@@ -32,6 +32,16 @@ services:
     networks:
       - reklaio
 
+  reklaio-upload-init:
+    image: alpine:3.22
+    container_name: reklaio-upload-init
+    restart: "no"
+    user: "0:0"
+    network_mode: none
+    command: ["sh", "-c", "mkdir -p /uploads && chown -R 1001:1001 /uploads && chmod -R u+rwX,go-rwx /uploads"]
+    volumes:
+      - reklaio_uploads:/uploads
+
   reklaio:
     build:
       context: .
@@ -42,6 +52,8 @@ services:
     init: true
     depends_on:
       reklaio-migrate:
+        condition: service_completed_successfully
+      reklaio-upload-init:
         condition: service_completed_successfully
     environment:
       NODE_ENV: production
