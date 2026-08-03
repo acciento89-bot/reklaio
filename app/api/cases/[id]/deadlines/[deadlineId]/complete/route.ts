@@ -7,8 +7,12 @@ export const runtime = "nodejs";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-function redirectToCase(caseId: string, error?: string) {
-  const url = publicUrl(`/faelle/${caseId}`);
+function safeReturnPath(value: string, caseId: string) {
+  return value === "/fristen" ? "/fristen" : `/faelle/${caseId}`;
+}
+
+function redirectAfterCompletion(pathname: string, error?: string) {
+  const url = publicUrl(pathname);
   if (error) {
     url.searchParams.set("error", error);
   }
@@ -16,7 +20,7 @@ function redirectToCase(caseId: string, error?: string) {
 }
 
 export async function POST(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ id: string; deadlineId: string }> }
 ) {
   const user = await getCurrentUser();
@@ -29,6 +33,8 @@ export async function POST(
     return NextResponse.redirect(publicUrl("/dashboard"), 303);
   }
 
+  const formData = await request.formData();
+  const returnPath = safeReturnPath(String(formData.get("returnTo") ?? ""), id);
   const client = await getDb().connect();
 
   try {
@@ -49,7 +55,7 @@ export async function POST(
 
     if (result.rowCount === 0) {
       await client.query("ROLLBACK");
-      return redirectToCase(id, "Die Frist wurde nicht gefunden oder ist bereits erledigt.");
+      return redirectAfterCompletion(returnPath, "Die Frist wurde nicht gefunden oder ist bereits erledigt.");
     }
 
     await client.query(
@@ -64,11 +70,11 @@ export async function POST(
     );
 
     await client.query("COMMIT");
-    return redirectToCase(id);
+    return redirectAfterCompletion(returnPath);
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
     console.error("Case deadline completion failed", error);
-    return redirectToCase(id, "Die Frist konnte gerade nicht abgeschlossen werden.");
+    return redirectAfterCompletion(returnPath, "Die Frist konnte gerade nicht abgeschlossen werden.");
   } finally {
     client.release();
   }
