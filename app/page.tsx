@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { caseTypes } from "@/lib/case-types";
+import { getCurrentUser } from "@/lib/auth";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const user = await getCurrentUser();
+
   return (
     <main>
       <header className="site-header container">
@@ -11,7 +14,14 @@ export default function HomePage() {
         </Link>
         <nav className="header-actions" aria-label="Hauptnavigation">
           <Link className="text-link" href="#so-funktionierts">So funktioniert’s</Link>
-          <Link className="button button-secondary" href="/dashboard">Demo öffnen</Link>
+          {user ? (
+            <Link className="button button-secondary" href="/dashboard">Zum Dashboard</Link>
+          ) : (
+            <>
+              <Link className="text-link" href="/anmelden">Anmelden</Link>
+              <Link className="button button-secondary" href="/registrieren">Konto erstellen</Link>
+            </>
+          )}
         </nav>
       </header>
 
@@ -23,8 +33,12 @@ export default function HomePage() {
           Chronik, Fristen und dem nächsten sinnvollen Schritt.
         </p>
         <div className="hero-actions">
-          <Link className="button button-primary" href="/neuer-fall">Neuen Fall starten</Link>
-          <Link className="button button-ghost" href="/dashboard">Beispiel-Dashboard</Link>
+          <Link className="button button-primary" href={user ? "/neuer-fall" : "/registrieren"}>
+            Neuen Fall starten
+          </Link>
+          <Link className="button button-ghost" href={user ? "/dashboard" : "/anmelden"}>
+            {user ? "Meine Fälle" : "Anmelden"}
+          </Link>
         </div>
         <div className="trust-row">
           <span>Keine Rechtsberatung</span>
@@ -47,7 +61,7 @@ export default function HomePage() {
               <div className="case-icon" aria-hidden="true">{item.icon}</div>
               <h3>{item.title}</h3>
               <p>{item.description}</p>
-              <Link href={`/neuer-fall?typ=${item.slug}`}>Fall anlegen <span>→</span></Link>
+              <Link href={user ? `/neuer-fall?typ=${item.slug}` : "/registrieren"}>Fall anlegen <span>→</span></Link>
             </article>
           ))}
         </div>
