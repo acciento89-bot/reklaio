@@ -1,0 +1,27 @@
+.auth-page { min-height: 100vh; padding-top: 28px; }
+.auth-card { width: min(520px, 100%); margin: 70px auto; padding: 34px; border: 1px solid var(--line); border-radius: 28px; background: var(--panel); }
+.auth-card h1 { margin: 10px 0; font-size: 2.5rem; letter-spacing: -.045em; }
+.auth-card > p { color: var(--muted); line-height: 1.6; }
+.auth-form { display: grid; gap: 18px; margin-top: 28px; }
+.auth-form label { display: grid; gap: 8px; font-weight: 700; }
+.auth-form label > span, .auth-form small { color: var(--muted); font-weight: 500; }
+.auth-form input { width: 100%; min-height: 48px; padding: 0 14px; color: var(--text); border: 1px solid var(--line); border-radius: 13px; outline: none; background: rgba(255,255,255,.035); }
+.auth-form input:focus { border-color: rgba(140,124,255,.75); box-shadow: 0 0 0 3px rgba(140,124,255,.12); }
+.auth-form .button { width: 100%; margin-top: 4px; cursor: pointer; }
+.auth-switch { margin: 24px 0 0 !important; text-align: center; }
+.auth-switch a { color: var(--accent-2); font-weight: 750; }
+.form-error { margin-top: 20px; padding: 13px 14px; border: 1px solid rgba(255,123,138,.3); border-radius: 13px; color: #ffc0c8; background: rgba(255,123,138,.1); }
+.sidebar-account { margin-top: auto; padding: 14px; border: 1px solid var(--line); border-radius: 14px; display: grid; gap: 5px; }
+.sidebar-account strong { overflow-wrap: anywhere; }
+.sidebar-account span { color: var(--muted); font-size: .78rem; overflow-wrap: anywhere; }
+.sidebar-account form { margin-top: 8px; }
+.sidebar-account button { width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 10px; color: var(--muted); background: rgba(255,255,255,.03); cursor: pointer; }
+.dashboard-welcome { margin: 8px 0 0; color: var(--muted); }
+.notice-card { display: flex; flex-direction: column; gap: 6px; margin-top: 28px; padding: 18px 20px; border: 1px solid rgba(92,225,196,.22); border-radius: 16px; background: rgba(92,225,196,.07); }
+.notice-card span { color: var(--muted); line-height: 1.5; }
+.panel-header > span { color: var(--muted); font-size: .85rem; }
+
+@media (max-width: 680px) {
+  .auth-card { margin-top: 42px; padding: 22px; }
+  .site-header .header-actions .text-link { display: none; }
+}
