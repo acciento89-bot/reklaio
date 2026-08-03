@@ -16,6 +16,7 @@ import {
   formatFileSize,
   getDocumentTypeLabel
 } from "@/lib/documents";
+import { getLetterKindLabel } from "@/lib/letters";
 
 type CaseDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -61,6 +62,13 @@ type CaseDocument = {
   created_at: string;
 };
 
+type GeneratedLetter = {
+  id: string;
+  kind: string;
+  subject: string | null;
+  created_at: string;
+};
+
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export default async function CaseDetailPage({ params, searchParams }: CaseDetailPageProps) {
@@ -86,7 +94,7 @@ export default async function CaseDetailPage({ params, searchParams }: CaseDetai
     notFound();
   }
 
-  const [eventResult, deadlineResult, documentResult] = await Promise.all([
+  const [eventResult, deadlineResult, documentResult, letterResult] = await Promise.all([
     query<CaseEvent>(
       `SELECT id, event_type, title, details, occurred_at
        FROM case_events
@@ -104,6 +112,13 @@ export default async function CaseDetailPage({ params, searchParams }: CaseDetai
     query<CaseDocument>(
       `SELECT id, original_name, mime_type, size_bytes, document_type, created_at
        FROM case_documents
+       WHERE case_id = $1
+       ORDER BY created_at DESC`,
+      [id]
+    ),
+    query<GeneratedLetter>(
+      `SELECT id, kind, subject, created_at
+       FROM generated_letters
        WHERE case_id = $1
        ORDER BY created_at DESC`,
       [id]
@@ -214,6 +229,38 @@ export default async function CaseDetailPage({ params, searchParams }: CaseDetai
                 </article>
               ))}
             </div>
+          </article>
+
+          <article className="detail-panel">
+            <div className="detail-panel-header">
+              <div>
+                <span className="eyebrow">Korrespondenz</span>
+                <h2>Schreiben</h2>
+              </div>
+              <Link className="button button-secondary" href={`/faelle/${id}/schreiben/neu`}>+ Neues Schreiben</Link>
+            </div>
+
+            {letterResult.rows.length === 0 ? (
+              <div className="empty-state letter-empty-state">
+                <div className="empty-state-icon">✎</div>
+                <h3>Noch kein Schreiben gespeichert</h3>
+                <p>Erstelle aus den Falldaten eine passende Nachricht, passe sie an und speichere sie in der Fallakte.</p>
+                <Link className="button button-primary" href={`/faelle/${id}/schreiben/neu`}>Erstes Schreiben erstellen</Link>
+              </div>
+            ) : (
+              <div className="letter-list">
+                {letterResult.rows.map((letter) => (
+                  <Link className="letter-list-item" href={`/faelle/${id}/schreiben/${letter.id}`} key={letter.id}>
+                    <span className="letter-list-icon" aria-hidden="true">✎</span>
+                    <span className="letter-list-main">
+                      <strong>{letter.subject || "Schreiben ohne Betreff"}</strong>
+                      <span>{getLetterKindLabel(letter.kind)} · {formatDateTime(letter.created_at)}</span>
+                    </span>
+                    <span className="letter-list-arrow" aria-hidden="true">→</span>
+                  </Link>
+                ))}
+              </div>
+            )}
           </article>
 
           <article className="detail-panel">
