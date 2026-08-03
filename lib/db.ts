@@ -20,17 +20,11 @@ function createPool() {
 }
 
 export function getDb() {
-  if (global.reklaioPool) {
-    return global.reklaioPool;
+  if (!global.reklaioPool) {
+    global.reklaioPool = createPool();
   }
 
-  const pool = createPool();
-
-  if (process.env.NODE_ENV !== "production") {
-    global.reklaioPool = pool;
-  }
-
-  return pool;
+  return global.reklaioPool;
 }
 
 export async function query<T extends QueryResultRow>(text: string, values: unknown[] = []) {
