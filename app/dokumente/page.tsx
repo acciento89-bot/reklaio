@@ -41,6 +41,7 @@ export default async function DocumentsPage() {
         <nav>
           <Link href="/dashboard">Meine Fälle</Link>
           <Link href="/neuer-fall">Neuer Fall</Link>
+          <Link href="/fristen">Fristen</Link>
           <Link className="active" href="/dokumente">Dokumente</Link>
           <a href="#">Einstellungen</a>
         </nav>
