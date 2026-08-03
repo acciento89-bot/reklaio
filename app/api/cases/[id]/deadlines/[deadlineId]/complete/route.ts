@@ -7,16 +7,32 @@ export const runtime = "nodejs";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-function redirectToCase(caseId: string, error?: string) {
-  const url = publicUrl(`/faelle/${caseId}`);
+function redirectAfterCompletion(pathname: string, error?: string) {
+  const url = publicUrl(pathname);
   if (error) {
     url.searchParams.set("error", error);
   }
   return NextResponse.redirect(url, 303);
 }
 
+async function getReturnPath(request: Request, caseId: string) {
+  const fallback = `/faelle/${caseId}`;
+  const contentType = request.headers.get("content-type") ?? "";
+
+  if (!contentType.includes("application/x-www-form-urlencoded") && !contentType.includes("multipart/form-data")) {
+    return fallback;
+  }
+
+  try {
+    const formData = await request.formData();
+    return String(formData.get("returnTo") ?? "") === "/fristen" ? "/fristen" : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export async function POST(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ id: string; deadlineId: string }> }
 ) {
   const user = await getCurrentUser();
@@ -29,6 +45,7 @@ export async function POST(
     return NextResponse.redirect(publicUrl("/dashboard"), 303);
   }
 
+  const returnPath = await getReturnPath(request, id);
   const client = await getDb().connect();
 
   try {
@@ -49,7 +66,7 @@ export async function POST(
 
     if (result.rowCount === 0) {
       await client.query("ROLLBACK");
-      return redirectToCase(id, "Die Frist wurde nicht gefunden oder ist bereits erledigt.");
+      return redirectAfterCompletion(returnPath, "Die Frist wurde nicht gefunden oder ist bereits erledigt.");
     }
 
     await client.query(
@@ -64,11 +81,11 @@ export async function POST(
     );
 
     await client.query("COMMIT");
-    return redirectToCase(id);
+    return redirectAfterCompletion(returnPath);
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
     console.error("Case deadline completion failed", error);
-    return redirectToCase(id, "Die Frist konnte gerade nicht abgeschlossen werden.");
+    return redirectAfterCompletion(returnPath, "Die Frist konnte gerade nicht abgeschlossen werden.");
   } finally {
     client.release();
   }
