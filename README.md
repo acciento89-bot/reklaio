@@ -40,7 +40,7 @@ Benötigte Stack-Variablen:
 - `FRONTEND_NETWORK` (z. B. `kamilunavo-infrastructure_frontend`)
 - optional `BASE_URL`, `POSTGRES_USER`, `POSTGRES_DB`
 
-Nach dem Deployment die Migration einmal im App-Container oder über einen temporären Node-Container ausführen.
+Die Migration läuft beim Stack-Deployment automatisch einmal im Container `reklaio-migrate`.
 
 ## Caddy
 
