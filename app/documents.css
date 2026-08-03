@@ -14,6 +14,41 @@
   line-height: 1.45;
 }
 
+.document-upload-form select {
+  color-scheme: dark;
+  color: #f5f7ff;
+  background-color: #181d33;
+  border-color: rgba(140,124,255,.42);
+  cursor: pointer;
+}
+
+.document-upload-form select:hover {
+  border-color: rgba(140,124,255,.82);
+  background-color: #202743;
+}
+
+.document-upload-form select:focus {
+  border-color: var(--accent);
+  background-color: #202743;
+  box-shadow: 0 0 0 3px rgba(140,124,255,.16);
+}
+
+.document-upload-form select option {
+  color: #f5f7ff;
+  background-color: #181d33;
+}
+
+.document-upload-form select option:checked {
+  color: #ffffff;
+  background-color: #6656e8;
+}
+
+.document-upload-form select option:hover,
+.document-upload-form select option:focus {
+  color: #ffffff;
+  background-color: #2b3454;
+}
+
 .document-upload-form input[type="file"] {
   padding: 10px;
   cursor: pointer;
