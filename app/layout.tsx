@@ -5,7 +5,9 @@ import "./cases.css";
 import "./documents.css";
 import "./selects.css";
 import "./letters.css";
+import "./case-shortcut.css";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
+import { CaseEditShortcut } from "@/components/case-edit-shortcut";
 
 export const metadata: Metadata = {
   title: {
@@ -36,6 +38,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <ServiceWorkerRegistration />
         {children}
+        <CaseEditShortcut />
       </body>
     </html>
   );
