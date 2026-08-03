@@ -7,9 +7,11 @@ import "./selects.css";
 import "./letters.css";
 import "./case-shortcut.css";
 import "./deadlines.css";
+import "./case-delete.css";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
 import { CaseEditShortcut } from "@/components/case-edit-shortcut";
 import { DeadlineShortcut } from "@/components/deadline-shortcut";
+import { CaseDeletePanel } from "@/components/case-delete-panel";
 
 export const metadata: Metadata = {
   title: {
@@ -41,6 +43,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <ServiceWorkerRegistration />
         {children}
         <DeadlineShortcut />
+        <CaseDeletePanel />
         <CaseEditShortcut />
       </body>
     </html>
