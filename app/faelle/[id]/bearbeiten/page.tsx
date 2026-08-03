@@ -40,7 +40,8 @@ export default async function EditCasePage({ params, searchParams }: EditCasePag
   }
 
   const result = await query<EditableCase>(
-    `SELECT id, type, title, company_name, order_reference, amount_cents, incident_date, summary
+    `SELECT id, type, title, company_name, order_reference, amount_cents,
+            incident_date::text AS incident_date, summary
      FROM cases
      WHERE id = $1 AND user_id = $2
      LIMIT 1`,
@@ -99,7 +100,7 @@ export default async function EditCasePage({ params, searchParams }: EditCasePag
 
             <label className="field">
               Vorfallsdatum
-              <input name="incidentDate" type="date" defaultValue={currentCase.incident_date?.slice(0, 10) ?? ""} />
+              <input name="incidentDate" type="date" defaultValue={currentCase.incident_date ?? ""} />
             </label>
 
             <label className="field field-full">
