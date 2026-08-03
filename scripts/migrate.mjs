@@ -10,15 +10,25 @@ if (!databaseUrl) {
   process.exit(1);
 }
 
-const sql = await fs.readFile(path.join(process.cwd(), "db", "001_init.sql"), "utf8");
+const dbDirectory = path.join(process.cwd(), "db");
+const migrationFiles = (await fs.readdir(dbDirectory))
+  .filter((file) => file.endsWith(".sql"))
+  .sort();
+
 const client = new Client({ connectionString: databaseUrl });
 
 try {
   await client.connect();
   await client.query("BEGIN");
-  await client.query(sql);
+
+  for (const file of migrationFiles) {
+    const sql = await fs.readFile(path.join(dbDirectory, file), "utf8");
+    await client.query(sql);
+    console.log(`Applied migration: ${file}`);
+  }
+
   await client.query("COMMIT");
-  console.log("Reklaio database migration completed.");
+  console.log("Reklaio database migrations completed.");
 } catch (error) {
   await client.query("ROLLBACK").catch(() => undefined);
   console.error("Migration failed:", error);
