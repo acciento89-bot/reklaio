@@ -3,6 +3,10 @@ import { requireUser } from "@/lib/auth";
 import { query } from "@/lib/db";
 import { formatDate, formatDateTime } from "@/lib/cases";
 
+type DeadlinesPageProps = {
+  searchParams: Promise<{ error?: string }>;
+};
+
 type DeadlineRow = {
   id: string;
   case_id: string;
@@ -30,8 +34,9 @@ function deadlineState(deadline: DeadlineRow, now: number, soonLimit: number) {
   return { key: "open", label: "Offen", tone: "neutral" } as const;
 }
 
-export default async function DeadlinesPage() {
+export default async function DeadlinesPage({ searchParams }: DeadlinesPageProps) {
   const user = await requireUser();
+  const { error } = await searchParams;
   const accountName = user.displayName || user.email;
 
   const result = await query<DeadlineRow>(
@@ -92,6 +97,8 @@ export default async function DeadlinesPage() {
           </div>
           <Link className="button button-primary" href="/dashboard">Zu den Fällen</Link>
         </header>
+
+        {error ? <div className="form-error deadline-page-error" role="alert">{error}</div> : null}
 
         <div className="stats-grid deadline-stats">
           <div className="stat-card deadline-stat-danger">
