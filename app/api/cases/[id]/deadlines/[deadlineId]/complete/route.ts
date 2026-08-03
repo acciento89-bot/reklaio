@@ -33,8 +33,8 @@ export async function POST(
     return NextResponse.redirect(publicUrl("/dashboard"), 303);
   }
 
-  const formData = await request.formData();
-  const returnPath = safeReturnPath(String(formData.get("returnTo") ?? ""), id);
+  const formData = await request.formData().catch(() => null);
+  const returnPath = safeReturnPath(String(formData?.get("returnTo") ?? ""), id);
   const client = await getDb().connect();
 
   try {
