@@ -57,6 +57,7 @@ export default async function DashboardPage() {
         <nav>
           <Link className="active" href="/dashboard">Meine Fälle</Link>
           <Link href="/neuer-fall">Neuer Fall</Link>
+          <Link href="/fristen">Fristen</Link>
           <Link href="/dokumente">Dokumente</Link>
           <a href="#">Einstellungen</a>
         </nav>
@@ -90,11 +91,11 @@ export default async function DashboardPage() {
             <strong>{formatCurrency(openAmount)}</strong>
             <small>über aktive Fälle</small>
           </div>
-          <div className="stat-card">
+          <Link className="stat-card stat-card-link" href="/fristen">
             <span>Nächste Frist</span>
             <strong>{nextDeadline ? formatDate(nextDeadline) : "Keine"}</strong>
-            <small>{nextDeadline ? "offene Frist" : "noch keine Frist erfasst"}</small>
-          </div>
+            <small>{nextDeadline ? "Fristenübersicht öffnen" : "noch keine Frist erfasst"}</small>
+          </Link>
         </div>
 
         <div className="panel">
