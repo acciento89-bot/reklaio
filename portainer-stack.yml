@@ -46,7 +46,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: "3000"
-      BASE_URL: ${BASE_URL:-https://reklaio.kamilunavo.com}
+      BASE_URL: ${BASE_URL:-https://reklaio.de}
       DATABASE_URL: postgresql://${POSTGRES_USER:-reklaio}:${POSTGRES_PASSWORD}@reklaio-postgres:5432/${POSTGRES_DB:-reklaio}
       SESSION_SECRET: ${SESSION_SECRET}
       UPLOAD_DIR: /app/uploads
@@ -55,7 +55,7 @@ services:
     expose:
       - "3000"
     networks:
-      - frontend
+      - caddy
       - reklaio
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
@@ -69,8 +69,8 @@ volumes:
   reklaio_uploads:
 
 networks:
-  frontend:
+  caddy:
     external: true
-    name: ${FRONTEND_NETWORK}
+    name: ${CADDY_NETWORK}
   reklaio:
     name: reklaio
