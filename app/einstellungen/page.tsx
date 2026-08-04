@@ -28,6 +28,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   );
 
   const account = result.rows[0];
+  const emailVerified = Boolean(account?.email_verified_at);
 
   return (
     <main className="app-shell">
@@ -87,10 +88,31 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
               <label className="field">
                 E-Mail-Adresse
                 <input type="email" value={account?.email ?? user.email} readOnly aria-readonly="true" />
-                <small>Die E-Mail kann erst geändert werden, sobald E-Mail-Verifizierung und Wiederherstellung eingebaut sind.</small>
+                <small>Die Adresse bleibt bis zu einer späteren, doppelt bestätigten E-Mail-Änderung schreibgeschützt.</small>
               </label>
               <button className="button button-secondary" type="submit">Profil speichern</button>
             </form>
+          </section>
+
+          <section className={`panel settings-panel settings-verification-panel${emailVerified ? " is-verified" : ""}`}>
+            <div className="settings-panel-heading">
+              <div>
+                <span className="eyebrow">E-Mail</span>
+                <h2>{emailVerified ? "Adresse bestätigt" : "Adresse bestätigen"}</h2>
+              </div>
+              <span>{emailVerified ? "Aktiv" : "Ausstehend"}</span>
+            </div>
+
+            {emailVerified ? (
+              <p>Bestätigt am {formatDateTime(account?.email_verified_at ?? null)}. Fristerinnerungen und direkter E-Mail-Versand sind für dieses Konto freigeschaltet.</p>
+            ) : (
+              <>
+                <p>Bestätige deine Adresse, damit Reklaio Fristerinnerungen senden und gespeicherte Schreiben direkt verschicken darf.</p>
+                <form action="/api/account/verification/resend" method="post">
+                  <button className="button button-secondary" type="submit">Bestätigungslink senden</button>
+                </form>
+              </>
+            )}
           </section>
 
           <section className="panel settings-panel">
