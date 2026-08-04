@@ -1,45 +1,45 @@
 select {
   color-scheme: dark;
-  color: #f5f7ff;
-  background-color: #181d33;
-  border-color: rgba(140,124,255,.42) !important;
+  color: var(--text);
+  background-color: #182b38;
+  border-color: var(--line-strong) !important;
   cursor: pointer;
 }
 
 select:hover {
   color: #ffffff;
-  background-color: #202743;
-  border-color: rgba(140,124,255,.82) !important;
+  background-color: #1c3341;
+  border-color: rgba(143,199,187,.5) !important;
 }
 
 select:focus,
 select:focus-visible {
   color: #ffffff;
-  background-color: #202743;
+  background-color: #1c3341;
   border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px rgba(140,124,255,.16) !important;
+  box-shadow: 0 0 0 3px rgba(73,151,137,.12) !important;
 }
 
 select option,
 select optgroup {
-  color: #f5f7ff;
-  background-color: #181d33;
+  color: var(--text);
+  background-color: #182b38;
 }
 
 select option:checked {
   color: #ffffff;
-  background: #6656e8 linear-gradient(0deg, #6656e8 0%, #6656e8 100%);
+  background: #2f7d72 linear-gradient(0deg, #2f7d72 0%, #2f7d72 100%);
 }
 
 select option:hover,
 select option:focus {
   color: #ffffff;
-  background-color: #2b3454;
+  background-color: #234353;
 }
 
 select:disabled {
-  color: #737b94;
-  background-color: #121629;
+  color: #718690;
+  background-color: #111f29;
   cursor: not-allowed;
   opacity: .7;
 }
