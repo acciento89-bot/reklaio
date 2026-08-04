@@ -17,6 +17,7 @@ import "./legal.css";
 import "./onboarding.css";
 import "./ai.css";
 import "./letter-management.css";
+import { GlobalLegalLinks } from "@/components/global-legal-links";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
 
 export const metadata: Metadata = {
@@ -62,6 +63,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <ServiceWorkerRegistration />
         {children}
+        <GlobalLegalLinks />
       </body>
     </html>
   );
