@@ -27,6 +27,8 @@ export function LegalLayout({
       <article className="legal-content container">{children}</article>
 
       <footer className="legal-footer container">
+        <Link href="/kontakt">Kontakt</Link>
+        <Link href="/preise">Preise</Link>
         <Link href="/impressum">Impressum</Link>
         <Link href="/datenschutz">Datenschutz</Link>
         <Link href="/nutzungsbedingungen">Nutzungsbedingungen</Link>

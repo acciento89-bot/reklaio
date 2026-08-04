@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { LegalLayout } from "@/components/legal-layout";
 import { LEGAL_VERSION, legalAddressLines, legalOperator } from "@/lib/legal";
 
@@ -15,7 +16,9 @@ export default function ImprintPage() {
       <section>
         <h2>Kontakt</h2>
         <p>E-Mail: <a href={`mailto:${legalOperator.email}`}>{legalOperator.email}</a></p>
+        <p>Elektronisches Kontaktformular: <Link href="/kontakt">Kontaktformular öffnen</Link></p>
         {legalOperator.phone ? <p>Telefon: {legalOperator.phone}</p> : null}
+        <p>Über das Kontaktformular ist eine direkte elektronische Nachricht möglich. Die Antwort erfolgt an die dort angegebene E-Mail-Adresse.</p>
       </section>
 
       {legalOperator.vatId || legalOperator.registerNumber ? (

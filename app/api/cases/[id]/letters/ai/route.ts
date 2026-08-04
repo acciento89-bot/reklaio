@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { generateLetterDraft, isAiConfigured } from "@/lib/ai";
 import { getCurrentUser } from "@/lib/auth";
+import { hasProAccess } from "@/lib/billing";
 import { formatCurrency, formatDate } from "@/lib/cases";
 import { getCaseTypeByValue } from "@/lib/case-types";
 import { getDb } from "@/lib/db";
@@ -30,6 +31,10 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
   const { id: caseId } = await context.params;
   if (!UUID_PATTERN.test(caseId)) return NextResponse.redirect(publicUrl("/dashboard"), 303);
+
+  if (!(await hasProAccess(user.id))) {
+    return errorRedirect(caseId, "Individuelle KI-Schreiben gehören zu Reklaio Pro.");
+  }
 
   const formData = await request.formData();
   const parsed = schema.safeParse({

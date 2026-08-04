@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { LetterEditor } from "@/components/letter-editor";
 import { isAiConfigured } from "@/lib/ai";
 import { requireUser } from "@/lib/auth";
+import { hasProAccess } from "@/lib/billing";
 import { query } from "@/lib/db";
 import {
   buildAllLetterTemplates,
@@ -35,23 +36,22 @@ export default async function NewLetterPage({ params, searchParams }: NewLetterP
   const { id } = await params;
   const { error } = await searchParams;
 
-  if (!UUID_PATTERN.test(id)) {
-    notFound();
-  }
+  if (!UUID_PATTERN.test(id)) notFound();
 
-  const result = await query<LetterCaseRow>(
-    `SELECT type, title, company_name, order_reference, amount_cents,
-            currency, incident_date, summary
-     FROM cases
-     WHERE id = $1 AND user_id = $2
-     LIMIT 1`,
-    [id, user.id]
-  );
+  const [result, proAccess] = await Promise.all([
+    query<LetterCaseRow>(
+      `SELECT type, title, company_name, order_reference, amount_cents,
+              currency, incident_date, summary
+       FROM cases
+       WHERE id = $1 AND user_id = $2
+       LIMIT 1`,
+      [id, user.id]
+    ),
+    hasProAccess(user.id)
+  ]);
 
   const currentCase = result.rows[0];
-  if (!currentCase) {
-    notFound();
-  }
+  if (!currentCase) notFound();
 
   const caseData: LetterCaseData = {
     type: currentCase.type,
@@ -82,7 +82,7 @@ export default async function NewLetterPage({ params, searchParams }: NewLetterP
         <div>
           <span className="eyebrow">Formulierungshilfe</span>
           <h1>Neues Schreiben</h1>
-          <p>Nutze eine feste Vorlage oder erstelle freiwillig einen KI-Entwurf. Jeder Text muss vor dem Versand geprüft werden.</p>
+          <p>Nutze eine feste Vorlage oder erstelle mit Reklaio Pro freiwillig einen KI-Entwurf. Jeder Text muss vor dem Versand geprüft werden.</p>
         </div>
       </section>
 
@@ -95,23 +95,21 @@ export default async function NewLetterPage({ params, searchParams }: NewLetterP
           <small>{currentCase.company_name || "Kein Anbieter eingetragen"}</small>
         </div>
 
-        <span className="eyebrow">Ohne externe Verarbeitung</span>
+        <span className="eyebrow">In Free enthalten</span>
         <h2>Bewährte Reklaio-Vorlage</h2>
         <p className="muted-copy">Die Vorlage wird direkt aus deinen Falldaten im Reklaio-System erstellt und nicht an einen KI-Anbieter übermittelt.</p>
 
-        <LetterEditor
-          caseId={id}
-          templates={templates}
-          initialKind={suggestedKind}
-        />
+        <LetterEditor caseId={id} templates={templates} initialKind={suggestedKind} />
       </section>
 
       <section className="ai-letter-panel letter-no-print">
-        <span className="eyebrow">Optionaler KI-Entwurf</span>
+        <span className="eyebrow">Reklaio Pro</span>
         <h2>Individuelles Schreiben aus bestätigten Falldaten</h2>
         <p>Reklaio übermittelt die sichtbaren Falldaten, die gewählte Schreibenart und deine gewünschte Lösung an die OpenAI API. Der Entwurf wird gespeichert, bleibt vollständig bearbeitbar und wird niemals automatisch versendet.</p>
 
-        {aiConfigured ? (
+        {!proAccess ? (
+          <div className="legal-note">Individuelle KI-Entwürfe gehören zu Reklaio Pro. <Link href="/preise">Tarife ansehen</Link></div>
+        ) : aiConfigured ? (
           <form className="ai-letter-form" action={`/api/cases/${id}/letters/ai`} method="post">
             <label className="field">
               Schreibenart
@@ -140,7 +138,7 @@ export default async function NewLetterPage({ params, searchParams }: NewLetterP
             <button className="button button-primary" type="submit">KI-Entwurf erstellen</button>
           </form>
         ) : (
-          <div className="legal-note">Die KI-Funktion ist noch nicht konfiguriert. Die normalen Reklaio-Vorlagen stehen weiterhin vollständig zur Verfügung.</div>
+          <div className="legal-note">Dein Pro-Zugang ist aktiv, aber die OpenAI API ist noch nicht vollständig eingerichtet. Die normalen Reklaio-Vorlagen funktionieren weiterhin.</div>
         )}
       </section>
     </main>

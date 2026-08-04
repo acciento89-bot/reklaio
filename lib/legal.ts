@@ -1,4 +1,4 @@
-export const LEGAL_VERSION = "2026-08-04";
+export const LEGAL_VERSION = "2026-08-05";
 
 export const legalOperator = {
   serviceName: "Reklaio",
