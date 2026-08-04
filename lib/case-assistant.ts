@@ -18,6 +18,10 @@ export type CaseAssistantInput = {
   openDeadlineCount: number;
   nextDueAt: string | Date | null;
   letterCount: number;
+  openTaskCount?: number;
+  latestResponseOutcome?: string | null;
+  latestPromisedDueAt?: string | Date | null;
+  lastEscalationStage?: string | null;
 };
 
 export type CaseAssistantResult = {
@@ -36,7 +40,7 @@ function hasText(value: string | null | undefined, minimum = 1) {
   return Boolean(value && value.trim().length >= minimum);
 }
 
-function deadlineDistanceInDays(value: string | Date | null) {
+function distanceInDays(value: string | Date | null | undefined) {
   if (!value) return null;
   const due = new Date(value).getTime();
   if (!Number.isFinite(due)) return null;
@@ -71,7 +75,8 @@ export function getCaseAssistant(input: CaseAssistantInput): CaseAssistantResult
   const completedWeight = checks.reduce((sum, check) => sum + (check.done ? check.weight : 0), 0);
   const completeness = totalWeight > 0 ? Math.round((completedWeight / totalWeight) * 100) : 100;
   const missingItems = checks.filter((check) => !check.done).map((check) => check.label);
-  const deadlineDistance = deadlineDistanceInDays(input.nextDueAt);
+  const deadlineDistance = distanceInDays(input.nextDueAt);
+  const promiseDistance = distanceInDays(input.latestPromisedDueAt);
 
   if (["resolved", "closed"].includes(input.status)) {
     return {
@@ -79,9 +84,21 @@ export function getCaseAssistant(input: CaseAssistantInput): CaseAssistantResult
       priority: "complete",
       priorityLabel: "Abgeschlossen",
       headline: "Fall ist abgeschlossen",
-      description: "Die Fallakte bleibt mit Chronik, Dokumenten, Fristen und Schreiben vollständig erhalten.",
+      description: "Die Fallakte bleibt mit Chronik, Dokumenten, Fristen, Aufgaben und Schreiben vollständig erhalten.",
       missingItems: [],
       action: { kind: "link", href: `/faelle/${input.id}/verwalten`, label: "Fall verwalten" }
+    };
+  }
+
+  if (promiseDistance !== null && promiseDistance < 0) {
+    return {
+      completeness,
+      priority: "urgent",
+      priorityLabel: "Zusage überfällig",
+      headline: "Ein zugesagter Termin ist überschritten",
+      description: "Prüfe Zahlung, Lieferung oder Bestätigung und dokumentiere anschließend die nächste Eskalationsstufe.",
+      missingItems,
+      action: { kind: "link", href: `/faelle/${input.id}/steuerung#eskalation`, label: "Eskalation prüfen" }
     };
   }
 
@@ -91,9 +108,21 @@ export function getCaseAssistant(input: CaseAssistantInput): CaseAssistantResult
       priority: "urgent",
       priorityLabel: "Dringend",
       headline: "Eine Frist ist überschritten",
-      description: "Dokumentiere die ausbleibende Reaktion und bereite jetzt den nächsten schriftlichen Schritt vor.",
+      description: "Dokumentiere die ausbleibende Reaktion und wähle in der Fallsteuerung den nächsten Schritt.",
       missingItems,
-      action: { kind: "link", href: `/faelle/${input.id}/schreiben/neu`, label: defaultLetterLabel(input.type) }
+      action: { kind: "link", href: `/faelle/${input.id}/steuerung#eskalation`, label: "Eskalationsstufe wählen" }
+    };
+  }
+
+  if (promiseDistance !== null && promiseDistance <= 3) {
+    return {
+      completeness,
+      priority: "soon",
+      priorityLabel: "Zusage beobachten",
+      headline: promiseDistance === 0 ? "Zugesagter Termin ist heute" : `Zugesagter Termin in ${promiseDistance} Tagen`,
+      description: "Prüfe am Termin, ob die angekündigte Zahlung, Lieferung oder Bestätigung eingegangen ist.",
+      missingItems,
+      action: { kind: "link", href: `/faelle/${input.id}/steuerung#aufgaben`, label: "Aufgaben öffnen" }
     };
   }
 
@@ -103,9 +132,45 @@ export function getCaseAssistant(input: CaseAssistantInput): CaseAssistantResult
       priority: "soon",
       priorityLabel: "Bald fällig",
       headline: deadlineDistance === 0 ? "Frist läuft heute ab" : `Frist läuft in ${deadlineDistance} Tagen ab`,
-      description: "Prüfe, ob eine Antwort oder Zahlung eingegangen ist, und halte das Ergebnis in der Chronik fest.",
+      description: "Prüfe, ob eine Antwort oder Zahlung eingegangen ist, und erfasse das Ergebnis in der Fallsteuerung.",
       missingItems,
-      action: { kind: "link", href: `/faelle/${input.id}`, label: "Reaktion dokumentieren" }
+      action: { kind: "link", href: `/faelle/${input.id}/steuerung#antworten`, label: "Antwort erfassen" }
+    };
+  }
+
+  if (["rejected", "partial_offer"].includes(input.latestResponseOutcome ?? "")) {
+    return {
+      completeness,
+      priority: "normal",
+      priorityLabel: "Entscheidung nötig",
+      headline: input.latestResponseOutcome === "rejected" ? "Anbieter hat abgelehnt" : "Teilangebot liegt vor",
+      description: "Bewerte die Antwort und dokumentiere, ob erneut geschrieben, eine letzte Frist gesetzt oder eine weitere Stelle eingeschaltet wird.",
+      missingItems,
+      action: { kind: "link", href: `/faelle/${input.id}/steuerung#eskalation`, label: "Nächste Stufe wählen" }
+    };
+  }
+
+  if (input.latestResponseOutcome === "question") {
+    return {
+      completeness,
+      priority: "normal",
+      priorityLabel: "Antwort erforderlich",
+      headline: "Der Anbieter hat eine Rückfrage gestellt",
+      description: "Beantworte die Rückfrage schriftlich und füge passende Belege direkt als E-Mail-Anhang hinzu.",
+      missingItems,
+      action: { kind: "link", href: `/faelle/${input.id}/schreiben/neu`, label: "Antwort vorbereiten" }
+    };
+  }
+
+  if ((input.openTaskCount ?? 0) > 0) {
+    return {
+      completeness,
+      priority: "normal",
+      priorityLabel: "Aufgabe offen",
+      headline: `${input.openTaskCount} offene ${input.openTaskCount === 1 ? "Aufgabe" : "Aufgaben"}`,
+      description: "Bearbeite die nächste Aufgabe oder passe die Fallsteuerung an die aktuelle Entwicklung an.",
+      missingItems,
+      action: { kind: "link", href: `/faelle/${input.id}/steuerung#aufgaben`, label: "Aufgaben öffnen" }
     };
   }
 
@@ -157,26 +222,14 @@ export function getCaseAssistant(input: CaseAssistantInput): CaseAssistantResult
     };
   }
 
-  if (input.eventCount === 0) {
-    return {
-      completeness,
-      priority: "normal",
-      priorityLabel: "Dokumentation",
-      headline: "Bisherigen Verlauf festhalten",
-      description: "Trage den bisherigen Kontakt und wichtige Zusagen ein, damit die zeitliche Abfolge später eindeutig bleibt.",
-      missingItems,
-      action: { kind: "link", href: `/faelle/${input.id}`, label: "Chronik ergänzen" }
-    };
-  }
-
   return {
     completeness,
     priority: "normal",
-    priorityLabel: "Gut vorbereitet",
-    headline: "Fall weiter beobachten",
-    description: "Die wichtigsten Angaben sind vorhanden. Prüfe eingehende Antworten und dokumentiere jede neue Entwicklung.",
+    priorityLabel: input.lastEscalationStage ? "Eskalation läuft" : "Gut vorbereitet",
+    headline: input.lastEscalationStage ? "Dokumentierten Eskalationsschritt verfolgen" : "Fall weiter beobachten",
+    description: "Prüfe eingehende Antworten, erledige offene Aufgaben und dokumentiere jede neue Entwicklung.",
     missingItems,
-    action: { kind: "link", href: `/faelle/${input.id}`, label: "Status prüfen" }
+    action: { kind: "link", href: `/faelle/${input.id}/steuerung`, label: "Fallsteuerung öffnen" }
   };
 }
 
