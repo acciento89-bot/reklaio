@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import { NextResponse } from "next/server";
 import { analyzeDocument, isAiConfigured } from "@/lib/ai";
 import { getCurrentUser } from "@/lib/auth";
+import { hasProAccess } from "@/lib/billing";
 import { getDb } from "@/lib/db";
 import { resolveStoragePath } from "@/lib/documents";
 import { publicUrl } from "@/lib/public-url";
@@ -23,6 +24,10 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const { id: caseId, documentId } = await context.params;
   if (!UUID_PATTERN.test(caseId) || !UUID_PATTERN.test(documentId)) {
     return NextResponse.redirect(publicUrl("/dashboard"), 303);
+  }
+
+  if (!(await hasProAccess(user.id))) {
+    return redirectToAnalysis(caseId, documentId, "error", "Die KI-Dokumentenanalyse gehört zu Reklaio Pro.");
   }
 
   const formData = await request.formData();
