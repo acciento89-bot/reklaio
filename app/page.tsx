@@ -28,7 +28,17 @@ export default async function HomePage() {
         </nav>
       </header>
 
-      <section className="hero container">
+      <section className="brand-banner container" aria-label="Reklaio Markenbanner">
+        <Image
+          src="/reklaio-banner.svg"
+          alt="Reklaio – Dein Fall. Deine Frist. Dein Überblick."
+          width={2048}
+          height={682}
+          priority
+        />
+      </section>
+
+      <section className="hero hero-brand-copy container">
         <div className="hero-content">
           <div className="eyebrow">Digitales Fallmanagement für Verbraucher</div>
           <h1>Reklamationen klar dokumentieren. <span>Fristen sicher im Blick behalten.</span></h1>
@@ -46,18 +56,9 @@ export default async function HomePage() {
           <div className="trust-row" aria-label="Vorteile">
             <span>Geschützte Dokumente</span>
             <span>Automatische Fristerinnerungen</span>
+            <span>Geführte nächste Schritte</span>
             <span>Keine Rechtsberatung</span>
           </div>
-        </div>
-
-        <div className="hero-visual" aria-label="Vorschau einer Reklaio-Fallakte">
-          <Image
-            src="/reklaio-banner.svg"
-            alt="Reklaio Fallakte mit Chronik, Frist und Dokumentenübersicht"
-            width={1200}
-            height={760}
-            priority
-          />
         </div>
       </section>
 
@@ -65,7 +66,7 @@ export default async function HomePage() {
         <div className="container professional-strip-grid">
           <div><strong>Eine Fallakte</strong><span>Alle Informationen an einem Ort</span></div>
           <div><strong>Klare Chronik</strong><span>Zusagen und Ereignisse nachvollziehbar</span></div>
-          <div><strong>Fristenkontrolle</strong><span>Erinnerungen vor und nach dem Termin</span></div>
+          <div><strong>Fallassistent</strong><span>Vollständigkeit und nächsten Schritt sehen</span></div>
           <div><strong>Versandfertige Schreiben</strong><span>Direkt aus dem Fall per E-Mail</span></div>
         </div>
       </section>
@@ -99,7 +100,7 @@ export default async function HomePage() {
         <div className="section-heading professional-section-heading">
           <div>
             <span className="eyebrow">Nachvollziehbarer Ablauf</span>
-            <h2>Vom Problem zur vollständigen Dokumentation</h2>
+            <h2>Vom Problem zum empfohlenen nächsten Schritt</h2>
           </div>
           <p>Reklaio ersetzt kein juristisches Urteil. Es sorgt dafür, dass Informationen vollständig, geordnet und rechtzeitig verfügbar sind.</p>
         </div>
@@ -108,7 +109,7 @@ export default async function HomePage() {
             ["01", "Fall erfassen", "Situation auswählen und die wichtigsten Eckdaten festhalten."],
             ["02", "Nachweise sammeln", "Rechnungen, E-Mails, Fotos und weitere Dokumente geschützt speichern."],
             ["03", "Fristen verfolgen", "Offene Termine zentral sehen und automatische Erinnerungen erhalten."],
-            ["04", "Sauber kommunizieren", "Schreiben vorbereiten, versenden und den Versand in der Chronik dokumentieren."]
+            ["04", "Nächsten Schritt sehen", "Der Fallassistent bewertet Vollständigkeit und priorisiert die passende Aktion."]
           ].map(([number, title, text]) => (
             <div className="workflow-step" key={number}>
               <span>{number}</span>
@@ -122,7 +123,7 @@ export default async function HomePage() {
       <section className="container closing-cta">
         <div>
           <span className="eyebrow">Bereit für den ersten Fall?</span>
-          <h2>Aus einzelnen Nachrichten wird eine belastbare Übersicht.</h2>
+          <h2>Aus einzelnen Nachrichten wird eine vollständige, geführte Fallakte.</h2>
         </div>
         <Link className="button button-primary" href={user ? "/neuer-fall" : "/registrieren"}>Jetzt Fallakte anlegen</Link>
       </section>
