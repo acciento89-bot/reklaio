@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LetterEditor } from "@/components/letter-editor";
+import { isAiConfigured } from "@/lib/ai";
 import { requireUser } from "@/lib/auth";
 import { query } from "@/lib/db";
 import {
   buildAllLetterTemplates,
   getSuggestedLetterKind,
+  letterKinds,
   type LetterCaseData
 } from "@/lib/letters";
 import type { CaseTypeValue } from "@/lib/case-types";
@@ -66,6 +68,8 @@ export default async function NewLetterPage({ params, searchParams }: NewLetterP
     displayName: user.displayName,
     email: user.email
   });
+  const suggestedKind = getSuggestedLetterKind(currentCase.type);
+  const aiConfigured = isAiConfigured();
 
   return (
     <main className="letter-page container">
@@ -78,7 +82,7 @@ export default async function NewLetterPage({ params, searchParams }: NewLetterP
         <div>
           <span className="eyebrow">Formulierungshilfe</span>
           <h1>Neues Schreiben</h1>
-          <p>Vorlage auswählen, Inhalt prüfen und als Entwurf in der Fallakte speichern.</p>
+          <p>Nutze eine feste Vorlage oder erstelle freiwillig einen KI-Entwurf. Jeder Text muss vor dem Versand geprüft werden.</p>
         </div>
       </section>
 
@@ -91,11 +95,53 @@ export default async function NewLetterPage({ params, searchParams }: NewLetterP
           <small>{currentCase.company_name || "Kein Anbieter eingetragen"}</small>
         </div>
 
+        <span className="eyebrow">Ohne externe Verarbeitung</span>
+        <h2>Bewährte Reklaio-Vorlage</h2>
+        <p className="muted-copy">Die Vorlage wird direkt aus deinen Falldaten im Reklaio-System erstellt und nicht an einen KI-Anbieter übermittelt.</p>
+
         <LetterEditor
           caseId={id}
           templates={templates}
-          initialKind={getSuggestedLetterKind(currentCase.type)}
+          initialKind={suggestedKind}
         />
+      </section>
+
+      <section className="ai-letter-panel letter-no-print">
+        <span className="eyebrow">Optionaler KI-Entwurf</span>
+        <h2>Individuelles Schreiben aus bestätigten Falldaten</h2>
+        <p>Reklaio übermittelt die sichtbaren Falldaten, die gewählte Schreibenart und deine gewünschte Lösung an die OpenAI API. Der Entwurf wird gespeichert, bleibt vollständig bearbeitbar und wird niemals automatisch versendet.</p>
+
+        {aiConfigured ? (
+          <form className="ai-letter-form" action={`/api/cases/${id}/letters/ai`} method="post">
+            <label className="field">
+              Schreibenart
+              <select name="kind" defaultValue={suggestedKind}>
+                {letterKinds.map((item) => <option value={item.value} key={item.value}>{item.label}</option>)}
+              </select>
+            </label>
+            <label className="field">
+              Gewünschte Antwortfrist
+              <input name="deadlineDate" type="date" />
+            </label>
+            <label className="field field-full">
+              Gewünschte Lösung
+              <textarea
+                name="desiredOutcome"
+                rows={5}
+                maxLength={1500}
+                placeholder="z. B. Rückzahlung des vollständigen Betrags und schriftliche Bestätigung bis zum gewählten Datum"
+                required
+              />
+            </label>
+            <label className="ai-consent-check">
+              <input name="aiConsent" type="checkbox" required />
+              <span>Ich willige für diesen Vorgang in die Übermittlung der sichtbaren Falldaten und meiner Anweisung an die OpenAI API ein. Ich prüfe den Entwurf vollständig und habe die <Link href="/datenschutz" target="_blank">Datenschutzerklärung</Link> gelesen.</span>
+            </label>
+            <button className="button button-primary" type="submit">KI-Entwurf erstellen</button>
+          </form>
+        ) : (
+          <div className="legal-note">Die KI-Funktion ist noch nicht konfiguriert. Die normalen Reklaio-Vorlagen stehen weiterhin vollständig zur Verfügung.</div>
+        )}
       </section>
     </main>
   );
