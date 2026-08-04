@@ -1,11 +1,18 @@
 import nodemailer from "nodemailer";
 
+type MailAttachment = {
+  filename: string;
+  path: string;
+  contentType?: string;
+};
+
 type MailMessage = {
   to: string;
   subject: string;
   text: string;
   html?: string;
   replyTo?: string;
+  attachments?: MailAttachment[];
 };
 
 type GlobalMail = typeof globalThis & {
@@ -61,7 +68,8 @@ export async function sendMail(message: MailMessage) {
     replyTo: message.replyTo,
     subject: message.subject.replace(/[\r\n]+/g, " ").slice(0, 240),
     text: message.text,
-    html: message.html
+    html: message.html,
+    attachments: message.attachments
   });
 }
 
