@@ -52,8 +52,13 @@ type Counts = {
   letter_count: number;
 };
 
-export default async function OnboardingPage() {
+type OnboardingPageProps = {
+  searchParams: Promise<{ notice?: string; error?: string }>;
+};
+
+export default async function OnboardingPage({ searchParams }: OnboardingPageProps) {
   const user = await requireUser();
+  const messages = await searchParams;
 
   const result = await query<Counts>(
     `SELECT
@@ -93,6 +98,9 @@ export default async function OnboardingPage() {
           <div className="onboarding-progress"><span style={{ width: `${completedCount * 20}%` }} /></div>
         </div>
       </section>
+
+      {messages.notice ? <div className="notice-card onboarding-notice container" role="status"><strong>{messages.notice}</strong></div> : null}
+      {messages.error ? <div className="form-error onboarding-notice container" role="alert">{messages.error}</div> : null}
 
       <section className="onboarding-steps container">
         {steps.map((step) => {
