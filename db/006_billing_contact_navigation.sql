@@ -56,9 +56,22 @@ CREATE TABLE IF NOT EXISTS contact_messages (
 CREATE INDEX IF NOT EXISTS idx_contact_messages_created
   ON contact_messages(created_at DESC);
 
--- Bestehende Testkonten behalten alle bereits verfügbaren Funktionen als Beta-Pro.
-UPDATE app_users
-SET plan_code = 'pro',
-    subscription_status = COALESCE(subscription_status, 'beta')
-WHERE plan_code = 'free'
-  AND created_at < NOW();
+CREATE TABLE IF NOT EXISTS app_migration_markers (
+  marker_key TEXT PRIMARY KEY,
+  applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM app_migration_markers WHERE marker_key = 'existing_accounts_beta_pro_v1'
+  ) THEN
+    UPDATE app_users
+    SET plan_code = 'pro',
+        subscription_status = COALESCE(subscription_status, 'beta')
+    WHERE plan_code = 'free';
+
+    INSERT INTO app_migration_markers (marker_key)
+    VALUES ('existing_accounts_beta_pro_v1');
+  END IF;
+END $$;
