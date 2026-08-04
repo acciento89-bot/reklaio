@@ -17,6 +17,8 @@ export default async function HomePage() {
         <nav className="header-actions" aria-label="Hauptnavigation">
           <Link className="text-link" href="#fallarten">Fallarten</Link>
           <Link className="text-link" href="#so-funktionierts">Ablauf</Link>
+          <Link className="text-link" href="/preise">Preise</Link>
+          <Link className="text-link" href="/kontakt">Kontakt</Link>
           {user ? (
             <Link className="button button-primary" href="/dashboard">Zum Dashboard</Link>
           ) : (
@@ -49,9 +51,7 @@ export default async function HomePage() {
             <Link className="button button-primary" href={user ? "/neuer-fall" : "/registrieren"}>
               Fallakte anlegen
             </Link>
-            <Link className="button button-secondary" href={user ? "/dashboard" : "/anmelden"}>
-              {user ? "Meine Fälle öffnen" : "Bereits registriert?"}
-            </Link>
+            <Link className="button button-secondary" href="/preise">Free und Pro vergleichen</Link>
           </div>
           <div className="trust-row" aria-label="Vorteile">
             <span>Geschützte Dokumente</span>
@@ -67,7 +67,7 @@ export default async function HomePage() {
           <div><strong>Eine Fallakte</strong><span>Alle Informationen an einem Ort</span></div>
           <div><strong>Klare Chronik</strong><span>Zusagen und Ereignisse nachvollziehbar</span></div>
           <div><strong>Fallassistent</strong><span>Vollständigkeit und nächsten Schritt sehen</span></div>
-          <div><strong>Versandfertige Schreiben</strong><span>Direkt aus dem Fall per E-Mail</span></div>
+          <div><strong>Free + Pro</strong><span>Kernfunktionen kostenlos, KI optional im Pro-Tarif</span></div>
         </div>
       </section>
 
@@ -125,7 +125,10 @@ export default async function HomePage() {
           <span className="eyebrow">Bereit für den ersten Fall?</span>
           <h2>Aus einzelnen Nachrichten wird eine vollständige, geführte Fallakte.</h2>
         </div>
-        <Link className="button button-primary" href={user ? "/neuer-fall" : "/registrieren"}>Jetzt Fallakte anlegen</Link>
+        <div className="hero-actions">
+          <Link className="button button-primary" href={user ? "/neuer-fall" : "/registrieren"}>Jetzt Fallakte anlegen</Link>
+          <Link className="button button-secondary" href="/preise">Tarife ansehen</Link>
+        </div>
       </section>
 
       <footer className="container footer">
