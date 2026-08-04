@@ -88,7 +88,7 @@ export function verifyStripeWebhookSignature(payload: string, signatureHeader: s
     .digest("hex");
 
   return signatures.some((signature) => {
-    if (signature.length !== expected.length) return false;
+    if (!/^[0-9a-f]{64}$/i.test(signature)) return false;
     return crypto.timingSafeEqual(Buffer.from(signature, "hex"), Buffer.from(expected, "hex"));
   });
 }
