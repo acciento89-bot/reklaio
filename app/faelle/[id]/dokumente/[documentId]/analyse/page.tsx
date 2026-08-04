@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { documentAnalysisSchema, isAiConfigured } from "@/lib/ai";
 import { requireUser } from "@/lib/auth";
+import { hasProAccess } from "@/lib/billing";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/cases";
 import { query } from "@/lib/db";
 import { formatFileSize, getDocumentTypeLabel } from "@/lib/documents";
@@ -45,15 +46,18 @@ export default async function DocumentAnalysisPage({ params, searchParams }: Pag
 
   if (!UUID_PATTERN.test(caseId) || !UUID_PATTERN.test(documentId)) notFound();
 
-  const documentResult = await query<DocumentRow>(
-    `SELECT d.id, d.original_name, d.mime_type, d.size_bytes, d.document_type,
-            d.created_at, c.title AS case_title
-     FROM case_documents d
-     JOIN cases c ON c.id = d.case_id
-     WHERE d.id = $1 AND d.case_id = $2 AND c.user_id = $3
-     LIMIT 1`,
-    [documentId, caseId, user.id]
-  );
+  const [documentResult, proAccess] = await Promise.all([
+    query<DocumentRow>(
+      `SELECT d.id, d.original_name, d.mime_type, d.size_bytes, d.document_type,
+              d.created_at, c.title AS case_title
+       FROM case_documents d
+       JOIN cases c ON c.id = d.case_id
+       WHERE d.id = $1 AND d.case_id = $2 AND c.user_id = $3
+       LIMIT 1`,
+      [documentId, caseId, user.id]
+    ),
+    hasProAccess(user.id)
+  ]);
   const document = documentResult.rows[0];
   if (!document) notFound();
 
@@ -98,11 +102,18 @@ export default async function DocumentAnalysisPage({ params, searchParams }: Pag
         <article><span>Hochgeladen</span><strong>{formatDateTime(document.created_at)}</strong></article>
       </section>
 
-      {!aiConfigured ? (
+      {!proAccess ? (
+        <section className="detail-panel ai-disabled-panel">
+          <span className="eyebrow">Reklaio Pro</span>
+          <h2>KI-Dokumentanalyse ist eine Pro-Funktion</h2>
+          <p>Die normale Fallakte, Dokumentablage, Fristen und Vorlagen bleiben im Free-Tarif verfügbar.</p>
+          <Link className="button button-primary" href="/preise">Tarife ansehen</Link>
+        </section>
+      ) : !aiConfigured ? (
         <section className="detail-panel ai-disabled-panel">
           <span className="eyebrow">Nicht eingerichtet</span>
           <h2>KI-Analyse ist derzeit deaktiviert</h2>
-          <p>Alle übrigen Reklaio-Funktionen bleiben nutzbar. Für die Analyse muss der Betreiber zuerst einen API-Schlüssel konfigurieren.</p>
+          <p>Der Pro-Zugang ist vorhanden, aber der Betreiber muss noch API-Schlüssel und API-Guthaben konfigurieren.</p>
         </section>
       ) : !supported ? (
         <section className="detail-panel ai-disabled-panel">
