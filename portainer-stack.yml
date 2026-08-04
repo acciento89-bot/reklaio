@@ -62,6 +62,13 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-reklaio}:${POSTGRES_PASSWORD}@reklaio-postgres:5432/${POSTGRES_DB:-reklaio}
       SESSION_SECRET: ${SESSION_SECRET}
       UPLOAD_DIR: /app/uploads
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      MAIL_FROM: ${MAIL_FROM}
+      CRON_SECRET: ${CRON_SECRET}
     volumes:
       - reklaio_uploads:/app/uploads
     expose:
@@ -75,6 +82,25 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+
+  reklaio-reminder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: reklaio-reminder
+    restart: unless-stopped
+    init: true
+    command: ["node", "scripts/reminder-loop.mjs"]
+    depends_on:
+      reklaio:
+        condition: service_healthy
+    environment:
+      REMINDER_URL: http://reklaio:3000/api/internal/deadline-reminders
+      REMINDER_INTERVAL_MS: ${REMINDER_INTERVAL_MS:-3600000}
+      CRON_SECRET: ${CRON_SECRET}
+    networks:
+      - reklaio
 
 volumes:
   reklaio_postgres_data:
