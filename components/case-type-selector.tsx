@@ -15,11 +15,9 @@ export function CaseTypeSelector({ defaultValue }: CaseTypeSelectorProps) {
 
   return (
     <fieldset className="case-type-fieldset">
+      <legend className="case-type-legend">Welche Situation trifft zu?</legend>
       <div className="case-type-heading">
-        <div>
-          <legend>Welche Situation trifft zu?</legend>
-          <p>Wähle die passendste Fallart. Die Angaben können später jederzeit ergänzt werden.</p>
-        </div>
+        <p>Wähle die passendste Fallart. Die Angaben können später jederzeit ergänzt werden.</p>
         <span>1 von 2</span>
       </div>
 
