@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { sendVerificationEmail } from "@/lib/account-email";
 import { query } from "@/lib/db";
+import { isMailConfigured } from "@/lib/mail";
 import { hashPassword } from "@/lib/password";
 import { publicUrl } from "@/lib/public-url";
 import { createSession } from "@/lib/session";
@@ -41,8 +43,28 @@ export async function POST(request: Request) {
       [parsed.data.email, parsed.data.displayName, passwordHash]
     );
 
-    await createSession(result.rows[0].id);
-    return NextResponse.redirect(publicUrl("/dashboard"), 303);
+    const userId = result.rows[0].id;
+    await createSession(userId);
+
+    const url = publicUrl("/dashboard");
+
+    if (isMailConfigured()) {
+      try {
+        await sendVerificationEmail({
+          userId,
+          email: parsed.data.email,
+          displayName: parsed.data.displayName
+        });
+        url.searchParams.set("notice", "Bestätigungslink wurde per E-Mail gesendet.");
+      } catch (error) {
+        console.error("Registration verification email failed", error);
+        url.searchParams.set("notice", "Konto erstellt. Den Bestätigungslink kannst du in den Einstellungen erneut senden.");
+      }
+    } else {
+      url.searchParams.set("notice", "Konto erstellt. E-Mail-Versand ist noch nicht eingerichtet.");
+    }
+
+    return NextResponse.redirect(url, 303);
   } catch (error) {
     if (typeof error === "object" && error !== null && "code" in error && error.code === "23505") {
       return redirectWithError("Für diese E-Mail-Adresse besteht bereits ein Konto.");
