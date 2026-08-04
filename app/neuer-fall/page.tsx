@@ -38,7 +38,10 @@ export default async function NewCasePage({ searchParams }: NewCasePageProps) {
                   required
                 />
                 <span className="case-icon">{item.icon}</span>
-                <span><strong>{item.title}</strong><small>{item.description}</small></span>
+                <span className="choice-copy">
+                  <strong>{item.title}</strong>
+                  <small>{item.description}</small>
+                </span>
                 <span className="radio-indicator" aria-hidden="true" />
               </label>
             ))}
