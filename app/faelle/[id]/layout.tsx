@@ -15,6 +15,7 @@ export default async function CaseLayout({ children, params }: CaseLayoutProps) 
         <Link href={`/faelle/${id}`}>Fallakte</Link>
         <Link href={`/faelle/${id}/bearbeiten`}>Fall bearbeiten</Link>
         <Link href="/fristen">Alle Fristen</Link>
+        <a href={`/api/cases/${id}/export/pdf`}>Fallakte als PDF</a>
       </nav>
     </>
   );
