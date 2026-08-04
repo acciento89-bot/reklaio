@@ -8,6 +8,11 @@
 .auth-form input { width: 100%; min-height: 48px; padding: 0 14px; color: var(--text); border: 1px solid var(--line); border-radius: 11px; outline: none; background: rgba(255,255,255,.025); }
 .auth-form input:focus { border-color: rgba(143,199,187,.62); box-shadow: 0 0 0 3px rgba(73,151,137,.11); }
 .auth-form .button { width: 100%; margin-top: 4px; cursor: pointer; }
+.auth-consent-row { grid-template-columns: 20px 1fr; gap: 10px !important; align-items: start; padding: 13px; border: 1px solid var(--line); border-radius: 11px; background: rgba(255,255,255,.018); cursor: pointer; }
+.auth-consent-row input { width: 18px; height: 18px; min-height: 0; margin-top: 2px; padding: 0; accent-color: var(--accent); }
+.auth-consent-row span { line-height: 1.5; }
+.auth-consent-row a { color: var(--accent-2); text-decoration: underline; text-underline-offset: 3px; }
+.auth-legal-hint { margin: -4px 0 0; color: var(--muted); font-size: .8rem; line-height: 1.55; }
 .auth-password-help { margin-top: -8px; text-align: right; }
 .auth-password-help a { color: var(--accent-2); font-size: .86rem; font-weight: 720; }
 .auth-switch { margin: 24px 0 0 !important; text-align: center; }
