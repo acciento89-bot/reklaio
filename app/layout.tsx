@@ -9,6 +9,7 @@ import "./case-tools.css";
 import "./settings.css";
 import "./dashboard-tools.css";
 import "./mail-features.css";
+import "./professional-overrides.css";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
 
 export const metadata: Metadata = {
