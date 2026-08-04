@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { sendVerificationEmail } from "@/lib/account-email";
 import { query } from "@/lib/db";
+import { LEGAL_VERSION } from "@/lib/legal";
 import { isMailConfigured } from "@/lib/mail";
 import { hashPassword } from "@/lib/password";
 import { publicUrl } from "@/lib/public-url";
@@ -12,7 +13,9 @@ export const runtime = "nodejs";
 const registrationSchema = z.object({
   displayName: z.string().trim().max(80).optional().default(""),
   email: z.string().trim().toLowerCase().email(),
-  password: z.string().min(10).max(128)
+  password: z.string().min(10).max(128),
+  acceptTerms: z.literal(true),
+  acknowledgePrivacy: z.literal(true)
 });
 
 function redirectWithError(message: string) {
@@ -26,27 +29,32 @@ export async function POST(request: Request) {
   const parsed = registrationSchema.safeParse({
     displayName: formData.get("displayName"),
     email: formData.get("email"),
-    password: formData.get("password")
+    password: formData.get("password"),
+    acceptTerms: formData.get("acceptTerms") === "on",
+    acknowledgePrivacy: formData.get("acknowledgePrivacy") === "on"
   });
 
   if (!parsed.success) {
-    return redirectWithError("Bitte prüfe deine Eingaben. Das Passwort muss mindestens 10 Zeichen haben.");
+    return redirectWithError("Bitte prüfe deine Eingaben, bestätige die Rechtstexte und verwende ein Passwort mit mindestens 10 Zeichen.");
   }
 
   const passwordHash = await hashPassword(parsed.data.password);
 
   try {
     const result = await query<{ id: string }>(
-      `INSERT INTO app_users (email, display_name, password_hash)
-       VALUES ($1, NULLIF($2, ''), $3)
+      `INSERT INTO app_users (
+         email, display_name, password_hash,
+         terms_accepted_at, terms_version, privacy_acknowledged_at
+       )
+       VALUES ($1, NULLIF($2, ''), $3, NOW(), $4, NOW())
        RETURNING id`,
-      [parsed.data.email, parsed.data.displayName, passwordHash]
+      [parsed.data.email, parsed.data.displayName, passwordHash, LEGAL_VERSION]
     );
 
     const userId = result.rows[0].id;
     await createSession(userId);
 
-    const url = publicUrl("/dashboard");
+    const url = publicUrl("/onboarding");
 
     if (isMailConfigured()) {
       try {
