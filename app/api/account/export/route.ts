@@ -17,64 +17,99 @@ type AccountRow = {
 
 export async function GET() {
   const user = await getCurrentUser();
-  if (!user) {
-    return NextResponse.redirect(publicUrl("/anmelden"), 303);
-  }
+  if (!user) return NextResponse.redirect(publicUrl("/anmelden"), 303);
 
   try {
-    const [accountResult, caseResult, eventResult, deadlineResult, letterResult, documentResult] = await Promise.all([
+    const [
+      accountResult,
+      caseResult,
+      eventResult,
+      deadlineResult,
+      letterResult,
+      documentResult,
+      taskResult,
+      responseResult,
+      escalationResult,
+      deliveryResult,
+      deliveryAttachmentResult
+    ] = await Promise.all([
       query<AccountRow>(
         `SELECT id, email, display_name, email_verified_at, created_at, updated_at
-         FROM app_users
-         WHERE id = $1
-         LIMIT 1`,
+         FROM app_users WHERE id = $1 LIMIT 1`,
         [user.id]
       ),
       query(
         `SELECT id, type, status, title, company_name, order_reference,
                 amount_cents, currency, incident_date, summary, created_at, updated_at
-         FROM cases
-         WHERE user_id = $1
-         ORDER BY created_at ASC`,
+         FROM cases WHERE user_id = $1 ORDER BY created_at ASC`,
         [user.id]
       ),
       query(
         `SELECT e.id, e.case_id, e.event_type, e.title, e.details, e.occurred_at, e.created_at
-         FROM case_events e
-         JOIN cases c ON c.id = e.case_id
-         WHERE c.user_id = $1
-         ORDER BY e.occurred_at ASC`,
+         FROM case_events e JOIN cases c ON c.id = e.case_id
+         WHERE c.user_id = $1 ORDER BY e.occurred_at ASC`,
         [user.id]
       ),
       query(
         `SELECT d.id, d.case_id, d.title, d.due_at, d.completed_at, d.reminder_sent_at, d.created_at
-         FROM case_deadlines d
-         JOIN cases c ON c.id = d.case_id
-         WHERE c.user_id = $1
-         ORDER BY d.due_at ASC`,
+         FROM case_deadlines d JOIN cases c ON c.id = d.case_id
+         WHERE c.user_id = $1 ORDER BY d.due_at ASC`,
         [user.id]
       ),
       query(
-        `SELECT l.id, l.case_id, l.kind, l.subject, l.body, l.model_name, l.approved_at, l.created_at
-         FROM generated_letters l
-         JOIN cases c ON c.id = l.case_id
-         WHERE c.user_id = $1
-         ORDER BY l.created_at ASC`,
+        `SELECT l.id, l.case_id, l.kind, l.subject, l.body, l.model_name,
+                l.approved_at, l.recipient_email, l.last_sent_at, l.created_at
+         FROM generated_letters l JOIN cases c ON c.id = l.case_id
+         WHERE c.user_id = $1 ORDER BY l.created_at ASC`,
         [user.id]
       ),
       query(
         `SELECT d.id, d.case_id, d.original_name, d.mime_type, d.size_bytes,
                 d.sha256, d.document_type, d.extracted_text, d.created_at
-         FROM case_documents d
-         JOIN cases c ON c.id = d.case_id
-         WHERE c.user_id = $1
-         ORDER BY d.created_at ASC`,
+         FROM case_documents d JOIN cases c ON c.id = d.case_id
+         WHERE c.user_id = $1 ORDER BY d.created_at ASC`,
+        [user.id]
+      ),
+      query(
+        `SELECT t.id, t.case_id, t.title, t.description, t.priority, t.status,
+                t.source, t.due_at, t.completed_at, t.created_at, t.updated_at
+         FROM case_tasks t JOIN cases c ON c.id = t.case_id
+         WHERE c.user_id = $1 ORDER BY t.created_at ASC`,
+        [user.id]
+      ),
+      query(
+        `SELECT r.id, r.case_id, r.response_received_at, r.outcome,
+                r.promised_amount_cents, r.promised_due_at, r.summary,
+                r.document_id, r.created_at
+         FROM provider_responses r JOIN cases c ON c.id = r.case_id
+         WHERE c.user_id = $1 ORDER BY r.response_received_at ASC`,
+        [user.id]
+      ),
+      query(
+        `SELECT e.id, e.case_id, e.stage, e.note, e.created_at
+         FROM case_escalations e JOIN cases c ON c.id = e.case_id
+         WHERE c.user_id = $1 ORDER BY e.created_at ASC`,
+        [user.id]
+      ),
+      query(
+        `SELECT e.id, e.letter_id, e.case_id, e.recipient_email, e.subject,
+                e.attachment_count, e.reply_deadline_id, e.sent_at
+         FROM letter_email_deliveries e JOIN cases c ON c.id = e.case_id
+         WHERE c.user_id = $1 ORDER BY e.sent_at ASC`,
+        [user.id]
+      ),
+      query(
+        `SELECT a.id, a.delivery_id, a.document_id, a.original_name, a.size_bytes
+         FROM letter_email_delivery_attachments a
+         JOIN letter_email_deliveries e ON e.id = a.delivery_id
+         JOIN cases c ON c.id = e.case_id
+         WHERE c.user_id = $1 ORDER BY e.sent_at ASC`,
         [user.id]
       )
     ]);
 
     const exportData = {
-      exportVersion: 1,
+      exportVersion: 2,
       generatedAt: new Date().toISOString(),
       service: "Reklaio",
       account: accountResult.rows[0] ?? null,
@@ -83,6 +118,11 @@ export async function GET() {
       deadlines: deadlineResult.rows,
       letters: letterResult.rows,
       documents: documentResult.rows,
+      tasks: taskResult.rows,
+      providerResponses: responseResult.rows,
+      escalations: escalationResult.rows,
+      emailDeliveries: deliveryResult.rows,
+      emailDeliveryAttachments: deliveryAttachmentResult.rows,
       note: "Passwort-Hashes, Sitzungstoken und hochgeladene Binärdateien sind nicht Teil dieses JSON-Exports."
     };
 
