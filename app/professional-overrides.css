@@ -1,0 +1,22 @@
+.case-type-legend {
+  margin: 0 0 7px;
+  padding: 0;
+  color: var(--text);
+  font-size: 1.3rem;
+  font-weight: 780;
+  letter-spacing: -.025em;
+}
+
+.case-type-heading {
+  margin-bottom: 18px;
+}
+
+.case-type-heading p {
+  margin: 0;
+}
+
+@media (max-width: 680px) {
+  .case-type-legend {
+    font-size: 1.2rem;
+  }
+}

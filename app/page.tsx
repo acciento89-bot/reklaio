@@ -1,85 +1,114 @@
+import Image from "next/image";
 import Link from "next/link";
 import { caseTypes } from "@/lib/case-types";
 import { getCurrentUser } from "@/lib/auth";
+import { CaseTypeIcon } from "@/components/case-type-icon";
 
 export default async function HomePage() {
   const user = await getCurrentUser();
 
   return (
-    <main>
+    <main className="marketing-page">
       <header className="site-header container">
         <Link className="brand" href="/" aria-label="Reklaio Startseite">
           <span className="brand-mark">R</span>
-          <span>Reklaio</span>
+          <span className="brand-copy"><strong>Reklaio</strong><small>by Kamilunavo</small></span>
         </Link>
         <nav className="header-actions" aria-label="Hauptnavigation">
-          <Link className="text-link" href="#so-funktionierts">So funktioniert’s</Link>
+          <Link className="text-link" href="#fallarten">Fallarten</Link>
+          <Link className="text-link" href="#so-funktionierts">Ablauf</Link>
           {user ? (
-            <Link className="button button-secondary" href="/dashboard">Zum Dashboard</Link>
+            <Link className="button button-primary" href="/dashboard">Zum Dashboard</Link>
           ) : (
             <>
               <Link className="text-link" href="/anmelden">Anmelden</Link>
-              <Link className="button button-secondary" href="/registrieren">Konto erstellen</Link>
+              <Link className="button button-primary" href="/registrieren">Kostenlos starten</Link>
             </>
           )}
         </nav>
       </header>
 
       <section className="hero container">
-        <div className="eyebrow">Reklaio by Kamilunavo</div>
-        <h1>Dein Fall. Deine Frist. <span>Dein Überblick.</span></h1>
-        <p className="hero-copy">
-          Reklamationen, Rückzahlungen und Kündigungen endlich an einem Ort – mit Belegen,
-          Chronik, Fristen und dem nächsten sinnvollen Schritt.
-        </p>
-        <div className="hero-actions">
-          <Link className="button button-primary" href={user ? "/neuer-fall" : "/registrieren"}>
-            Neuen Fall starten
-          </Link>
-          <Link className="button button-ghost" href={user ? "/dashboard" : "/anmelden"}>
-            {user ? "Meine Fälle" : "Anmelden"}
-          </Link>
+        <div className="hero-content">
+          <div className="eyebrow">Digitales Fallmanagement für Verbraucher</div>
+          <h1>Reklamationen klar dokumentieren. <span>Fristen sicher im Blick behalten.</span></h1>
+          <p className="hero-copy">
+            Reklaio bündelt Belege, Kommunikation, Fristen und Schreiben in einer nachvollziehbaren Fallakte – vom ersten Problem bis zum Abschluss.
+          </p>
+          <div className="hero-actions">
+            <Link className="button button-primary" href={user ? "/neuer-fall" : "/registrieren"}>
+              Fallakte anlegen
+            </Link>
+            <Link className="button button-secondary" href={user ? "/dashboard" : "/anmelden"}>
+              {user ? "Meine Fälle öffnen" : "Bereits registriert?"}
+            </Link>
+          </div>
+          <div className="trust-row" aria-label="Vorteile">
+            <span>Geschützte Dokumente</span>
+            <span>Automatische Fristerinnerungen</span>
+            <span>Keine Rechtsberatung</span>
+          </div>
         </div>
-        <div className="trust-row">
-          <span>Keine Rechtsberatung</span>
-          <span>Dokumente geschützt</span>
-          <span>Für Handy und Desktop</span>
+
+        <div className="hero-visual" aria-label="Vorschau einer Reklaio-Fallakte">
+          <Image
+            src="/reklaio-banner.svg"
+            alt="Reklaio Fallakte mit Chronik, Frist und Dokumentenübersicht"
+            width={1200}
+            height={760}
+            priority
+          />
         </div>
       </section>
 
-      <section className="container section" id="so-funktionierts">
-        <div className="section-heading">
-          <div>
-            <span className="eyebrow">Zum Start</span>
-            <h2>Vier typische Fälle, klar geführt</h2>
-          </div>
-          <p>Reklaio fragt nur das ab, was für deinen Fall wirklich benötigt wird.</p>
+      <section className="professional-strip">
+        <div className="container professional-strip-grid">
+          <div><strong>Eine Fallakte</strong><span>Alle Informationen an einem Ort</span></div>
+          <div><strong>Klare Chronik</strong><span>Zusagen und Ereignisse nachvollziehbar</span></div>
+          <div><strong>Fristenkontrolle</strong><span>Erinnerungen vor und nach dem Termin</span></div>
+          <div><strong>Versandfertige Schreiben</strong><span>Direkt aus dem Fall per E-Mail</span></div>
         </div>
-        <div className="case-grid">
+      </section>
+
+      <section className="container section" id="fallarten">
+        <div className="section-heading professional-section-heading">
+          <div>
+            <span className="eyebrow">Typische Verbraucherfälle</span>
+            <h2>Mit der passenden Struktur starten</h2>
+          </div>
+          <p>Jede Fallart führt durch die relevanten Angaben und zeigt, welche Nachweise für die weitere Bearbeitung hilfreich sind.</p>
+        </div>
+        <div className="case-grid professional-case-grid">
           {caseTypes.map((item) => (
-            <article className="case-card" key={item.slug}>
-              <div className="case-icon" aria-hidden="true">{item.icon}</div>
-              <h3>{item.title}</h3>
-              <p>{item.description}</p>
-              <Link href={user ? `/neuer-fall?typ=${item.slug}` : "/registrieren"}>Fall anlegen <span>→</span></Link>
+            <article className="case-card professional-case-card" key={item.slug}>
+              <div className="case-icon" aria-hidden="true"><CaseTypeIcon type={item.dbValue} /></div>
+              <div className="case-card-copy">
+                <h3>{item.title}</h3>
+                <p>{item.description}</p>
+              </div>
+              <ul>
+                {item.checklist.slice(0, 2).map((entry) => <li key={entry}>{entry}</li>)}
+              </ul>
+              <Link href={user ? `/neuer-fall?typ=${item.slug}` : "/registrieren"}>Fallart auswählen <span>→</span></Link>
             </article>
           ))}
         </div>
       </section>
 
-      <section className="container section workflow-section">
-        <div className="section-heading">
+      <section className="container section workflow-section" id="so-funktionierts">
+        <div className="section-heading professional-section-heading">
           <div>
-            <span className="eyebrow">Nicht nur ein KI-Chat</span>
-            <h2>Ein Fall bleibt nachvollziehbar</h2>
+            <span className="eyebrow">Nachvollziehbarer Ablauf</span>
+            <h2>Vom Problem zur vollständigen Dokumentation</h2>
           </div>
+          <p>Reklaio ersetzt kein juristisches Urteil. Es sorgt dafür, dass Informationen vollständig, geordnet und rechtzeitig verfügbar sind.</p>
         </div>
-        <div className="workflow">
+        <div className="workflow professional-workflow">
           {[
-            ["01", "Belege sammeln", "Rechnung, E-Mails, Tracking und Screenshots zusammenführen."],
-            ["02", "Chronik aufbauen", "Wichtige Ereignisse und Zusagen automatisch sortieren."],
-            ["03", "Frist verfolgen", "Reklaio merkt sich, wann eine Antwort oder Zahlung fällig ist."],
-            ["04", "Nächsten Schritt wählen", "Passende Nachricht vorbereiten und den Fall sauber dokumentieren."]
+            ["01", "Fall erfassen", "Situation auswählen und die wichtigsten Eckdaten festhalten."],
+            ["02", "Nachweise sammeln", "Rechnungen, E-Mails, Fotos und weitere Dokumente geschützt speichern."],
+            ["03", "Fristen verfolgen", "Offene Termine zentral sehen und automatische Erinnerungen erhalten."],
+            ["04", "Sauber kommunizieren", "Schreiben vorbereiten, versenden und den Versand in der Chronik dokumentieren."]
           ].map(([number, title, text]) => (
             <div className="workflow-step" key={number}>
               <span>{number}</span>
@@ -90,12 +119,20 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <footer className="container footer">
+      <section className="container closing-cta">
         <div>
-          <strong>Reklaio</strong>
-          <span>by Kamilunavo</span>
+          <span className="eyebrow">Bereit für den ersten Fall?</span>
+          <h2>Aus einzelnen Nachrichten wird eine belastbare Übersicht.</h2>
         </div>
-        <p>Früher Produktprototyp – keine Rechtsberatung.</p>
+        <Link className="button button-primary" href={user ? "/neuer-fall" : "/registrieren"}>Jetzt Fallakte anlegen</Link>
+      </section>
+
+      <footer className="container footer">
+        <Link className="brand" href="/">
+          <span className="brand-mark">R</span>
+          <span className="brand-copy"><strong>Reklaio</strong><small>by Kamilunavo</small></span>
+        </Link>
+        <p>Digitale Organisation von Verbraucherfällen · Keine Rechtsberatung.</p>
       </footer>
     </main>
   );

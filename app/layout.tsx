@@ -9,28 +9,43 @@ import "./case-tools.css";
 import "./settings.css";
 import "./dashboard-tools.css";
 import "./mail-features.css";
+import "./professional-overrides.css";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://reklaio.de"),
   title: {
-    default: "Reklaio – Dein Fall. Deine Frist. Dein Überblick.",
+    default: "Reklaio – Verbraucherfälle strukturiert dokumentieren",
     template: "%s | Reklaio"
   },
   description:
-    "Reklamationen, Rückzahlungen, Kündigungen und offene Verbraucherfälle übersichtlich organisieren.",
+    "Reklamationen, Rückzahlungen, Kündigungen, Belege und Fristen in einer nachvollziehbaren digitalen Fallakte organisieren.",
   applicationName: "Reklaio",
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: [
-      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icon-512.png", sizes: "512x512", type: "image/png" }
-    ],
-    apple: [{ url: "/icon-192.png", sizes: "192x192", type: "image/png" }]
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    shortcut: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/icon.svg", type: "image/svg+xml" }]
+  },
+  openGraph: {
+    type: "website",
+    locale: "de_DE",
+    url: "https://reklaio.de",
+    siteName: "Reklaio",
+    title: "Reklaio – Dein Fall. Deine Frist. Dein Überblick.",
+    description: "Belege, Chronik, Fristen und Schreiben in einer vollständigen digitalen Fallakte.",
+    images: [{ url: "/reklaio-banner.svg", width: 1200, height: 760, alt: "Reklaio digitale Fallakte" }]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Reklaio – Verbraucherfälle strukturiert dokumentieren",
+    description: "Belege, Chronik, Fristen und Schreiben an einem Ort.",
+    images: ["/reklaio-banner.svg"]
   }
 };
 
 export const viewport: Viewport = {
-  themeColor: "#121629",
+  themeColor: "#14364b",
   colorScheme: "dark"
 };
 
