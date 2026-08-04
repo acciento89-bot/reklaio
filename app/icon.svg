@@ -1,6 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="16" fill="#14364b"/>
-  <path d="M19 14.5h19.2L47 23.3V47a4 4 0 0 1-4 4H19a4 4 0 0 1-4-4V18.5a4 4 0 0 1 4-4Z" fill="#fff"/>
-  <path d="M38 14.5v8.8h9" fill="none" stroke="#c9d9e2" stroke-width="3" stroke-linejoin="round"/>
-  <path d="m23.5 35 5.1 5.1L39.8 28.8" fill="none" stroke="#2b7a68" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="tile" x1="42" y1="24" x2="454" y2="490" gradientUnits="userSpaceOnUse"><stop stop-color="#172454"/><stop offset=".54" stop-color="#0b1537"/><stop offset="1" stop-color="#070d25"/></linearGradient>
+    <linearGradient id="paper" x1="126" y1="112" x2="390" y2="402" gradientUnits="userSpaceOnUse"><stop stop-color="#fff"/><stop offset="1" stop-color="#d9def6"/></linearGradient>
+    <linearGradient id="fold" x1="310" y1="102" x2="390" y2="190" gradientUnits="userSpaceOnUse"><stop stop-color="#817dff"/><stop offset="1" stop-color="#4c4dc4"/></linearGradient>
+    <linearGradient id="shield" x1="326" y1="300" x2="435" y2="445" gradientUnits="userSpaceOnUse"><stop stop-color="#4df0e7"/><stop offset="1" stop-color="#19aeb9"/></linearGradient>
+  </defs>
+  <rect x="18" y="18" width="476" height="476" rx="104" fill="url(#tile)" stroke="#33458a" stroke-width="5"/>
+  <path d="M139 112h183l70 70v181" fill="none" stroke="url(#paper)" stroke-width="39" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M322 112v70h70" fill="url(#fold)" stroke="#a3a7ff" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M139 112v275c0 17 14 31 31 31h171" fill="none" stroke="url(#paper)" stroke-width="39" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M220 233h79c49 0 79 27 79 67 0 37-27 63-68 67l67 75" fill="none" stroke="url(#paper)" stroke-width="39" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M171 312h54M171 350h38" stroke="#858fc8" stroke-width="15" stroke-linecap="round"/>
+  <path d="M342 314c31 21 55 24 82 0v71c0 43-29 73-82 95-53-22-82-52-82-95v-71c27 24 51 21 82 0Z" fill="#08223a" stroke="url(#shield)" stroke-width="14" stroke-linejoin="round"/>
+  <path d="m306 385 24 24 48-52" fill="none" stroke="#51eee7" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
