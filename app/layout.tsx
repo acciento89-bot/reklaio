@@ -13,6 +13,10 @@ import "./professional-overrides.css";
 import "./assistant-brand.css";
 import "./assistant-brand-fixes.css";
 import "./workflow.css";
+import "./legal.css";
+import "./onboarding.css";
+import "./ai.css";
+import "./letter-management.css";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
 
 export const metadata: Metadata = {
