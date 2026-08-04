@@ -38,6 +38,17 @@ export default async function RegistrationPage({ searchParams }: RegistrationPag
             <input name="password" type="password" autoComplete="new-password" minLength={10} maxLength={128} required />
             <small>Mindestens 10 Zeichen.</small>
           </label>
+
+          <label className="auth-consent-row">
+            <input name="acceptTerms" type="checkbox" required />
+            <span>Ich akzeptiere die <Link href="/nutzungsbedingungen" target="_blank">Nutzungsbedingungen</Link>.</span>
+          </label>
+          <label className="auth-consent-row">
+            <input name="acknowledgePrivacy" type="checkbox" required />
+            <span>Ich habe die <Link href="/datenschutz" target="_blank">Datenschutzerklärung</Link> gelesen.</span>
+          </label>
+          <p className="auth-legal-hint">Die KI-Funktionen sind freiwillig. Eine Zustimmung dazu wird erst direkt vor einer Analyse oder einem KI-Entwurf abgefragt.</p>
+
           <button className="button button-primary" type="submit">Konto erstellen</button>
         </form>
 
