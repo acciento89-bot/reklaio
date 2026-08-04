@@ -15,6 +15,11 @@
 .settings-data-panel > p,
 .settings-danger-panel > p { margin: 0 0 22px; max-width: 850px; color: var(--muted); line-height: 1.7; }
 .settings-data-panel .button { width: fit-content; }
+.settings-verification-panel { border-color: rgba(255,206,115,.28); background: linear-gradient(180deg, rgba(255,206,115,.055), var(--panel)); }
+.settings-verification-panel.is-verified { border-color: rgba(92,225,196,.28); background: linear-gradient(180deg, rgba(92,225,196,.055), var(--panel)); }
+.settings-verification-panel > p { margin: 0 0 20px; color: var(--muted); line-height: 1.7; }
+.settings-verification-panel form .button { cursor: pointer; }
+.settings-verification-panel.is-verified .eyebrow { color: var(--accent-2); }
 .settings-danger-panel { border-color: rgba(255,123,138,.28); background: linear-gradient(180deg, rgba(255,123,138,.055), var(--panel)); }
 .settings-danger-panel .eyebrow { color: #ff9aa8; }
 .settings-delete-button { justify-self: start; min-height: 46px; padding: 0 16px; border: 1px solid rgba(255,123,138,.42); border-radius: 12px; color: #ffd2d8; background: rgba(255,123,138,.13); font: inherit; font-weight: 800; cursor: pointer; }
@@ -33,5 +38,6 @@
   .settings-panel-heading > span { text-align: left; }
   .settings-form .button,
   .settings-data-panel .button,
+  .settings-verification-panel .button,
   .settings-delete-button { width: 100%; }
 }
