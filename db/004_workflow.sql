@@ -56,9 +56,10 @@ CREATE INDEX IF NOT EXISTS idx_letter_email_deliveries_letter_sent
   ON letter_email_deliveries(letter_id, sent_at DESC);
 
 CREATE TABLE IF NOT EXISTS letter_email_delivery_attachments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   delivery_id UUID NOT NULL REFERENCES letter_email_deliveries(id) ON DELETE CASCADE,
   document_id UUID REFERENCES case_documents(id) ON DELETE SET NULL,
   original_name TEXT NOT NULL,
   size_bytes BIGINT NOT NULL CHECK (size_bytes >= 0),
-  PRIMARY KEY (delivery_id, original_name)
+  UNIQUE (delivery_id, document_id)
 );
