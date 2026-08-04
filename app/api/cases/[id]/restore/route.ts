@@ -7,8 +7,8 @@ export const runtime = "nodejs";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-function redirectToCase(caseId: string, error?: string) {
-  const url = publicUrl(`/faelle/${caseId}`);
+function redirectToManagement(caseId: string, error?: string) {
+  const url = publicUrl(`/faelle/${caseId}/verwalten`);
   if (error) {
     url.searchParams.set("error", error);
   }
@@ -41,7 +41,7 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
 
     if (result.rowCount === 0) {
       await client.query("ROLLBACK");
-      return redirectToCase(id, "Der Fall ist nicht archiviert oder wurde nicht gefunden.");
+      return redirectToManagement(id, "Der Fall ist nicht archiviert oder wurde nicht gefunden.");
     }
 
     await client.query(
@@ -51,11 +51,11 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
     );
 
     await client.query("COMMIT");
-    return redirectToCase(id);
+    return redirectToManagement(id);
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
     console.error("Case restore failed", error);
-    return redirectToCase(id, "Der Fall konnte gerade nicht wieder geöffnet werden.");
+    return redirectToManagement(id, "Der Fall konnte gerade nicht wieder geöffnet werden.");
   } finally {
     client.release();
   }
