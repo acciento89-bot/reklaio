@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
     shortcut: [{ url: "/icon.svg", type: "image/svg+xml" }],
-    apple: [{ url: "/icon-192.png", sizes: "192x192", type: "image/png" }]
+    apple: [{ url: "/icon.svg", type: "image/svg+xml" }]
   },
   openGraph: {
     type: "website",
