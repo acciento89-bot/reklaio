@@ -57,6 +57,7 @@ services:
         condition: service_completed_successfully
     environment:
       NODE_ENV: production
+      HOSTNAME: 0.0.0.0
       PORT: "3000"
       BASE_URL: ${BASE_URL:-https://reklaio.de}
       DATABASE_URL: postgresql://${POSTGRES_USER:-reklaio}:${POSTGRES_PASSWORD}@reklaio-postgres:5432/${POSTGRES_DB:-reklaio}
