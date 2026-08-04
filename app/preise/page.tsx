@@ -3,8 +3,13 @@ import { getCurrentUser } from "@/lib/auth";
 import { getBillingAccount, getProPriceLabel, isStripeConfigured } from "@/lib/billing";
 import { formatDateTime } from "@/lib/cases";
 
-export default async function PricingPage() {
+type PricingPageProps = {
+  searchParams: Promise<{ error?: string; checkout?: string }>;
+};
+
+export default async function PricingPage({ searchParams }: PricingPageProps) {
   const user = await getCurrentUser();
+  const messages = await searchParams;
   const billing = user ? await getBillingAccount(user.id) : null;
   const stripeReady = isStripeConfigured();
   const isPro = billing?.planCode === "pro";
@@ -21,6 +26,10 @@ export default async function PricingPage() {
         <h1>Die Fallakte bleibt einfach. KI wird Pro.</h1>
         <p>Alle wichtigen Werkzeuge zur Organisation eines Verbraucherfalls bleiben im kostenlosen Tarif. Reklaio Pro erweitert den Dienst um freiwillige KI-Dokumentanalyse und individuelle KI-Schreiben.</p>
       </section>
+
+      {messages.checkout === "success" ? <div className="notice-card pricing-note" role="status"><strong>Zahlung abgeschlossen.</strong><span>Stripe übermittelt den Abostatus gerade an Reklaio. Lade die Seite in wenigen Sekunden erneut, falls Pro noch nicht angezeigt wird.</span></div> : null}
+      {messages.checkout === "cancelled" ? <div className="pricing-note">Der Checkout wurde abgebrochen. Dein bisheriger Tarif bleibt unverändert.</div> : null}
+      {messages.error ? <div className="form-error pricing-note" role="alert">{messages.error}</div> : null}
 
       <section className="pricing-grid">
         <article className="pricing-card">
