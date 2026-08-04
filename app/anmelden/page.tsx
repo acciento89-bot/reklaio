@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 
 type LoginPageProps = {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; deleted?: string }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
@@ -12,7 +12,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     redirect("/dashboard");
   }
 
-  const { error } = await searchParams;
+  const { error, deleted } = await searchParams;
 
   return (
     <main className="auth-page container">
@@ -21,6 +21,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <span className="eyebrow">Willkommen zurück</span>
         <h1>Anmelden</h1>
         <p>Öffne deine Fälle, Fristen und Dokumente.</p>
+
+        {deleted === "1" ? (
+          <div className="notice-card auth-deleted-notice" role="status">
+            <strong>Dein Reklaio-Konto wurde gelöscht.</strong>
+            <span>Alle zugehörigen Fälle und Kontodaten wurden entfernt.</span>
+          </div>
+        ) : null}
 
         {error ? <div className="form-error" role="alert">{error}</div> : null}
 
