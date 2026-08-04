@@ -20,17 +20,18 @@
   min-width: 92px;
   padding: 10px 14px;
   border: 1px solid var(--line);
-  border-radius: 11px;
+  border-radius: 9px;
   color: var(--muted);
   text-align: center;
-  font-weight: 780;
+  font-size: .86rem;
+  font-weight: 720;
 }
 
 .dashboard-scope-tabs a:hover,
 .dashboard-scope-tabs a.active {
   color: #fff;
-  border-color: rgba(140,124,255,.45);
-  background: rgba(140,124,255,.15);
+  border-color: rgba(143,199,187,.4);
+  background: rgba(73,151,137,.13);
 }
 
 .dashboard-filter-form {
@@ -48,8 +49,8 @@
 
 .dashboard-filter-form label > span {
   color: var(--muted);
-  font-size: .78rem;
-  font-weight: 760;
+  font-size: .75rem;
+  font-weight: 720;
 }
 
 .dashboard-filter-form input,
@@ -59,15 +60,15 @@
   padding: 0 13px;
   color: var(--text);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 10px;
   outline: none;
-  background: rgba(255,255,255,.035);
+  background: rgba(255,255,255,.025);
 }
 
 .dashboard-filter-form input:focus,
 .dashboard-filter-form select:focus {
-  border-color: rgba(140,124,255,.75);
-  box-shadow: 0 0 0 3px rgba(140,124,255,.12);
+  border-color: rgba(143,199,187,.62);
+  box-shadow: 0 0 0 3px rgba(73,151,137,.11);
 }
 
 .dashboard-filter-actions {
