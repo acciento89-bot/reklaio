@@ -70,6 +70,20 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD}
       MAIL_FROM: ${MAIL_FROM}
       CRON_SECRET: ${CRON_SECRET}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5-mini}
+      LEGAL_BUSINESS_NAME: ${LEGAL_BUSINESS_NAME:-Kamilunavo}
+      LEGAL_OPERATOR_NAME: ${LEGAL_OPERATOR_NAME:-Piotr Kaminski}
+      LEGAL_STREET: ${LEGAL_STREET:-Otto-Braun-Straße 14}
+      LEGAL_POSTAL_CITY: ${LEGAL_POSTAL_CITY:-40595 Düsseldorf}
+      LEGAL_COUNTRY: ${LEGAL_COUNTRY:-Deutschland}
+      LEGAL_EMAIL: ${LEGAL_EMAIL:-reklaio@kamilunavo.com}
+      LEGAL_PHONE: ${LEGAL_PHONE:-}
+      LEGAL_VAT_ID: ${LEGAL_VAT_ID:-}
+      LEGAL_REGISTER_NAME: ${LEGAL_REGISTER_NAME:-}
+      LEGAL_REGISTER_NUMBER: ${LEGAL_REGISTER_NUMBER:-}
+      LEGAL_HOSTING_PROVIDER: ${LEGAL_HOSTING_PROVIDER:-Hetzner Online GmbH}
+      LEGAL_HOSTING_COUNTRY: ${LEGAL_HOSTING_COUNTRY:-Deutschland}
     volumes:
       - reklaio_uploads:/app/uploads
     expose:
