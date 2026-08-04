@@ -1,0 +1,24 @@
+.hero.hero-brand-copy {
+  display: block;
+  grid-template-columns: none;
+  padding-bottom: 78px;
+}
+
+.hero-brand-copy .hero-content {
+  max-width: 900px;
+  margin-inline: auto;
+}
+
+.dashboard-brand-banner {
+  overflow: hidden;
+}
+
+@media (max-width: 680px) {
+  .hero.hero-brand-copy {
+    padding-bottom: 58px;
+  }
+
+  .dashboard-brand-banner {
+    margin-top: 22px;
+  }
+}
