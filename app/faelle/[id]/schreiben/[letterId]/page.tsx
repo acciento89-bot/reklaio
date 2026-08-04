@@ -11,7 +11,14 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3
 
 type LetterPageProps = {
   params: Promise<{ id: string; letterId: string }>;
-  searchParams: Promise<{ saved?: string; sent?: string; error?: string; warning?: string }>;
+  searchParams: Promise<{
+    saved?: string;
+    sent?: string;
+    error?: string;
+    warning?: string;
+    generated?: string;
+    duplicated?: string;
+  }>;
 };
 
 type LetterRow = {
@@ -26,6 +33,8 @@ type LetterRow = {
   case_title: string;
   company_name: string | null;
   email_verified_at: string | null;
+  generation_mode: string;
+  model_name: string | null;
 };
 
 type CaseDocument = {
@@ -46,14 +55,14 @@ type DeliveryRow = {
 export default async function LetterPage({ params, searchParams }: LetterPageProps) {
   const user = await requireUser();
   const { id: caseId, letterId } = await params;
-  const { saved, sent, error, warning } = await searchParams;
+  const { saved, sent, error, warning, generated, duplicated } = await searchParams;
 
   if (!UUID_PATTERN.test(caseId) || !UUID_PATTERN.test(letterId)) notFound();
 
   const result = await query<LetterRow>(
     `SELECT
        l.id, l.kind, l.subject, l.body, l.created_at, l.approved_at,
-       l.recipient_email, l.last_sent_at,
+       l.recipient_email, l.last_sent_at, l.generation_mode, l.model_name,
        c.title AS case_title, c.company_name, u.email_verified_at
      FROM generated_letters l
      JOIN cases c ON c.id = l.case_id
@@ -89,6 +98,7 @@ export default async function LetterPage({ params, searchParams }: LetterPagePro
 
   const subject = letter.subject || "Schreiben ohne Betreff";
   const emailVerified = Boolean(letter.email_verified_at);
+  const isAiDraft = letter.generation_mode === "ai";
 
   return (
     <main className="letter-page container">
@@ -106,6 +116,13 @@ export default async function LetterPage({ params, searchParams }: LetterPagePro
         <LetterActions subject={subject} body={letter.body} />
       </section>
 
+      {generated === "1" || isAiDraft ? (
+        <div className="ai-generated-note letter-no-print">
+          <strong>KI-Entwurf – vor Nutzung vollständig prüfen.</strong><br />
+          Der Text wurde mit {letter.model_name || "einem KI-Modell"} aus Falldaten erstellt. Tatsachen, Betrag, Empfänger, Frist und gewünschte Lösung können falsch oder unvollständig sein.
+        </div>
+      ) : null}
+      {duplicated === "1" ? <div className="notice-card letter-notice letter-no-print"><strong>Kopie erstellt.</strong><span>Änderungen an dieser Fassung wirken sich nicht auf das ursprüngliche Schreiben aus.</span></div> : null}
       {saved === "1" ? <div className="notice-card letter-notice letter-no-print"><strong>Änderungen gespeichert.</strong><span>Die aktuelle Fassung ist jetzt in der Fallakte hinterlegt.</span></div> : null}
       {sent === "1" ? <div className="notice-card letter-notice letter-no-print"><strong>Schreiben per E-Mail versendet.</strong><span>Empfänger, Anhänge und eine gewählte Antwortfrist wurden in der Fallakte dokumentiert.</span></div> : null}
       {warning ? <div className="notice-card letter-notice letter-no-print"><strong>Versandhinweis</strong><span>{warning}</span></div> : null}
@@ -120,6 +137,17 @@ export default async function LetterPage({ params, searchParams }: LetterPagePro
             <label className="field">Nachricht<textarea className="letter-body-input" name="body" rows={22} maxLength={20000} defaultValue={letter.body} required /></label>
             <div className="letter-editor-footer"><p>Prüfe Namen, Daten, Fristen und gewünschte Lösung vor dem Versand.</p><button className="button button-primary" type="submit">Änderungen speichern</button></div>
           </form>
+
+          <section className="letter-version-actions">
+            <div>
+              <span className="eyebrow">Versionen</span>
+              <h2>Schreiben weiterverwenden</h2>
+              <p>Eine Kopie ist hilfreich, wenn du eine zweite Erinnerung oder eine leicht veränderte Fassung benötigst.</p>
+            </div>
+            <form action={`/api/cases/${caseId}/letters/${letterId}/duplicate`} method="post">
+              <button className="button button-secondary" type="submit">Schreiben duplizieren</button>
+            </form>
+          </section>
 
           <section className="letter-email-panel">
             <div>
@@ -168,6 +196,18 @@ export default async function LetterPage({ params, searchParams }: LetterPagePro
                 ))}
               </div>
             ) : null}
+          </section>
+
+          <section className="letter-delete-panel">
+            <div>
+              <span className="eyebrow">Gefahrenbereich</span>
+              <h2>Schreiben endgültig löschen</h2>
+              <p>{deliveryResult.rows.length ? "Dieses Schreiben wurde bereits versendet. Die gespeicherte Fassung und das Reklaio-Versandprotokoll werden gelöscht; bereits zugestellte E-Mails können nicht zurückgerufen werden." : "Die gespeicherte Fassung wird aus der Fallakte entfernt. Dieser Vorgang kann nicht rückgängig gemacht werden."}</p>
+            </div>
+            <form action={`/api/cases/${caseId}/letters/${letterId}/delete`} method="post">
+              <label className="field">Zur Bestätigung LÖSCHEN eingeben<input name="confirmation" type="text" required autoComplete="off" /></label>
+              <button className="button letter-delete-button" type="submit">Schreiben unwiderruflich löschen</button>
+            </form>
           </section>
         </section>
 
