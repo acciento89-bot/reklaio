@@ -8,6 +8,8 @@
 .auth-form input { width: 100%; min-height: 48px; padding: 0 14px; color: var(--text); border: 1px solid var(--line); border-radius: 13px; outline: none; background: rgba(255,255,255,.035); }
 .auth-form input:focus { border-color: rgba(140,124,255,.75); box-shadow: 0 0 0 3px rgba(140,124,255,.12); }
 .auth-form .button { width: 100%; margin-top: 4px; cursor: pointer; }
+.auth-password-help { margin-top: -8px; text-align: right; }
+.auth-password-help a { color: var(--accent-2); font-size: .86rem; font-weight: 750; }
 .auth-switch { margin: 24px 0 0 !important; text-align: center; }
 .auth-switch a { color: var(--accent-2); font-weight: 750; }
 .form-error { margin-top: 20px; padding: 13px 14px; border: 1px solid rgba(255,123,138,.3); border-radius: 13px; color: #ffc0c8; background: rgba(255,123,138,.1); }

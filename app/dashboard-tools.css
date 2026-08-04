@@ -1,0 +1,151 @@
+.dashboard-notice {
+  margin-top: 24px;
+}
+
+.dashboard-tools {
+  margin-bottom: 20px;
+  padding: 20px;
+  overflow: visible;
+}
+
+.dashboard-scope-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.dashboard-scope-tabs a {
+  min-width: 92px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  color: var(--muted);
+  text-align: center;
+  font-weight: 780;
+}
+
+.dashboard-scope-tabs a:hover,
+.dashboard-scope-tabs a.active {
+  color: #fff;
+  border-color: rgba(140,124,255,.45);
+  background: rgba(140,124,255,.15);
+}
+
+.dashboard-filter-form {
+  display: grid;
+  grid-template-columns: minmax(240px, 1.4fr) repeat(3, minmax(160px, .75fr));
+  gap: 14px;
+  align-items: end;
+}
+
+.dashboard-filter-form label {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.dashboard-filter-form label > span {
+  color: var(--muted);
+  font-size: .78rem;
+  font-weight: 760;
+}
+
+.dashboard-filter-form input,
+.dashboard-filter-form select {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 13px;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  outline: none;
+  background: rgba(255,255,255,.035);
+}
+
+.dashboard-filter-form input:focus,
+.dashboard-filter-form select:focus {
+  border-color: rgba(140,124,255,.75);
+  box-shadow: 0 0 0 3px rgba(140,124,255,.12);
+}
+
+.dashboard-filter-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.dashboard-filter-actions button {
+  cursor: pointer;
+}
+
+.dashboard-case-panel {
+  overflow: hidden;
+}
+
+.dashboard-case-row {
+  grid-template-columns: minmax(0, 1fr) 170px 180px 40px;
+}
+
+.dashboard-case-meta {
+  display: grid;
+  gap: 4px;
+}
+
+.dashboard-case-meta small {
+  color: var(--muted);
+  font-size: .76rem;
+}
+
+.dashboard-no-results {
+  min-height: 320px;
+}
+
+@media (max-width: 1180px) {
+  .dashboard-filter-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .dashboard-case-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .dashboard-case-row .dashboard-case-meta,
+  .dashboard-case-row .status {
+    display: none;
+  }
+}
+
+@media (max-width: 680px) {
+  .dashboard-tools {
+    padding: 16px;
+  }
+
+  .dashboard-scope-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .dashboard-scope-tabs a {
+    min-width: 0;
+    padding-inline: 8px;
+  }
+
+  .dashboard-filter-form {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-filter-actions {
+    grid-column: auto;
+    flex-direction: column;
+  }
+
+  .dashboard-filter-actions .button {
+    width: 100%;
+  }
+}

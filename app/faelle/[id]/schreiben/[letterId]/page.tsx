@@ -10,7 +10,7 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3
 
 type LetterPageProps = {
   params: Promise<{ id: string; letterId: string }>;
-  searchParams: Promise<{ saved?: string; error?: string }>;
+  searchParams: Promise<{ saved?: string; sent?: string; error?: string }>;
 };
 
 type LetterRow = {
@@ -20,24 +20,38 @@ type LetterRow = {
   body: string;
   created_at: string;
   approved_at: string | null;
+  recipient_email: string | null;
+  last_sent_at: string | null;
   case_title: string;
   company_name: string | null;
+  email_verified_at: string | null;
 };
 
 export default async function LetterPage({ params, searchParams }: LetterPageProps) {
   const user = await requireUser();
   const { id: caseId, letterId } = await params;
-  const { saved, error } = await searchParams;
+  const { saved, sent, error } = await searchParams;
 
   if (!UUID_PATTERN.test(caseId) || !UUID_PATTERN.test(letterId)) {
     notFound();
   }
 
   const result = await query<LetterRow>(
-    `SELECT l.id, l.kind, l.subject, l.body, l.created_at, l.approved_at,
-            c.title AS case_title, c.company_name
+    `SELECT
+       l.id,
+       l.kind,
+       l.subject,
+       l.body,
+       l.created_at,
+       l.approved_at,
+       l.recipient_email,
+       l.last_sent_at,
+       c.title AS case_title,
+       c.company_name,
+       u.email_verified_at
      FROM generated_letters l
      JOIN cases c ON c.id = l.case_id
+     JOIN app_users u ON u.id = c.user_id
      WHERE l.id = $1
        AND l.case_id = $2
        AND c.user_id = $3
@@ -51,6 +65,7 @@ export default async function LetterPage({ params, searchParams }: LetterPagePro
   }
 
   const subject = letter.subject || "Schreiben ohne Betreff";
+  const emailVerified = Boolean(letter.email_verified_at);
 
   return (
     <main className="letter-page container">
@@ -72,6 +87,13 @@ export default async function LetterPage({ params, searchParams }: LetterPagePro
         <div className="notice-card letter-notice letter-no-print">
           <strong>Änderungen gespeichert.</strong>
           <span>Die aktuelle Fassung ist jetzt in der Fallakte hinterlegt.</span>
+        </div>
+      ) : null}
+
+      {sent === "1" ? (
+        <div className="notice-card letter-notice letter-no-print">
+          <strong>Schreiben per E-Mail versendet.</strong>
+          <span>Der Versand wurde zusätzlich in der Chronik dokumentiert.</span>
         </div>
       ) : null}
 
@@ -100,6 +122,39 @@ export default async function LetterPage({ params, searchParams }: LetterPagePro
               <button className="button button-primary" type="submit">Änderungen speichern</button>
             </div>
           </form>
+
+          <section className="letter-email-panel">
+            <div>
+              <span className="eyebrow">Direktversand</span>
+              <h2>Per E-Mail senden</h2>
+              <p>Die Nachricht wird über Reklaio versendet. Antworten gehen direkt an {user.email}.</p>
+              {letter.last_sent_at ? (
+                <small>Zuletzt an {letter.recipient_email || "Empfänger"} gesendet: {formatDateTime(letter.last_sent_at)}</small>
+              ) : null}
+            </div>
+
+            {emailVerified ? (
+              <form className="letter-email-form" action={`/api/cases/${caseId}/letters/${letterId}/send`} method="post">
+                <label className="field">
+                  Empfängeradresse
+                  <input
+                    name="recipientEmail"
+                    type="email"
+                    defaultValue={letter.recipient_email ?? ""}
+                    placeholder="service@anbieter.de"
+                    required
+                    autoComplete="email"
+                  />
+                </label>
+                <button className="button button-secondary" type="submit">Schreiben jetzt senden</button>
+              </form>
+            ) : (
+              <div className="letter-email-blocked">
+                <p>Für den Direktversand muss deine E-Mail-Adresse zuerst bestätigt sein.</p>
+                <Link className="button button-secondary" href="/einstellungen">E-Mail bestätigen</Link>
+              </div>
+            )}
+          </section>
         </section>
 
         <aside className="letter-preview-wrap">
