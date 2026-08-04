@@ -71,7 +71,6 @@ export default async function DocumentAnalysisPage({ params, searchParams }: Pag
   const data = analysis?.success ? analysis.data : null;
   const supported = ["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(document.mime_type);
   const aiConfigured = isAiConfigured();
-
   const reference = data?.orderReference || data?.invoiceNumber || data?.contractNumber || null;
 
   return (
@@ -211,6 +210,14 @@ export default async function DocumentAnalysisPage({ params, searchParams }: Pag
               <p>Einwilligung: {formatDateTime(row.consent_at)}</p>
               <p>Erstellt: {formatDateTime(row.created_at)}</p>
               {row.applied_at ? <p>Werte übernommen: {formatDateTime(row.applied_at)}</p> : null}
+
+              <form className="ai-analysis-delete-form" action={`/api/cases/${caseId}/documents/${documentId}/analysis/${row.id}/delete`} method="post">
+                <label className="field">
+                  Analyseergebnis löschen
+                  <input name="confirmation" type="text" placeholder="LÖSCHEN" required autoComplete="off" />
+                </label>
+                <button className="button letter-delete-button" type="submit">Analyse unwiderruflich löschen</button>
+              </form>
             </article>
           </aside>
         </section>
