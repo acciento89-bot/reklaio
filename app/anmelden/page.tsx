@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 
 type LoginPageProps = {
-  searchParams: Promise<{ error?: string; deleted?: string }>;
+  searchParams: Promise<{ error?: string; deleted?: string; notice?: string }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
@@ -12,7 +12,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     redirect("/dashboard");
   }
 
-  const { error, deleted } = await searchParams;
+  const { error, deleted, notice } = await searchParams;
 
   return (
     <main className="auth-page container">
@@ -29,6 +29,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </div>
         ) : null}
 
+        {notice ? <div className="notice-card auth-deleted-notice" role="status"><strong>{notice}</strong></div> : null}
         {error ? <div className="form-error" role="alert">{error}</div> : null}
 
         <form className="auth-form" action="/api/auth/login" method="post">
@@ -40,6 +41,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             Passwort
             <input name="password" type="password" autoComplete="current-password" required />
           </label>
+          <div className="auth-password-help"><Link href="/passwort-vergessen">Passwort vergessen?</Link></div>
           <button className="button button-primary" type="submit">Anmelden</button>
         </form>
 
