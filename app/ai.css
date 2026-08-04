@@ -44,6 +44,9 @@
 .ai-evidence-list p { margin: 8px 0; color: var(--muted); line-height: 1.5; font-size: .82rem; }
 .ai-evidence-list span { color: var(--accent-2); font-size: .74rem; font-weight: 700; }
 .ai-meta-card p { margin: 8px 0 0; color: var(--muted); font-size: .84rem; }
+.ai-analysis-delete-form { display: grid; gap: 10px; margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(226,125,131,.24); }
+.ai-analysis-delete-form .field { color: #f0b6ba; }
+.ai-analysis-delete-form button { width: 100%; cursor: pointer; }
 .ai-letter-panel { margin-top: 20px; padding: 22px; border: 1px solid rgba(58,196,210,.2); border-radius: 15px; background: rgba(40,70,130,.12); }
 .ai-letter-panel h2 { margin: 8px 0 10px; }
 .ai-letter-panel > p { color: var(--muted); line-height: 1.6; }
