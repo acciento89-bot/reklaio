@@ -75,7 +75,7 @@ export default async function DeadlinesPage({ searchParams }: PageProps) {
           <Link href="/neuer-fall">Neuer Fall</Link>
           <Link className="active" href="/fristen">Fristen</Link>
           <Link href="/dokumente">Dokumente</Link>
-          <a href="#">Einstellungen</a>
+          <Link href="/einstellungen">Einstellungen</Link>
         </nav>
         <div className="sidebar-account">
           <strong>{accountName}</strong>
