@@ -17,8 +17,8 @@ function deadlineTitle(type: string) {
   }
 }
 
-function caseRedirect(caseId: string, key: "notice" | "error", message: string) {
-  const url = publicUrl(`/faelle/${caseId}`);
+function assistantRedirect(caseId: string, key: "notice" | "error", message: string) {
+  const url = publicUrl(`/faelle/${caseId}/assistent`);
   url.searchParams.set(key, message);
   return NextResponse.redirect(url, 303);
 }
@@ -53,7 +53,7 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
 
     if (Number(openDeadlineResult.rows[0]?.count ?? 0) > 0) {
       await client.query("ROLLBACK");
-      return caseRedirect(id, "notice", "Für diesen Fall besteht bereits eine offene Frist.");
+      return assistantRedirect(id, "notice", "Für diesen Fall besteht bereits eine offene Frist.");
     }
 
     const title = deadlineTitle(currentCase.type);
@@ -74,11 +74,11 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
 
     await client.query(`UPDATE cases SET updated_at = NOW() WHERE id = $1 AND user_id = $2`, [id, user.id]);
     await client.query("COMMIT");
-    return caseRedirect(id, "notice", `${title} bis ${dueDate} wurde angelegt.`);
+    return assistantRedirect(id, "notice", `${title} bis ${dueDate} wurde angelegt.`);
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
     console.error("Assistant deadline creation failed", error);
-    return caseRedirect(id, "error", "Die empfohlene Frist konnte gerade nicht angelegt werden.");
+    return assistantRedirect(id, "error", "Die empfohlene Frist konnte gerade nicht angelegt werden.");
   } finally {
     client.release();
   }
