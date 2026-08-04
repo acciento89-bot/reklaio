@@ -13,8 +13,8 @@ const deleteSchema = z.object({
   confirmation: z.string().trim().min(1).max(32)
 });
 
-function redirectToCase(caseId: string, error: string) {
-  const url = publicUrl(`/faelle/${caseId}`);
+function redirectToManagement(caseId: string, error: string) {
+  const url = publicUrl(`/faelle/${caseId}/verwalten`);
   url.searchParams.set("error", error);
   return NextResponse.redirect(url, 303);
 }
@@ -34,7 +34,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const parsed = deleteSchema.safeParse({ confirmation: formData.get("confirmation") });
 
   if (!parsed.success || parsed.data.confirmation.toLocaleUpperCase("de-DE") !== "LÖSCHEN") {
-    return redirectToCase(id, "Zur Bestätigung muss exakt das Wort LÖSCHEN eingegeben werden.");
+    return redirectToManagement(id, "Zur Bestätigung muss exakt das Wort LÖSCHEN eingegeben werden.");
   }
 
   const client = await getDb().connect();
@@ -74,7 +74,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
     console.error("Case deletion failed", error);
-    return redirectToCase(id, "Der Fall konnte gerade nicht gelöscht werden.");
+    return redirectToManagement(id, "Der Fall konnte gerade nicht gelöscht werden.");
   } finally {
     client.release();
   }
