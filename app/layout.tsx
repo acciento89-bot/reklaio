@@ -11,6 +11,7 @@ import "./dashboard-tools.css";
 import "./mail-features.css";
 import "./professional-overrides.css";
 import "./assistant-brand.css";
+import "./assistant-brand-fixes.css";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
 
 export const metadata: Metadata = {
