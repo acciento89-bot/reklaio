@@ -26,6 +26,10 @@ type AssistantCase = {
   open_deadline_count: number;
   next_due_at: string | null;
   letter_count: number;
+  open_task_count: number;
+  latest_response_outcome: string | null;
+  latest_promised_due_at: string | null;
+  last_escalation_stage: string | null;
 };
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -39,20 +43,17 @@ export default async function AssistantPage({ params, searchParams }: AssistantP
 
   const result = await query<AssistantCase>(
     `SELECT
-       c.id,
-       c.type,
-       c.status,
-       c.title,
-       c.company_name,
-       c.order_reference,
-       c.amount_cents,
-       c.incident_date,
-       c.summary,
+       c.id, c.type, c.status, c.title, c.company_name, c.order_reference,
+       c.amount_cents, c.incident_date, c.summary,
        (SELECT COUNT(*)::int FROM case_documents d WHERE d.case_id = c.id) AS document_count,
        (SELECT COUNT(*)::int FROM case_events e WHERE e.case_id = c.id) AS event_count,
        (SELECT COUNT(*)::int FROM case_deadlines d WHERE d.case_id = c.id AND d.completed_at IS NULL) AS open_deadline_count,
        (SELECT MIN(d.due_at) FROM case_deadlines d WHERE d.case_id = c.id AND d.completed_at IS NULL) AS next_due_at,
-       (SELECT COUNT(*)::int FROM generated_letters l WHERE l.case_id = c.id) AS letter_count
+       (SELECT COUNT(*)::int FROM generated_letters l WHERE l.case_id = c.id) AS letter_count,
+       (SELECT COUNT(*)::int FROM case_tasks t WHERE t.case_id = c.id AND t.status = 'open') AS open_task_count,
+       (SELECT r.outcome FROM provider_responses r WHERE r.case_id = c.id ORDER BY r.response_received_at DESC, r.created_at DESC LIMIT 1) AS latest_response_outcome,
+       (SELECT r.promised_due_at FROM provider_responses r WHERE r.case_id = c.id AND r.promised_due_at IS NOT NULL ORDER BY r.response_received_at DESC, r.created_at DESC LIMIT 1) AS latest_promised_due_at,
+       (SELECT e.stage FROM case_escalations e WHERE e.case_id = c.id ORDER BY e.created_at DESC LIMIT 1) AS last_escalation_stage
      FROM cases c
      WHERE c.id = $1 AND c.user_id = $2
      LIMIT 1`,
@@ -75,7 +76,11 @@ export default async function AssistantPage({ params, searchParams }: AssistantP
     eventCount: currentCase.event_count,
     openDeadlineCount: currentCase.open_deadline_count,
     nextDueAt: currentCase.next_due_at,
-    letterCount: currentCase.letter_count
+    letterCount: currentCase.letter_count,
+    openTaskCount: currentCase.open_task_count,
+    latestResponseOutcome: currentCase.latest_response_outcome,
+    latestPromisedDueAt: currentCase.latest_promised_due_at,
+    lastEscalationStage: currentCase.last_escalation_stage
   });
 
   const type = getCaseTypeByValue(currentCase.type);
@@ -104,17 +109,17 @@ export default async function AssistantPage({ params, searchParams }: AssistantP
         <article className="detail-panel">
           <span className="eyebrow">So bewertet Reklaio</span>
           <h2>Vollständigkeit</h2>
-          <p>Berücksichtigt werden Falldaten, Referenz, Vorfallsdatum, Zusammenfassung, Belege, Chronik, Fristen und Schreiben. Die Bewertung ist eine Organisationshilfe und keine rechtliche Einschätzung.</p>
+          <p>Berücksichtigt werden Falldaten, Belege, Chronik, Fristen, Schreiben, Aufgaben, Anbieterantworten und dokumentierte Eskalationsschritte.</p>
         </article>
         <article className="detail-panel">
           <span className="eyebrow">Priorität</span>
-          <h2>Fristen zuerst</h2>
-          <p>Überfällige oder in den nächsten drei Tagen fällige Termine werden automatisch vor anderen Empfehlungen priorisiert.</p>
+          <h2>Fristen und Zusagen zuerst</h2>
+          <p>Überfällige Fristen und überschrittene Anbieterzusagen werden automatisch vor anderen Empfehlungen priorisiert.</p>
         </article>
         <article className="detail-panel">
-          <span className="eyebrow">Automatische Aktion</span>
-          <h2>7-Tage-Frist</h2>
-          <p>Fehlt eine offene Frist, kann Reklaio mit einem Klick eine passende Frist in sieben Tagen anlegen und gleichzeitig in der Chronik dokumentieren.</p>
+          <span className="eyebrow">Fallsteuerung</span>
+          <h2>Aufgabe oder Eskalation</h2>
+          <p>Antworten erzeugen passende Folgeaufgaben. Nach Ablehnung oder Fristablauf führt der Assistent direkt zur dokumentierten Eskalation.</p>
         </article>
       </section>
     </main>
