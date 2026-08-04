@@ -11,6 +11,11 @@ type AccountRow = {
   email: string;
   display_name: string | null;
   email_verified_at: string | Date | null;
+  onboarding_completed_at: string | Date | null;
+  onboarding_dismissed_at: string | Date | null;
+  terms_accepted_at: string | Date | null;
+  terms_version: string | null;
+  privacy_acknowledged_at: string | Date | null;
   created_at: string | Date;
   updated_at: string | Date;
 };
@@ -31,10 +36,15 @@ export async function GET() {
       responseResult,
       escalationResult,
       deliveryResult,
-      deliveryAttachmentResult
+      deliveryAttachmentResult,
+      aiAnalysisResult,
+      aiUsageResult
     ] = await Promise.all([
       query<AccountRow>(
-        `SELECT id, email, display_name, email_verified_at, created_at, updated_at
+        `SELECT id, email, display_name, email_verified_at,
+                onboarding_completed_at, onboarding_dismissed_at,
+                terms_accepted_at, terms_version, privacy_acknowledged_at,
+                created_at, updated_at
          FROM app_users WHERE id = $1 LIMIT 1`,
         [user.id]
       ),
@@ -58,7 +68,8 @@ export async function GET() {
       ),
       query(
         `SELECT l.id, l.case_id, l.kind, l.subject, l.body, l.model_name,
-                l.approved_at, l.recipient_email, l.last_sent_at, l.created_at
+                l.generation_mode, l.ai_response_id, l.approved_at,
+                l.recipient_email, l.last_sent_at, l.created_at
          FROM generated_letters l JOIN cases c ON c.id = l.case_id
          WHERE c.user_id = $1 ORDER BY l.created_at ASC`,
         [user.id]
@@ -105,11 +116,27 @@ export async function GET() {
          JOIN cases c ON c.id = e.case_id
          WHERE c.user_id = $1 ORDER BY e.sent_at ASC`,
         [user.id]
+      ),
+      query(
+        `SELECT a.id, a.document_id, a.case_id, a.provider, a.model_name,
+                a.response_id, a.consent_at, a.result_json, a.applied_at, a.created_at
+         FROM document_ai_analyses a
+         WHERE a.user_id = $1
+         ORDER BY a.created_at ASC`,
+        [user.id]
+      ),
+      query(
+        `SELECT id, case_id, document_id, operation, provider, model_name,
+                response_id, consent_at, metadata_json, created_at
+         FROM ai_usage_events
+         WHERE user_id = $1
+         ORDER BY created_at ASC`,
+        [user.id]
       )
     ]);
 
     const exportData = {
-      exportVersion: 2,
+      exportVersion: 3,
       generatedAt: new Date().toISOString(),
       service: "Reklaio",
       account: accountResult.rows[0] ?? null,
@@ -123,6 +150,8 @@ export async function GET() {
       escalations: escalationResult.rows,
       emailDeliveries: deliveryResult.rows,
       emailDeliveryAttachments: deliveryAttachmentResult.rows,
+      documentAiAnalyses: aiAnalysisResult.rows,
+      aiUsageEvents: aiUsageResult.rows,
       note: "Passwort-Hashes, Sitzungstoken und hochgeladene Binärdateien sind nicht Teil dieses JSON-Exports."
     };
 
