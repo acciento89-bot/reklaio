@@ -14,9 +14,9 @@
 
 .letter-page-header h1 {
   margin: 10px 0 8px;
-  font-size: clamp(2.2rem, 5vw, 4.4rem);
+  font-size: clamp(2.2rem, 5vw, 4.2rem);
   line-height: 1;
-  letter-spacing: -.055em;
+  letter-spacing: -.052em;
 }
 
 .letter-page-header p {
@@ -36,8 +36,8 @@
   margin-bottom: 24px;
   padding: 16px;
   border: 1px solid var(--line);
-  border-radius: 14px;
-  background: rgba(255,255,255,.025);
+  border-radius: 12px;
+  background: rgba(255,255,255,.018);
 }
 
 .letter-case-reference span,
@@ -69,9 +69,9 @@
   align-content: center;
   gap: 7px;
   padding: 16px;
-  border: 1px solid rgba(255,206,115,.22);
-  border-radius: 14px;
-  background: rgba(255,206,115,.07);
+  border: 1px solid rgba(227,180,95,.22);
+  border-radius: 12px;
+  background: rgba(227,180,95,.07);
 }
 
 .letter-safety-note span {
@@ -148,7 +148,7 @@
   color: #171923;
   border-radius: 8px;
   background: #ffffff;
-  box-shadow: 0 18px 55px rgba(0,0,0,.28);
+  box-shadow: 0 18px 55px rgba(0,0,0,.24);
 }
 
 .letter-paper header {
@@ -202,14 +202,14 @@
   align-items: center;
   padding: 14px;
   border: 1px solid var(--line);
-  border-radius: 14px;
-  background: rgba(255,255,255,.025);
+  border-radius: 12px;
+  background: rgba(255,255,255,.018);
   transition: .18s ease;
 }
 
 .letter-list-item:hover {
-  border-color: rgba(140,124,255,.45);
-  background: rgba(140,124,255,.07);
+  border-color: rgba(143,199,187,.38);
+  background: rgba(73,151,137,.06);
 }
 
 .letter-list-icon {
@@ -217,10 +217,10 @@
   height: 42px;
   display: grid;
   place-items: center;
-  border-radius: 12px;
-  color: #c8c1ff;
-  background: rgba(140,124,255,.13);
-  font-weight: 900;
+  border-radius: 10px;
+  color: var(--accent-2);
+  background: var(--accent-soft);
+  font-weight: 800;
 }
 
 .letter-list-main {
