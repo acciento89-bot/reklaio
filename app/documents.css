@@ -4,8 +4,8 @@
   gap: 14px;
   padding: 18px;
   border: 1px solid var(--line);
-  border-radius: 16px;
-  background: rgba(255,255,255,.02);
+  border-radius: 14px;
+  background: rgba(255,255,255,.018);
 }
 
 .document-upload-form small {
@@ -16,37 +16,37 @@
 
 .document-upload-form select {
   color-scheme: dark;
-  color: #f5f7ff;
-  background-color: #181d33;
-  border-color: rgba(140,124,255,.42);
+  color: var(--text);
+  background-color: #182b38;
+  border-color: var(--line-strong);
   cursor: pointer;
 }
 
 .document-upload-form select:hover {
-  border-color: rgba(140,124,255,.82);
-  background-color: #202743;
+  border-color: rgba(143,199,187,.5);
+  background-color: #1c3341;
 }
 
 .document-upload-form select:focus {
   border-color: var(--accent);
-  background-color: #202743;
-  box-shadow: 0 0 0 3px rgba(140,124,255,.16);
+  background-color: #1c3341;
+  box-shadow: 0 0 0 3px rgba(73,151,137,.12);
 }
 
 .document-upload-form select option {
-  color: #f5f7ff;
-  background-color: #181d33;
+  color: var(--text);
+  background-color: #182b38;
 }
 
 .document-upload-form select option:checked {
   color: #ffffff;
-  background-color: #6656e8;
+  background-color: #2f7d72;
 }
 
 .document-upload-form select option:hover,
 .document-upload-form select option:focus {
   color: #ffffff;
-  background-color: #2b3454;
+  background-color: #234353;
 }
 
 .document-upload-form input[type="file"] {
@@ -58,9 +58,9 @@
   margin-right: 12px;
   padding: 8px 11px;
   border: 1px solid var(--line);
-  border-radius: 9px;
+  border-radius: 8px;
   color: var(--text);
-  background: rgba(255,255,255,.06);
+  background: rgba(255,255,255,.04);
   cursor: pointer;
 }
 
@@ -82,8 +82,8 @@
   align-items: center;
   padding: 14px;
   border: 1px solid var(--line);
-  border-radius: 14px;
-  background: rgba(255,255,255,.025);
+  border-radius: 12px;
+  background: rgba(255,255,255,.018);
 }
 
 .document-icon {
@@ -91,11 +91,11 @@
   height: 42px;
   display: grid;
   place-items: center;
-  border-radius: 12px;
+  border-radius: 10px;
   color: var(--accent-2);
-  background: rgba(92,225,196,.1);
-  font-size: 1.2rem;
-  font-weight: 900;
+  background: var(--accent-soft);
+  font-size: 1.15rem;
+  font-weight: 800;
 }
 
 .document-main {
@@ -133,9 +133,9 @@
 .document-actions button {
   padding: 8px 10px;
   border: 1px solid var(--line);
-  border-radius: 9px;
+  border-radius: 8px;
   color: var(--muted);
-  background: rgba(255,255,255,.03);
+  background: rgba(255,255,255,.02);
   font-size: .8rem;
   cursor: pointer;
 }
@@ -145,9 +145,9 @@
 }
 
 .document-actions button:hover {
-  color: #ffc0c8;
-  border-color: rgba(255,123,138,.28);
-  background: rgba(255,123,138,.08);
+  color: #f3b4b8;
+  border-color: rgba(226,125,131,.28);
+  background: rgba(226,125,131,.08);
 }
 
 .document-overview-panel {
