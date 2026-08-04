@@ -14,6 +14,7 @@ export default async function CaseLayout({ children, params }: CaseLayoutProps) 
       <nav className="case-route-navigation" aria-label="Fallnavigation">
         <Link href={`/faelle/${id}`}>Fall</Link>
         <Link href={`/faelle/${id}/assistent`}>Assistent</Link>
+        <Link href={`/faelle/${id}/steuerung`}>Steuerung</Link>
         <Link href={`/faelle/${id}/bearbeiten`}>Bearbeiten</Link>
         <Link href={`/faelle/${id}/verwalten`}>Verwalten</Link>
         <Link href="/fristen">Fristen</Link>
