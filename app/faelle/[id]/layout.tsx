@@ -12,10 +12,11 @@ export default async function CaseLayout({ children, params }: CaseLayoutProps) 
     <>
       {children}
       <nav className="case-route-navigation" aria-label="Fallnavigation">
-        <Link href={`/faelle/${id}`}>Fallakte</Link>
-        <Link href={`/faelle/${id}/bearbeiten`}>Fall bearbeiten</Link>
-        <Link href="/fristen">Alle Fristen</Link>
-        <a href={`/api/cases/${id}/export/pdf`}>Fallakte als PDF</a>
+        <Link href={`/faelle/${id}`}>Fall</Link>
+        <Link href={`/faelle/${id}/bearbeiten`}>Bearbeiten</Link>
+        <Link href={`/faelle/${id}/verwalten`}>Verwalten</Link>
+        <Link href="/fristen">Fristen</Link>
+        <a href={`/api/cases/${id}/export/pdf`}>PDF</a>
       </nav>
     </>
   );
