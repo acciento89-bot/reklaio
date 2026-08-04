@@ -1,0 +1,28 @@
+.letter-version-actions,
+.letter-delete-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: center;
+  margin-top: 26px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255,255,255,.018);
+}
+.letter-version-actions h2,
+.letter-delete-panel h2 { margin: 8px 0 8px; }
+.letter-version-actions p,
+.letter-delete-panel p { margin: 0; color: var(--muted); line-height: 1.6; }
+.letter-version-actions button { cursor: pointer; }
+.letter-delete-panel { grid-template-columns: minmax(0, 1fr) minmax(260px, .65fr); border-color: rgba(226,125,131,.26); background: rgba(226,125,131,.055); }
+.letter-delete-panel form { display: grid; gap: 12px; }
+.letter-delete-button { border-color: rgba(226,125,131,.42); color: #ffd6d9; background: rgba(156,44,55,.28); cursor: pointer; }
+.letter-delete-button:hover { background: rgba(176,55,66,.4); }
+
+@media (max-width: 760px) {
+  .letter-version-actions,
+  .letter-delete-panel { grid-template-columns: 1fr; }
+  .letter-version-actions .button,
+  .letter-delete-panel .button { width: 100%; }
+}

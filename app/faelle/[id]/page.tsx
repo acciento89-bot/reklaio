@@ -20,7 +20,7 @@ import { getLetterKindLabel } from "@/lib/letters";
 
 type CaseDetailPageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; notice?: string }>;
 };
 
 type CaseDetail = {
@@ -74,7 +74,7 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3
 export default async function CaseDetailPage({ params, searchParams }: CaseDetailPageProps) {
   const user = await requireUser();
   const { id } = await params;
-  const { error } = await searchParams;
+  const { error, notice } = await searchParams;
 
   if (!UUID_PATTERN.test(id)) {
     notFound();
@@ -136,6 +136,7 @@ export default async function CaseDetailPage({ params, searchParams }: CaseDetai
         <Link className="text-link" href="/dashboard">← Alle Fälle</Link>
       </header>
 
+      {notice ? <div className="notice-card case-error" role="status"><strong>{notice}</strong></div> : null}
       {error ? <div className="form-error case-error" role="alert">{error}</div> : null}
 
       <section className="case-detail-header">
@@ -172,7 +173,7 @@ export default async function CaseDetailPage({ params, searchParams }: CaseDetai
             </div>
           </article>
 
-          <article className="detail-panel">
+          <article className="detail-panel" id="dokumente">
             <div className="detail-panel-header">
               <div>
                 <span className="eyebrow">Belege</span>
@@ -211,23 +212,27 @@ export default async function CaseDetailPage({ params, searchParams }: CaseDetai
             <div className="document-list">
               {documentResult.rows.length === 0 ? (
                 <p className="muted-copy">Noch keine Dokumente hochgeladen.</p>
-              ) : documentResult.rows.map((document) => (
-                <article className="document-item" key={document.id}>
-                  <div className="document-icon" aria-hidden="true">▤</div>
-                  <div className="document-main">
-                    <strong>{document.original_name}</strong>
-                    <span>
-                      {getDocumentTypeLabel(document.document_type)} · {formatFileSize(document.size_bytes)} · {formatDateTime(document.created_at)}
-                    </span>
-                  </div>
-                  <div className="document-actions">
-                    <a href={`/api/cases/${id}/documents/${document.id}/download`}>Herunterladen</a>
-                    <form action={`/api/cases/${id}/documents/${document.id}/delete`} method="post">
-                      <button type="submit">Löschen</button>
-                    </form>
-                  </div>
-                </article>
-              ))}
+              ) : documentResult.rows.map((document) => {
+                const analyzable = ["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(document.mime_type);
+                return (
+                  <article className="document-item" key={document.id}>
+                    <div className="document-icon" aria-hidden="true">▤</div>
+                    <div className="document-main">
+                      <strong>{document.original_name}</strong>
+                      <span>
+                        {getDocumentTypeLabel(document.document_type)} · {formatFileSize(document.size_bytes)} · {formatDateTime(document.created_at)}
+                      </span>
+                    </div>
+                    <div className="document-actions">
+                      <a href={`/api/cases/${id}/documents/${document.id}/download`}>Herunterladen</a>
+                      {analyzable ? <Link href={`/faelle/${id}/dokumente/${document.id}/analyse`}>KI prüfen</Link> : null}
+                      <form action={`/api/cases/${id}/documents/${document.id}/delete`} method="post">
+                        <button type="submit">Löschen</button>
+                      </form>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </article>
 
