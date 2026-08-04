@@ -105,7 +105,7 @@ export function getCaseAssistant(input: CaseAssistantInput): CaseAssistantResult
       headline: deadlineDistance === 0 ? "Frist läuft heute ab" : `Frist läuft in ${deadlineDistance} Tagen ab`,
       description: "Prüfe, ob eine Antwort oder Zahlung eingegangen ist, und halte das Ergebnis in der Chronik fest.",
       missingItems,
-      action: { kind: "link", href: `/faelle/${input.id}#chronik`, label: "Reaktion dokumentieren" }
+      action: { kind: "link", href: `/faelle/${input.id}`, label: "Reaktion dokumentieren" }
     };
   }
 
@@ -129,7 +129,7 @@ export function getCaseAssistant(input: CaseAssistantInput): CaseAssistantResult
       headline: "Ersten Beleg hinzufügen",
       description: "Speichere Rechnung, Bestätigung, Tracking, Kündigung oder einen anderen Nachweis direkt in der Fallakte.",
       missingItems,
-      action: { kind: "link", href: `/faelle/${input.id}#dokumente`, label: "Dokument hochladen" }
+      action: { kind: "link", href: `/faelle/${input.id}`, label: "Dokument hochladen" }
     };
   }
 
@@ -165,7 +165,7 @@ export function getCaseAssistant(input: CaseAssistantInput): CaseAssistantResult
       headline: "Bisherigen Verlauf festhalten",
       description: "Trage den bisherigen Kontakt und wichtige Zusagen ein, damit die zeitliche Abfolge später eindeutig bleibt.",
       missingItems,
-      action: { kind: "link", href: `/faelle/${input.id}#chronik`, label: "Chronik ergänzen" }
+      action: { kind: "link", href: `/faelle/${input.id}`, label: "Chronik ergänzen" }
     };
   }
 
@@ -176,7 +176,7 @@ export function getCaseAssistant(input: CaseAssistantInput): CaseAssistantResult
     headline: "Fall weiter beobachten",
     description: "Die wichtigsten Angaben sind vorhanden. Prüfe eingehende Antworten und dokumentiere jede neue Entwicklung.",
     missingItems,
-    action: { kind: "link", href: `/faelle/${input.id}#status`, label: "Status prüfen" }
+    action: { kind: "link", href: `/faelle/${input.id}`, label: "Status prüfen" }
   };
 }
 
