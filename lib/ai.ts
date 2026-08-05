@@ -174,7 +174,11 @@ export async function analyzeDocument(input: DocumentInput): Promise<AiResult<Do
 
   const fileContent = supportedImage
     ? { type: "input_image", image_url: `data:${input.mimeType};base64,${base64}`, detail: "high" }
-    : { type: "input_file", filename: input.fileName, file_data: base64 };
+    : {
+        type: "input_file",
+        filename: input.fileName,
+        file_data: `data:${input.mimeType};base64,${base64}`
+      };
 
   const prompt = [
     "Analysiere dieses Dokument für eine private Verbraucher-Fallakte in Deutschland.",
