@@ -19,6 +19,8 @@ import "./ai.css";
 import "./letter-management.css";
 import "./navigation-billing.css";
 import "./global-app-navigation.css";
+import "./admin.css";
+import "./checkout.css";
 import { GlobalAppNavigation } from "@/components/global-app-navigation";
 import { GlobalLegalLinks } from "@/components/global-legal-links";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
