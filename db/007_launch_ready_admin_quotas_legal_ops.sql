@@ -67,8 +67,8 @@ BEGIN
 END $$;
 
 UPDATE ai_usage_events
-SET status = 'completed', completed_at = COALESCE(completed_at, created_at)
-WHERE status IS NULL OR status = 'reserved';
+SET completed_at = created_at
+WHERE status = 'completed' AND completed_at IS NULL;
 
 CREATE INDEX IF NOT EXISTS idx_ai_usage_events_quota
   ON ai_usage_events(user_id, operation, created_at DESC)
