@@ -7,7 +7,8 @@ export function GlobalLegalLinks() {
       <Link href="/preise">Preise</Link>
       <Link href="/impressum">Impressum</Link>
       <Link href="/datenschutz">Datenschutz</Link>
-      <Link href="/nutzungsbedingungen">Nutzungsbedingungen</Link>
+      <Link href="/agb">AGB</Link>
+      <Link href="/widerruf">Widerruf</Link>
       <Link href="/hilfe">Hilfe</Link>
     </nav>
   );
