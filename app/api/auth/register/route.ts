@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { sendVerificationEmail } from "@/lib/account-email";
 import { query } from "@/lib/db";
-import { LEGAL_VERSION } from "@/lib/legal";
+import { AGB_VERSION } from "@/lib/legal-documents";
 import { isMailConfigured } from "@/lib/mail";
 import { hashPassword } from "@/lib/password";
 import { publicUrl } from "@/lib/public-url";
+import { consumeRateLimit, requestFingerprint } from "@/lib/rate-limit";
 import { createSession } from "@/lib/session";
 
 export const runtime = "nodejs";
@@ -25,6 +26,9 @@ function redirectWithError(message: string) {
 }
 
 export async function POST(request: Request) {
+  const rate = await consumeRateLimit({ key: `register:${requestFingerprint(request, "register")}`, limit: 5, windowSeconds: 3600 });
+  if (!rate.allowed) return redirectWithError("Zu viele Registrierungsversuche. Bitte versuche es später erneut.");
+
   const formData = await request.formData();
   const parsed = registrationSchema.safeParse({
     displayName: formData.get("displayName"),
@@ -48,21 +52,16 @@ export async function POST(request: Request) {
        )
        VALUES ($1, NULLIF($2, ''), $3, NOW(), $4, NOW())
        RETURNING id`,
-      [parsed.data.email, parsed.data.displayName, passwordHash, LEGAL_VERSION]
+      [parsed.data.email, parsed.data.displayName, passwordHash, AGB_VERSION]
     );
 
     const userId = result.rows[0].id;
     await createSession(userId);
-
     const url = publicUrl("/onboarding");
 
     if (isMailConfigured()) {
       try {
-        await sendVerificationEmail({
-          userId,
-          email: parsed.data.email,
-          displayName: parsed.data.displayName
-        });
+        await sendVerificationEmail({ userId, email: parsed.data.email, displayName: parsed.data.displayName });
         url.searchParams.set("notice", "Bestätigungslink wurde per E-Mail gesendet.");
       } catch (error) {
         console.error("Registration verification email failed", error);
@@ -77,7 +76,6 @@ export async function POST(request: Request) {
     if (typeof error === "object" && error !== null && "code" in error && error.code === "23505") {
       return redirectWithError("Für diese E-Mail-Adresse besteht bereits ein Konto.");
     }
-
     console.error("Registration failed", error);
     return redirectWithError("Die Registrierung konnte gerade nicht abgeschlossen werden.");
   }
