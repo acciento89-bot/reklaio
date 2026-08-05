@@ -21,8 +21,10 @@ import "./navigation-billing.css";
 import "./global-app-navigation.css";
 import "./admin.css";
 import "./checkout.css";
+import "./consent.css";
 import { GlobalAppNavigation } from "@/components/global-app-navigation";
 import { GlobalLegalLinks } from "@/components/global-legal-links";
+import { GoogleConsentManager } from "@/components/google-consent-manager";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
 
 export const metadata: Metadata = {
@@ -67,6 +69,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="de">
       <body>
         <ServiceWorkerRegistration />
+        <GoogleConsentManager />
         <GlobalAppNavigation />
         {children}
         <GlobalLegalLinks />
