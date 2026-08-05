@@ -62,6 +62,7 @@ services:
       BASE_URL: ${BASE_URL:-https://reklaio.de}
       DATABASE_URL: postgresql://${POSTGRES_USER:-reklaio}:${POSTGRES_PASSWORD}@reklaio-postgres:5432/${POSTGRES_DB:-reklaio}
       SESSION_SECRET: ${SESSION_SECRET}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-}
       UPLOAD_DIR: /app/uploads
       SMTP_HOST: ${SMTP_HOST}
       SMTP_PORT: ${SMTP_PORT:-587}
@@ -73,10 +74,14 @@ services:
       CRON_SECRET: ${CRON_SECRET}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5-mini}
+      PRO_AI_DOCUMENTS_MONTHLY: ${PRO_AI_DOCUMENTS_MONTHLY:-20}
+      PRO_AI_LETTERS_MONTHLY: ${PRO_AI_LETTERS_MONTHLY:-40}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
       STRIPE_PRICE_PRO_MONTHLY: ${STRIPE_PRICE_PRO_MONTHLY:-}
       REKLAIO_PRO_PRICE_LABEL: ${REKLAIO_PRO_PRICE_LABEL:-Preis wird in Stripe angezeigt}
+      REKLAIO_PRO_INTERVAL_LABEL: ${REKLAIO_PRO_INTERVAL_LABEL:-monatlich, automatisch verlängernd}
+      REKLAIO_TAX_LABEL: ${REKLAIO_TAX_LABEL:-Der im Checkout angezeigte Gesamtpreis ist maßgeblich.}
       LEGAL_BUSINESS_NAME: ${LEGAL_BUSINESS_NAME:-Kamilunavo}
       LEGAL_OPERATOR_NAME: ${LEGAL_OPERATOR_NAME:-Piotr Kaminski}
       LEGAL_STREET: ${LEGAL_STREET:-Otto-Braun-Straße 14}
@@ -122,9 +127,33 @@ services:
     networks:
       - reklaio
 
+  reklaio-backup:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backup
+    container_name: reklaio-backup
+    restart: unless-stopped
+    depends_on:
+      reklaio-migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-reklaio}:${POSTGRES_PASSWORD}@reklaio-postgres:5432/${POSTGRES_DB:-reklaio}
+      BACKUP_DIR: /backups
+      UPLOAD_DIR: /uploads
+      BACKUP_INTERVAL_SECONDS: ${BACKUP_INTERVAL_SECONDS:-86400}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+      BACKUP_POLL_SECONDS: ${BACKUP_POLL_SECONDS:-300}
+    volumes:
+      - reklaio_uploads:/uploads:ro
+      - reklaio_backups:/backups
+    networks:
+      - reklaio
+
 volumes:
   reklaio_postgres_data:
   reklaio_uploads:
+  reklaio_backups:
 
 networks:
   caddy:
