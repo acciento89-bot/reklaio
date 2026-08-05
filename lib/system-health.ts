@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { isAiConfigured, getAiModel } from "@/lib/ai";
+import { getAiModel, isAiConfigured } from "@/lib/ai";
 import { getStripeDiagnostics } from "@/lib/billing";
 import { query } from "@/lib/db";
 import { isMailConfigured } from "@/lib/mail";
@@ -10,6 +10,14 @@ export type HealthCheck = {
   label: string;
   status: "ok" | "warning" | "critical";
   detail: string;
+};
+
+type BackupHealthRow = {
+  status: string;
+  completed_at: string;
+  database_bytes: string | null;
+  uploads_bytes: string | null;
+  error_message: string | null;
 };
 
 export async function getSystemHealthChecks(): Promise<HealthCheck[]> {
@@ -61,19 +69,23 @@ export async function getSystemHealthChecks(): Promise<HealthCheck[]> {
     detail: stripe.error || `${stripe.mode.toUpperCase()} · ${stripe.currency?.toUpperCase() ?? "–"} · ${stripe.interval ?? "kein Intervall"}.`
   });
 
-  const backupResult = await query<{
-    status: string;
-    completed_at: string;
-    database_bytes: string | null;
-    uploads_bytes: string | null;
-    error_message: string | null;
-  }>(
-    `SELECT status, completed_at, database_bytes, uploads_bytes, error_message
-     FROM backup_runs
-     ORDER BY completed_at DESC
-     LIMIT 1`
-  ).catch(() => ({ rows: [] as never[] }));
-  const backup = backupResult.rows[0];
+  let backup: BackupHealthRow | null = null;
+  try {
+    const backupResult = await query<BackupHealthRow>(
+      `SELECT status, completed_at, database_bytes, uploads_bytes, error_message
+       FROM backup_runs
+       ORDER BY completed_at DESC
+       LIMIT 1`
+    );
+    backup = backupResult.rows[0] ?? null;
+  } catch (error) {
+    checks.push({
+      key: "backup-table",
+      label: "Backup-Protokoll",
+      status: "critical",
+      detail: error instanceof Error ? error.message : "Backup-Protokoll nicht erreichbar."
+    });
+  }
 
   if (!backup) {
     checks.push({ key: "backup", label: "Backup", status: "warning", detail: "Noch kein erfolgreich protokolliertes Backup vorhanden." });
@@ -89,11 +101,7 @@ export async function getSystemHealthChecks(): Promise<HealthCheck[]> {
     });
   }
 
-  const secretChecks = [
-    ["SESSION_SECRET", 32],
-    ["CRON_SECRET", 24]
-  ] as const;
-  for (const [name, minimum] of secretChecks) {
+  for (const [name, minimum] of [["SESSION_SECRET", 32], ["CRON_SECRET", 24]] as const) {
     const value = process.env[name] ?? "";
     checks.push({
       key: name.toLowerCase(),
