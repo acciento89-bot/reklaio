@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
+import { getAiQuotaSummary } from "@/lib/ai-quota";
 import { getBillingAccount, getProPriceLabel, isStripeConfigured } from "@/lib/billing";
 import { formatDateTime } from "@/lib/cases";
 
@@ -7,10 +8,13 @@ type PricingPageProps = {
   searchParams: Promise<{ error?: string; checkout?: string }>;
 };
 
+function quotaText(used:number,limit:number,unlimited:boolean){return unlimited?`${used} verwendet · unbegrenzt`:`${used} von ${limit} verwendet`}
+
 export default async function PricingPage({ searchParams }: PricingPageProps) {
   const user = await getCurrentUser();
   const messages = await searchParams;
   const billing = user ? await getBillingAccount(user.id) : null;
+  const quotas = user ? await getAiQuotaSummary(user) : null;
   const stripeReady = isStripeConfigured();
   const isPro = billing?.planCode === "pro";
 
@@ -24,7 +28,7 @@ export default async function PricingPage({ searchParams }: PricingPageProps) {
       <section className="pricing-hero">
         <span className="eyebrow">Tarife</span>
         <h1>Die Fallakte bleibt einfach. KI wird Pro.</h1>
-        <p>Alle wichtigen Werkzeuge zur Organisation eines Verbraucherfalls bleiben im kostenlosen Tarif. Reklaio Pro erweitert den Dienst um freiwillige KI-Dokumentanalyse und individuelle KI-Schreiben.</p>
+        <p>Alle wichtigen Werkzeuge zur Organisation eines Verbraucherfalls bleiben kostenlos. Reklaio Pro erweitert den Dienst um freiwillige KI-Dokumentanalyse und individuelle KI-Schreiben mit transparenten Monatskontingenten.</p>
       </section>
 
       {messages.checkout === "success" ? <div className="notice-card pricing-note" role="status"><strong>Zahlung abgeschlossen.</strong><span>Stripe übermittelt den Abostatus gerade an Reklaio. Lade die Seite in wenigen Sekunden erneut, falls Pro noch nicht angezeigt wird.</span></div> : null}
@@ -57,16 +61,16 @@ export default async function PricingPage({ searchParams }: PricingPageProps) {
           <div className="pricing-price">{getProPriceLabel()}</div>
           <ul>
             <li>Alle Funktionen aus Reklaio Free</li>
-            <li>KI-Analyse von PDF- und Bilddokumenten</li>
+            <li>Monatliches Kontingent für KI-Dokumentanalysen</li>
+            <li>Monatliches Kontingent für individuelle KI-Schreiben</li>
             <li>Erkannte Werte einzeln prüfen und übernehmen</li>
-            <li>Individuelle Mahn- und Aufforderungsentwürfe</li>
             <li>KI-Protokoll und separate Löschung</li>
             <li>Neue Premium-Funktionen während der Weiterentwicklung</li>
           </ul>
 
           {isPro ? (
-            billing?.subscriptionStatus === "beta" ? (
-              <Link className="button button-primary" href="/dashboard">Beta-Pro aktiv</Link>
+            billing?.subscriptionStatus === "beta" || billing?.subscriptionStatus === "manual" ? (
+              <Link className="button button-primary" href="/dashboard">Pro aktiv</Link>
             ) : billing?.stripeCustomerId ? (
               <form action="/api/billing/portal" method="post"><button className="button button-primary" type="submit">Abo verwalten</button></form>
             ) : (
@@ -75,7 +79,7 @@ export default async function PricingPage({ searchParams }: PricingPageProps) {
           ) : !user ? (
             <Link className="button button-primary" href="/registrieren">Konto erstellen</Link>
           ) : stripeReady ? (
-            <form action="/api/billing/checkout" method="post"><button className="button button-primary" type="submit">Reklaio Pro abonnieren</button></form>
+            <Link className="button button-primary" href="/preise/checkout">Pro verbindlich bestellen</Link>
           ) : (
             <span className="button button-secondary" aria-disabled="true">Checkout wird eingerichtet</span>
           )}
@@ -88,6 +92,7 @@ export default async function PricingPage({ searchParams }: PricingPageProps) {
           {billing.subscriptionStatus ? ` · ${billing.subscriptionStatus}` : ""}
           {billing.currentPeriodEnd ? ` · Zeitraum bis ${formatDateTime(billing.currentPeriodEnd)}` : ""}
           {billing.cancelAtPeriodEnd ? " · Kündigung zum Periodenende vorgemerkt" : ""}
+          {quotas && billing.planCode === "pro" ? <><br/>Dokumentanalysen: {quotaText(quotas.documentAnalysis.used,quotas.documentAnalysis.limit,quotas.documentAnalysis.unlimited)} · KI-Schreiben: {quotaText(quotas.letterDraft.used,quotas.letterDraft.limit,quotas.letterDraft.unlimited)}</> : null}
         </div>
       ) : (
         <div className="pricing-note">Die Abrechnung erfolgt über eine von Stripe gehostete Checkout-Seite. Zahlungsdaten werden nicht in Reklaio gespeichert.</div>
