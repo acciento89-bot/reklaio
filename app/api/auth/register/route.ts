@@ -58,6 +58,7 @@ export async function POST(request: Request) {
     const userId = result.rows[0].id;
     await createSession(userId);
     const url = publicUrl("/onboarding");
+    url.searchParams.set("registered", "1");
 
     if (isMailConfigured()) {
       try {
