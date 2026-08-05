@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CookieSettingsButton } from "@/components/cookie-settings-button";
 
 export function GlobalLegalLinks() {
   return (
@@ -7,6 +8,7 @@ export function GlobalLegalLinks() {
       <Link href="/preise">Preise</Link>
       <Link href="/impressum">Impressum</Link>
       <Link href="/datenschutz">Datenschutz</Link>
+      <CookieSettingsButton />
       <Link href="/agb">AGB</Link>
       <Link href="/widerruf">Widerruf</Link>
       <Link href="/hilfe">Hilfe</Link>

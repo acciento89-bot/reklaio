@@ -1,7 +1,7 @@
 import { legalAddressLines, legalOperator } from "@/lib/legal";
 
 export const AGB_VERSION = "2026-08-05-pro-v1";
-export const PRIVACY_VERSION = "2026-08-05";
+export const PRIVACY_VERSION = "2026-08-05-ads-v1";
 export const WITHDRAWAL_VERSION = "2026-08-05-v1";
 
 export function getPaidContractSummary() {
