@@ -8,6 +8,7 @@ type NavigationState = {
   authenticated: boolean;
   onboardingOpen?: boolean;
   planCode?: "free" | "pro";
+  admin?: boolean;
 };
 
 export function GlobalAppNavigation() {
@@ -16,19 +17,10 @@ export function GlobalAppNavigation() {
 
   useEffect(() => {
     let cancelled = false;
-
     fetch("/api/navigation-state", { credentials: "same-origin", cache: "no-store" })
-      .then(async (response) => {
-        if (!response.ok) return { authenticated: false } as NavigationState;
-        return response.json() as Promise<NavigationState>;
-      })
-      .then((value) => {
-        if (!cancelled) setState(value);
-      })
-      .catch(() => {
-        if (!cancelled) setState({ authenticated: false });
-      });
-
+      .then(async (response) => response.ok ? response.json() as Promise<NavigationState> : { authenticated: false } as NavigationState)
+      .then((value) => { if (!cancelled) setState(value); })
+      .catch(() => { if (!cancelled) setState({ authenticated: false }); });
     return () => { cancelled = true; };
   }, [pathname]);
 
@@ -37,15 +29,10 @@ export function GlobalAppNavigation() {
   return (
     <nav className="global-app-navigation" aria-label="Schnellnavigation">
       <Link className={pathname === "/dashboard" ? "active" : undefined} href="/dashboard">Fälle</Link>
-      {state.onboardingOpen ? (
-        <Link className={pathname === "/onboarding" ? "active onboarding-open" : "onboarding-open"} href="/onboarding">
-          Onboarding
-        </Link>
-      ) : null}
+      {state.onboardingOpen ? <Link className={pathname === "/onboarding" ? "active onboarding-open" : "onboarding-open"} href="/onboarding">Onboarding</Link> : null}
       <Link className={pathname === "/hilfe" ? "active" : undefined} href="/hilfe">Hilfe</Link>
-      <Link className={pathname === "/preise" ? "active" : undefined} href="/preise">
-        {state.planCode === "pro" ? "Pro" : "Upgrade"}
-      </Link>
+      <Link className={pathname.startsWith("/preise") ? "active" : undefined} href="/preise">{state.planCode === "pro" ? "Pro" : "Upgrade"}</Link>
+      {state.admin ? <Link className={pathname.startsWith("/admin") ? "active admin-link" : "admin-link"} href="/admin">Admin</Link> : null}
       <Link className={pathname === "/einstellungen" ? "active" : undefined} href="/einstellungen">Konto</Link>
     </nav>
   );
