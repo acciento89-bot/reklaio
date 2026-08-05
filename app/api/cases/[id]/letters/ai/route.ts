@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { generateLetterDraft, isAiConfigured } from "@/lib/ai";
+import { generateLetterDraft, getAiModel, isAiConfigured } from "@/lib/ai";
+import { AiQuotaError, failAiUsage, reserveAiUsage } from "@/lib/ai-quota";
 import { getCurrentUser } from "@/lib/auth";
-import { hasProAccess } from "@/lib/billing";
 import { formatCurrency, formatDate } from "@/lib/cases";
 import { getCaseTypeByValue } from "@/lib/case-types";
 import { getDb } from "@/lib/db";
@@ -32,10 +32,6 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const { id: caseId } = await context.params;
   if (!UUID_PATTERN.test(caseId)) return NextResponse.redirect(publicUrl("/dashboard"), 303);
 
-  if (!(await hasProAccess(user.id))) {
-    return errorRedirect(caseId, "Individuelle KI-Schreiben gehören zu Reklaio Pro.");
-  }
-
   const formData = await request.formData();
   const parsed = schema.safeParse({
     kind: formData.get("kind"),
@@ -52,6 +48,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   }
 
   const client = await getDb().connect();
+  let reservationId: string | null = null;
 
   try {
     const caseResult = await client.query<{
@@ -99,6 +96,22 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       return facts.join("; ");
     });
     const consentAt = new Date();
+
+    reservationId = await reserveAiUsage({
+      user,
+      operation: "letter_draft",
+      caseId,
+      modelName: getAiModel(),
+      consentAt,
+      inputBytes: Buffer.byteLength(JSON.stringify({
+        caseTitle: currentCase.title,
+        summary: currentCase.summary,
+        desiredOutcome: parsed.data.desiredOutcome,
+        providerResponses
+      }), "utf8"),
+      metadata: { kind: parsed.data.kind }
+    });
+
     const result = await generateLetterDraft({
       kindLabel: getLetterKindLabel(parsed.data.kind),
       caseTitle: currentCase.title,
@@ -128,18 +141,14 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const letterId = inserted.rows[0]!.id;
 
     await client.query(
-      `INSERT INTO ai_usage_events (
-         user_id, case_id, operation, provider, model_name,
-         response_id, consent_at, metadata_json
-       ) VALUES ($1, $2, 'letter_draft', 'openai', $3, $4, $5, $6::jsonb)`,
+      `UPDATE ai_usage_events
+       SET status = 'completed', response_id = $2, completed_at = NOW(),
+           metadata_json = metadata_json || $3::jsonb
+       WHERE id = $1`,
       [
-        user.id,
-        caseId,
-        result.model,
+        reservationId,
         result.responseId,
-        consentAt,
         JSON.stringify({
-          kind: parsed.data.kind,
           desiredOutcome: parsed.data.desiredOutcome,
           missingInformation: result.data.missingInformation,
           usedFacts: result.data.usedFacts
@@ -159,7 +168,13 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     return NextResponse.redirect(url, 303);
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
+    if (reservationId) await failAiUsage(reservationId, error instanceof Error ? error.message : "UNKNOWN").catch(() => undefined);
     console.error("AI letter generation failed", error);
+
+    if (error instanceof AiQuotaError) {
+      return errorRedirect(caseId, error.message);
+    }
+
     return errorRedirect(caseId, "Der KI-Entwurf konnte gerade nicht erstellt werden.");
   } finally {
     client.release();

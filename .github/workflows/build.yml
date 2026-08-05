@@ -31,5 +31,8 @@ jobs:
       - name: Build migration image
         run: docker build --target migrator -t reklaio-migrator-ci .
 
+      - name: Build backup image
+        run: docker build --target backup -t reklaio-backup-ci .
+
       - name: Build production image
         run: docker build --target runner -t reklaio-runner-ci .

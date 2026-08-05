@@ -1,8 +1,8 @@
 import fs from "node:fs/promises";
 import { NextResponse } from "next/server";
-import { analyzeDocument, isAiConfigured } from "@/lib/ai";
+import { analyzeDocument, getAiModel, isAiConfigured } from "@/lib/ai";
+import { AiQuotaError, failAiUsage, reserveAiUsage } from "@/lib/ai-quota";
 import { getCurrentUser } from "@/lib/auth";
-import { hasProAccess } from "@/lib/billing";
 import { getDb } from "@/lib/db";
 import { resolveStoragePath } from "@/lib/documents";
 import { publicUrl } from "@/lib/public-url";
@@ -26,10 +26,6 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     return NextResponse.redirect(publicUrl("/dashboard"), 303);
   }
 
-  if (!(await hasProAccess(user.id))) {
-    return redirectToAnalysis(caseId, documentId, "error", "Die KI-Dokumentenanalyse gehört zu Reklaio Pro.");
-  }
-
   const formData = await request.formData();
   if (formData.get("aiConsent") !== "on") {
     return redirectToAnalysis(caseId, documentId, "error", "Bitte bestätige die freiwillige KI-Verarbeitung für dieses Dokument.");
@@ -40,6 +36,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   }
 
   const client = await getDb().connect();
+  let reservationId: string | null = null;
 
   try {
     const documentResult = await client.query<{
@@ -64,6 +61,18 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
     const bytes = new Uint8Array(await fs.readFile(resolveStoragePath(document.storage_key)));
     const consentAt = new Date();
+
+    reservationId = await reserveAiUsage({
+      user,
+      operation: "document_analysis",
+      caseId,
+      documentId,
+      modelName: getAiModel(),
+      consentAt,
+      inputBytes: bytes.byteLength,
+      metadata: { fileName: document.original_name, mimeType: document.mime_type }
+    });
+
     const result = await analyzeDocument({
       bytes,
       mimeType: document.mime_type,
@@ -79,11 +88,11 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       [documentId, caseId, user.id, result.model, result.responseId, consentAt, JSON.stringify(result.data)]
     );
     await client.query(
-      `INSERT INTO ai_usage_events (
-         user_id, case_id, document_id, operation, provider,
-         model_name, response_id, consent_at, metadata_json
-       ) VALUES ($1, $2, $3, 'document_analysis', 'openai', $4, $5, $6, $7::jsonb)`,
-      [user.id, caseId, documentId, result.model, result.responseId, consentAt, JSON.stringify({ fileName: document.original_name, mimeType: document.mime_type })]
+      `UPDATE ai_usage_events
+       SET status = 'completed', response_id = $2, completed_at = NOW(),
+           metadata_json = metadata_json || $3::jsonb
+       WHERE id = $1`,
+      [reservationId, result.responseId, JSON.stringify({ overallConfidence: result.data.overallConfidence })]
     );
     await client.query(
       `INSERT INTO case_events (case_id, event_type, title, details, occurred_at)
@@ -96,7 +105,13 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     return redirectToAnalysis(caseId, documentId, "notice", "Analyse erstellt. Bitte prüfe jeden Wert, bevor du etwas übernimmst.");
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
+    if (reservationId) await failAiUsage(reservationId, error instanceof Error ? error.message : "UNKNOWN").catch(() => undefined);
     console.error("Document AI analysis failed", error);
+
+    if (error instanceof AiQuotaError) {
+      return redirectToAnalysis(caseId, documentId, "error", error.message);
+    }
+
     const message = error instanceof Error && error.message === "AI_FILE_TYPE_UNSUPPORTED"
       ? "Dieser Dateityp wird von der KI-Analyse nicht unterstützt."
       : "Die KI-Analyse konnte gerade nicht abgeschlossen werden.";

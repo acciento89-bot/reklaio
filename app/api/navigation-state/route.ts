@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isAdminUser } from "@/lib/admin";
 import { getCurrentUser } from "@/lib/auth";
 import { getBillingAccount } from "@/lib/billing";
 import { query } from "@/lib/db";
@@ -26,7 +27,8 @@ export async function GET() {
   return NextResponse.json({
     authenticated: true,
     onboardingOpen: !onboardingResult.rows[0]?.onboarding_completed_at,
-    planCode: billing.planCode
+    planCode: billing.planCode,
+    admin: isAdminUser(user)
   }, {
     headers: { "Cache-Control": "private, no-store" }
   });

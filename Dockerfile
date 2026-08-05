@@ -9,6 +9,12 @@ COPY db ./db
 COPY scripts ./scripts
 CMD ["node", "scripts/migrate.mjs"]
 
+FROM postgres:17-bookworm AS backup
+WORKDIR /opt/reklaio
+COPY scripts/backup-loop.sh ./backup-loop.sh
+RUN chmod +x ./backup-loop.sh
+CMD ["/opt/reklaio/backup-loop.sh"]
+
 FROM node:22-bookworm-slim AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1

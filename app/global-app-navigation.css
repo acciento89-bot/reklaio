@@ -34,6 +34,11 @@
   background: rgba(73,151,137,.18);
 }
 
+.global-app-navigation a.admin-link {
+  color: #f1e7ff;
+  background: rgba(126,92,190,.16);
+}
+
 @media (max-width: 1040px) {
   body { padding-bottom: 72px; }
 
@@ -53,7 +58,7 @@
 }
 
 @media (max-width: 520px) {
-  .global-app-navigation a { font-size: .69rem; }
+  .global-app-navigation a { font-size: .67rem; }
 }
 
 @media print {
