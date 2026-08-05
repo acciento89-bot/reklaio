@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isAdminUser, recordAdminAudit } from "@/lib/admin";
+import { isAdminUser } from "@/lib/admin";
 import { getCurrentUser } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { publicUrl } from "@/lib/public-url";
