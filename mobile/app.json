@@ -2,6 +2,7 @@
   "expo": {
     "name": "Reklaio",
     "slug": "reklaio",
+    "owner": "Kamilunavo",
     "version": "0.1.0",
     "orientation": "portrait",
     "scheme": "reklaio",
@@ -48,7 +49,10 @@
       "typedRoutes": false
     },
     "extra": {
-      "apiUrl": "https://reklaio.de"
+      "apiUrl": "https://reklaio.de",
+      "eas": {
+        "projectId": "0ebb2297-f882-4211-8367-638c782aa0de"
+      }
     }
   }
 }
