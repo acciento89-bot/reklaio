@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { ApiError, caseRequest, type MobileCaseDetail } from "@/src/api";
 import { useAuth } from "@/src/auth-context";
+import { DocumentUploadPanel } from "@/src/document-upload-panel";
 import { colors, radius, spacing } from "@/src/theme";
 
 const statusLabels: Record<string, string> = {
@@ -239,6 +240,14 @@ export default function CaseDetailScreen() {
           <Text style={styles.counter}>{currentCase.documents.length}</Text>
         </View>
 
+        {token ? (
+          <DocumentUploadPanel
+            caseId={currentCase.id}
+            token={token}
+            onUploaded={() => load(true)}
+          />
+        ) : null}
+
         {currentCase.documents.length === 0 ? (
           <Text style={styles.muted}>Noch keine Dokumente hochgeladen.</Text>
         ) : currentCase.documents.map((document) => (
@@ -252,8 +261,6 @@ export default function CaseDetailScreen() {
             </View>
           </View>
         ))}
-
-        <Text style={styles.nextStepHint}>Kamera und nativer Dokumentupload folgen im nächsten Bauabschnitt.</Text>
       </View>
 
       <View style={styles.section}>
@@ -321,7 +328,6 @@ const styles = StyleSheet.create({
   done: { color: colors.success, fontSize: 12, fontWeight: "800" },
   documentIcon: { width: 38, height: 38, alignItems: "center", justifyContent: "center", borderRadius: radius.sm, backgroundColor: colors.panelSoft },
   documentIconText: { color: colors.accentSoft, fontSize: 20 },
-  nextStepHint: { color: colors.muted, fontSize: 12, lineHeight: 18, marginTop: spacing.md },
   timelineItem: { flexDirection: "row", gap: spacing.md, paddingVertical: spacing.md, borderTopWidth: 1, borderTopColor: colors.line },
   timelineDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.accentSoft, marginTop: 5 },
   timelineCopy: { flex: 1 },
