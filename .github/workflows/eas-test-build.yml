@@ -1,0 +1,65 @@
+name: Reklaio EAS Test Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Zielplattform für den internen Testbuild
+        required: true
+        default: android
+        type: choice
+        options:
+          - android
+          - ios
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reklaio-eas-test-${{ inputs.platform }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: EAS ${{ inputs.platform }} preview build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Check Expo token
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "Repository secret EXPO_TOKEN fehlt."
+            exit 1
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Validate Expo project link
+        run: npm run config:check
+
+      - name: Typecheck mobile app
+        run: npm run typecheck
+
+      - name: Trigger EAS preview build
+        run: eas build --platform "${{ inputs.platform }}" --profile preview --non-interactive --no-wait
