@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { ApiError, deadlinesRequest, type MobileDeadline } from "@/src/api";
 import { useAuth } from "@/src/auth-context";
+import { syncDeadlineReminders } from "@/src/deadline-reminders";
+import { useSecurity } from "@/src/security-context";
 import { colors, radius, spacing } from "@/src/theme";
 
 const stateLabels: Record<MobileDeadline["state"], string> = {
@@ -30,6 +32,7 @@ function formatDate(value: string) {
 
 export default function DeadlinesScreen() {
   const { token, logout } = useAuth();
+  const { remindersEnabled } = useSecurity();
   const [deadlines, setDeadlines] = useState<MobileDeadline[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -43,6 +46,9 @@ export default function DeadlinesScreen() {
     try {
       const response = await deadlinesRequest(token);
       setDeadlines(response.deadlines);
+      if (remindersEnabled) {
+        await syncDeadlineReminders(response.deadlines).catch(() => undefined);
+      }
     } catch (cause) {
       if (cause instanceof ApiError && cause.status === 401) {
         await logout();
@@ -53,7 +59,7 @@ export default function DeadlinesScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [token, logout]);
+  }, [token, logout, remindersEnabled]);
 
   useFocusEffect(
     useCallback(() => {
@@ -93,6 +99,17 @@ export default function DeadlinesScreen() {
           <Text style={styles.eyebrow}>Termine im Blick</Text>
           <Text style={styles.heading}>Fristen</Text>
           <Text style={styles.intro}>Offene und erledigte Fristen aus allen deinen Fallakten.</Text>
+
+          <View style={[styles.reminderBox, remindersEnabled && styles.reminderBoxActive]}>
+            <Text style={styles.reminderTitle}>
+              {remindersEnabled ? "Fristerinnerungen aktiv" : "Fristerinnerungen ausgeschaltet"}
+            </Text>
+            <Text style={styles.reminderCopy}>
+              {remindersEnabled
+                ? "Dieses Gerät erinnert dich am Vortag und am Fälligkeitstag um 09:00 Uhr."
+                : "Du kannst lokale Erinnerungen unter Konto & Sicherheit aktivieren."}
+            </Text>
+          </View>
 
           <View style={styles.stats}>
             <View style={[styles.stat, styles.statDanger]}>
@@ -154,7 +171,11 @@ const styles = StyleSheet.create({
   heading: { color: colors.text, fontSize: 30, fontWeight: "900", marginTop: spacing.xs },
   intro: { color: colors.muted, lineHeight: 22, marginTop: spacing.sm },
   muted: { color: colors.muted, lineHeight: 21 },
-  stats: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.lg },
+  reminderBox: { padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.panel, borderWidth: 1, borderColor: colors.line, marginTop: spacing.lg },
+  reminderBoxActive: { borderColor: "rgba(117,189,169,0.55)" },
+  reminderTitle: { color: colors.text, fontWeight: "800" },
+  reminderCopy: { color: colors.muted, fontSize: 13, lineHeight: 19, marginTop: spacing.xs },
+  stats: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.md },
   stat: { flex: 1, padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.panel, borderWidth: 1, borderColor: colors.line },
   statDanger: { borderColor: "rgba(226,125,131,0.45)" },
   statLabel: { color: colors.muted, fontSize: 12 },
