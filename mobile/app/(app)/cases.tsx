@@ -174,11 +174,11 @@ const styles = StyleSheet.create({
   card: { padding: spacing.md, marginBottom: spacing.md, borderRadius: radius.md, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.panel },
   cardTop: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: spacing.md },
   cardTitleWrap: { flex: 1 },
-  cardTitle: { color: colors.text, fontSize: 19, fontWeight: "850" },
+  cardTitle: { color: colors.text, fontSize: 19, fontWeight: "800" },
   company: { color: colors.muted, marginTop: spacing.xs },
   status: { color: colors.accentSoft, fontSize: 12, fontWeight: "800", paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: 999, backgroundColor: "rgba(143,199,187,0.1)", overflow: "hidden" },
   metaGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginTop: spacing.lg },
   metaItem: { minWidth: "30%", flexGrow: 1, padding: spacing.sm, borderRadius: radius.sm, backgroundColor: colors.panelSoft },
   metaLabel: { color: colors.muted, fontSize: 12 },
-  metaValue: { color: colors.text, fontWeight: "750", marginTop: 4 }
+  metaValue: { color: colors.text, fontWeight: "700", marginTop: 4 }
 });
