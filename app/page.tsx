@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { caseTypes } from "@/lib/case-types";
 import { getCurrentUser } from "@/lib/auth";
+import { seoGuides } from "@/lib/seo-guides";
 import { CaseTypeIcon } from "@/components/case-type-icon";
 import { HomeSeoJsonLd } from "@/components/home-seo-json-ld";
 
@@ -35,6 +36,7 @@ export default async function HomePage() {
         <nav className="header-actions" aria-label="Hauptnavigation">
           <Link className="text-link" href="#fallarten">Fallarten</Link>
           <Link className="text-link" href="#so-funktionierts">Ablauf</Link>
+          <Link className="text-link" href="/ratgeber">Ratgeber</Link>
           <Link className="text-link" href="/preise">Preise</Link>
           <Link className="text-link" href="/kontakt">Kontakt</Link>
           {user ? (
@@ -110,6 +112,26 @@ export default async function HomePage() {
               </ul>
               <Link href={user ? `/neuer-fall?typ=${item.slug}` : "/registrieren"}>Fallart auswählen <span>→</span></Link>
             </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="container section" id="ratgeber">
+        <div className="section-heading professional-section-heading">
+          <div>
+            <span className="eyebrow">Kostenlose Ratgeber</span>
+            <h2>Den nächsten Schritt sachlich vorbereiten</h2>
+          </div>
+          <p>Checklisten, neutrale Formulierungshilfen und verständliche Grundlagen für typische Reklamationssituationen.</p>
+        </div>
+        <div className="home-guide-grid">
+          {seoGuides.map((guide) => (
+            <Link className="guide-card-link home-guide-card" href={`/${guide.slug}`} key={guide.slug}>
+              <span>{guide.eyebrow}</span>
+              <strong>{guide.title}</strong>
+              <p>{guide.metaDescription}</p>
+              <small>Ratgeber öffnen →</small>
+            </Link>
           ))}
         </div>
       </section>
