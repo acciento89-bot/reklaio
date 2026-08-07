@@ -14,6 +14,22 @@ Native iOS- und Android-App auf Basis von Expo und React Native. Die App verwend
 - optionale biometrische App-Sperre mit Face ID, Fingerabdruck oder Gerätecode
 - EAS-Buildprofile für Entwicklung, interne Vorschau und Produktion
 
+## Expo-Projekt
+
+Die App ist fest mit folgendem EAS-Projekt verbunden:
+
+```text
+Owner: Kamilunavo
+Slug: reklaio
+Project ID: 0ebb2297-f882-4211-8367-638c782aa0de
+```
+
+Die Store-Kennungen lauten für iOS und Android:
+
+```text
+de.kamilunavo.reklaio
+```
+
 ## Lokal starten
 
 ```bash
@@ -27,41 +43,36 @@ npm run start
 
 Die API-Adresse wird über `EXPO_PUBLIC_API_URL` gesetzt. Standard ist `https://reklaio.de`.
 
-Face ID und Remote-Push-Nachrichten benötigen einen nativen Development- oder Preview-Build. Die in Reklaio verwendeten Fristerinnerungen werden lokal auf dem Gerät geplant und übertragen keine Fallinhalte an einen externen Push-Dienst.
+Face ID benötigt einen nativen Development- oder Preview-Build. Die Fristerinnerungen werden lokal auf dem Gerät geplant und übertragen keine Fallinhalte an einen externen Push-Dienst.
 
-## Kennungen
+## Erster installierbarer Testbuild über GitHub
 
-Die vorläufigen Store-Kennungen lauten für iOS und Android:
+Einmalig im Expo-Konto unter den Access-Token-Einstellungen einen persönlichen Token erzeugen. Den Token niemals in Code, Issues oder Chats einfügen.
+
+Danach im privaten GitHub-Repository unter `Settings → Secrets and variables → Actions` ein Repository Secret anlegen:
 
 ```text
-de.kamilunavo.reklaio
+Name: EXPO_TOKEN
+Value: der erzeugte Expo-Token
 ```
 
-Vor der ersten Store-Registrierung müssen diese Kennungen endgültig bestätigt werden, da sie später nicht beliebig geändert werden können.
+Anschließend in GitHub:
 
-## Erster installierbarer Testbuild
+1. `Actions` öffnen
+2. `Reklaio EAS Test Build` auswählen
+3. `Run workflow` anklicken
+4. zunächst `android` auswählen
 
-Zuerst einmalig bei Expo anmelden und das Projekt verknüpfen:
+Der Workflow prüft Expo-Konfiguration und TypeScript und stößt anschließend den EAS-Preview-Build an. Der Android-Preview-Build wird als direkt installierbare APK erzeugt. Der Installationslink erscheint im EAS-Dashboard und im Build-Log.
 
-```bash
-cd mobile
-npx eas-cli login
-npx eas-cli init
-```
-
-Danach kann ein direkt installierbares Android-APK erzeugt werden:
+Alternativ lokal:
 
 ```bash
 npm run build:android:test
-```
-
-Für einen internen iPhone-Testbuild:
-
-```bash
 npm run build:ios:test
 ```
 
-Der Android-Preview-Build wird als APK erzeugt. Der iOS-Testbuild benötigt ein Apple-Developer-Konto und registrierte Testgeräte beziehungsweise TestFlight-Konfiguration.
+Der iOS-Testbuild benötigt ein Apple-Developer-Konto und die Einrichtung der Apple-Zugangsdaten beziehungsweise registrierter Testgeräte.
 
 ## Noch offen vor Store-Einreichung
 
