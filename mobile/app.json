@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "Reklaio",
+    "slug": "reklaio",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "reklaio",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "de.kamilunavo.reklaio"
+    },
+    "android": {
+      "package": "de.kamilunavo.reklaio",
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true,
+          "faceIDPermission": "Erlaube Reklaio, Face ID zum Schutz deiner Fallakte zu verwenden."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": false
+    },
+    "extra": {
+      "apiUrl": "https://reklaio.de"
+    }
+  }
+}
