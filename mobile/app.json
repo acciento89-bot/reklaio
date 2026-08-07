@@ -9,16 +9,25 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "de.kamilunavo.reklaio"
+      "bundleIdentifier": "de.kamilunavo.reklaio",
+      "buildNumber": "1"
     },
     "android": {
       "package": "de.kamilunavo.reklaio",
+      "versionCode": 1,
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "plugins": [
       "expo-router",
       "expo-document-picker",
+      "expo-notifications",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Erlaube Reklaio, Face ID zum Schutz deiner persönlichen Fallakten zu verwenden."
+        }
+      ],
       [
         "expo-image-picker",
         {
