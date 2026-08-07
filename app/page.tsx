@@ -1,14 +1,32 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { caseTypes } from "@/lib/case-types";
 import { getCurrentUser } from "@/lib/auth";
 import { CaseTypeIcon } from "@/components/case-type-icon";
+import { HomeSeoJsonLd } from "@/components/home-seo-json-ld";
+
+export const metadata: Metadata = {
+  title: "Reklamationen organisieren, Fristen und Belege im Blick",
+  description:
+    "Reklaio hilft dir, Reklamationen, Beschwerden, Rückzahlungen und Kündigungen mit Belegen, Fristen, Chronik und eigenen Schreiben übersichtlich zu organisieren.",
+  alternates: {
+    canonical: "/"
+  },
+  openGraph: {
+    url: "/",
+    title: "Reklaio – Reklamationen und Verbraucherfälle organisieren",
+    description:
+      "Belege, Kommunikation, Fristen und eigene Schreiben in einer nachvollziehbaren digitalen Fallakte bündeln."
+  }
+};
 
 export default async function HomePage() {
   const user = await getCurrentUser();
 
   return (
     <main className="marketing-page">
+      <HomeSeoJsonLd />
       <header className="site-header container">
         <Link className="brand" href="/" aria-label="Reklaio Startseite">
           <span className="brand-mark">R</span>
