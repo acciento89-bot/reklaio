@@ -1,3 +1,4 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { Redirect, Tabs } from "expo-router";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { useAuth } from "@/src/auth-context";
@@ -29,8 +30,8 @@ export default function AppTabsLayout() {
         tabBarStyle: {
           backgroundColor: colors.panelSoft,
           borderTopColor: colors.line,
-          height: 70,
-          paddingTop: 8,
+          height: 72,
+          paddingTop: 7,
           paddingBottom: 10
         },
         tabBarShowLabel: true,
@@ -42,6 +43,9 @@ export default function AppTabsLayout() {
         name="cases"
         options={{
           title: "Meine Fälle",
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? "folder-open" : "folder-open-outline"} size={size} color={color} />
+          ),
           tabBarLabel: ({ focused }) => <TabLabel focused={focused} label="Fälle" />
         }}
       />
@@ -49,6 +53,9 @@ export default function AppTabsLayout() {
         name="deadlines"
         options={{
           title: "Fristen",
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? "calendar" : "calendar-outline"} size={size} color={color} />
+          ),
           tabBarLabel: ({ focused }) => <TabLabel focused={focused} label="Fristen" />
         }}
       />
@@ -56,6 +63,9 @@ export default function AppTabsLayout() {
         name="profile"
         options={{
           title: "Konto",
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? "person-circle" : "person-circle-outline"} size={size} color={color} />
+          ),
           tabBarLabel: ({ focused }) => <TabLabel focused={focused} label="Konto" />
         }}
       />
@@ -70,6 +80,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: colors.background
   },
-  tabLabel: { color: colors.muted, fontSize: 13, fontWeight: "700" },
+  tabLabel: { color: colors.muted, fontSize: 12, fontWeight: "700" },
   tabLabelActive: { color: colors.accentSoft }
 });
