@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     borderColor: colors.line
   },
   eyebrow: { color: colors.accentSoft, fontSize: 12, fontWeight: "800", letterSpacing: 1.2, textTransform: "uppercase" },
-  title: { color: colors.text, fontSize: 25, fontWeight: "850", marginTop: spacing.sm },
+  title: { color: colors.text, fontSize: 25, fontWeight: "800", marginTop: spacing.sm },
   copy: { color: colors.muted, lineHeight: 22, marginTop: spacing.sm, marginBottom: spacing.lg },
   label: { color: colors.text, fontSize: 14, fontWeight: "700", marginBottom: spacing.xs, marginTop: spacing.sm },
   input: {
