@@ -14,6 +14,7 @@
     "build:ios:test": "npx eas-cli build --platform ios --profile preview"
   },
   "dependencies": {
+    "@expo/vector-icons": "15.1.1",
     "expo": "~57.0.8",
     "expo-constants": "~57.0.7",
     "expo-document-picker": "~57.0.1",
