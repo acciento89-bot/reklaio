@@ -22,6 +22,7 @@ import "./global-app-navigation.css";
 import "./admin.css";
 import "./checkout.css";
 import "./consent.css";
+import "./ratgeber.css";
 import { GlobalAppNavigation } from "@/components/global-app-navigation";
 import { GlobalLegalLinks } from "@/components/global-legal-links";
 import { GoogleConsentManager } from "@/components/google-consent-manager";
