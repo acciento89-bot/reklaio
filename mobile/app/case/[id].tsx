@@ -12,6 +12,8 @@ import {
 } from "react-native";
 import { ApiError, caseRequest, type MobileCaseDetail } from "@/src/api";
 import { useAuth } from "@/src/auth-context";
+import { CaseActionsPanel, CompleteDeadlineButton } from "@/src/case-actions-panel";
+import { DocumentActions } from "@/src/document-actions";
 import { DocumentUploadPanel } from "@/src/document-upload-panel";
 import { colors, radius, spacing } from "@/src/theme";
 
@@ -141,6 +143,7 @@ export default function CaseDetailScreen() {
   return (
     <ScrollView
       contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="handled"
       refreshControl={
         <RefreshControl
           onRefresh={() => void load(true)}
@@ -204,6 +207,16 @@ export default function CaseDetailScreen() {
         </View>
       </View>
 
+      {token ? (
+        <CaseActionsPanel
+          caseId={currentCase.id}
+          token={token}
+          currentStatus={currentCase.status}
+          onChanged={() => load(true)}
+          onUnauthorized={logout}
+        />
+      ) : null}
+
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <View>
@@ -224,9 +237,17 @@ export default function CaseDetailScreen() {
               <Text style={styles.listItemTitle}>{deadline.title}</Text>
               <Text style={styles.listItemMeta}>Fällig: {formatDate(deadline.dueAt)}</Text>
             </View>
-            <Text style={deadline.completedAt ? styles.done : styles.open}>
-              {deadline.completedAt ? "Erledigt" : "Offen"}
-            </Text>
+            {deadline.completedAt ? (
+              <Text style={styles.done}>Erledigt</Text>
+            ) : token ? (
+              <CompleteDeadlineButton
+                caseId={currentCase.id}
+                deadlineId={deadline.id}
+                token={token}
+                onChanged={() => load(true)}
+                onUnauthorized={logout}
+              />
+            ) : null}
           </View>
         ))}
       </View>
@@ -251,14 +272,25 @@ export default function CaseDetailScreen() {
         {currentCase.documents.length === 0 ? (
           <Text style={styles.muted}>Noch keine Dokumente hochgeladen.</Text>
         ) : currentCase.documents.map((document) => (
-          <View key={document.id} style={styles.listItem}>
-            <View style={styles.documentIcon}>
-              <Text style={styles.documentIconText}>▤</Text>
+          <View key={document.id} style={styles.documentItem}>
+            <View style={styles.documentRow}>
+              <View style={styles.documentIcon}>
+                <Text style={styles.documentIconText}>▤</Text>
+              </View>
+              <View style={styles.listItemMain}>
+                <Text numberOfLines={2} style={styles.listItemTitle}>{document.originalName}</Text>
+                <Text style={styles.listItemMeta}>{formatFileSize(document.sizeBytes)} · {formatDate(document.createdAt)}</Text>
+              </View>
             </View>
-            <View style={styles.listItemMain}>
-              <Text numberOfLines={2} style={styles.listItemTitle}>{document.originalName}</Text>
-              <Text style={styles.listItemMeta}>{formatFileSize(document.sizeBytes)} · {formatDate(document.createdAt)}</Text>
-            </View>
+            {token ? (
+              <DocumentActions
+                caseId={currentCase.id}
+                document={document}
+                token={token}
+                onChanged={() => load(true)}
+                onUnauthorized={logout}
+              />
+            ) : null}
           </View>
         ))}
       </View>
@@ -324,8 +356,9 @@ const styles = StyleSheet.create({
   listItemMain: { flex: 1 },
   listItemTitle: { color: colors.text, fontWeight: "800", lineHeight: 21 },
   listItemMeta: { color: colors.muted, fontSize: 13, marginTop: 4 },
-  open: { color: colors.warning, fontSize: 12, fontWeight: "800" },
   done: { color: colors.success, fontSize: 12, fontWeight: "800" },
+  documentItem: { paddingVertical: spacing.md, borderTopWidth: 1, borderTopColor: colors.line },
+  documentRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
   documentIcon: { width: 38, height: 38, alignItems: "center", justifyContent: "center", borderRadius: radius.sm, backgroundColor: colors.panelSoft },
   documentIconText: { color: colors.accentSoft, fontSize: 20 },
   timelineItem: { flexDirection: "row", gap: spacing.md, paddingVertical: spacing.md, borderTopWidth: 1, borderTopColor: colors.line },

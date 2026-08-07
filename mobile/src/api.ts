@@ -5,6 +5,27 @@ export type MobileUser = {
   role: "user" | "admin";
 };
 
+export type MobileCaseStatus =
+  | "draft"
+  | "collecting_evidence"
+  | "ready_to_contact"
+  | "waiting_for_reply"
+  | "deadline_expired"
+  | "escalation"
+  | "resolved"
+  | "closed";
+
+export const mobileCaseStatuses: Array<{ value: MobileCaseStatus; label: string }> = [
+  { value: "draft", label: "Entwurf" },
+  { value: "collecting_evidence", label: "Belege sammeln" },
+  { value: "ready_to_contact", label: "Kontakt vorbereiten" },
+  { value: "waiting_for_reply", label: "Antwort ausstehend" },
+  { value: "deadline_expired", label: "Frist abgelaufen" },
+  { value: "escalation", label: "Eskalation prüfen" },
+  { value: "resolved", label: "Gelöst" },
+  { value: "closed", label: "Geschlossen" }
+];
+
 export type MobileCase = {
   id: string;
   type: string;
@@ -212,6 +233,49 @@ export function uploadDocumentRequest(
       token,
       body: formData
     }
+  );
+}
+
+export function documentDownloadUrl(caseId: string, documentId: string) {
+  return `${API_URL}/api/mobile/v1/cases/${encodeURIComponent(caseId)}/documents/${encodeURIComponent(documentId)}`;
+}
+
+export function deleteDocumentRequest(token: string, caseId: string, documentId: string) {
+  return apiRequest<void>(
+    `/api/mobile/v1/cases/${encodeURIComponent(caseId)}/documents/${encodeURIComponent(documentId)}`,
+    { method: "DELETE", token }
+  );
+}
+
+export function updateCaseStatusRequest(token: string, caseId: string, status: MobileCaseStatus) {
+  return apiRequest<{ status: MobileCaseStatus }>(
+    `/api/mobile/v1/cases/${encodeURIComponent(caseId)}/status`,
+    { method: "PATCH", token, body: JSON.stringify({ status }) }
+  );
+}
+
+export function createDeadlineRequest(token: string, caseId: string, title: string, dueDate: string) {
+  return apiRequest<{ deadline: MobileCaseDeadline }>(
+    `/api/mobile/v1/cases/${encodeURIComponent(caseId)}/deadlines`,
+    { method: "POST", token, body: JSON.stringify({ title, dueDate }) }
+  );
+}
+
+export function completeDeadlineRequest(token: string, caseId: string, deadlineId: string) {
+  return apiRequest<{ completedAt: string }>(
+    `/api/mobile/v1/cases/${encodeURIComponent(caseId)}/deadlines/${encodeURIComponent(deadlineId)}/complete`,
+    { method: "PATCH", token }
+  );
+}
+
+export function createEventRequest(
+  token: string,
+  caseId: string,
+  input: { title: string; details: string; occurredAt?: string }
+) {
+  return apiRequest<{ event: MobileCaseEvent }>(
+    `/api/mobile/v1/cases/${encodeURIComponent(caseId)}/events`,
+    { method: "POST", token, body: JSON.stringify({ ...input, occurredAt: input.occurredAt || "" }) }
   );
 }
 
