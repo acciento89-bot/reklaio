@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import {
   ActivityIndicator,
   FlatList,
@@ -42,6 +42,7 @@ function formatAmount(cents: number | null, currency: string) {
 }
 
 export default function CasesScreen() {
+  const router = useRouter();
   const { token, logout } = useAuth();
   const [cases, setCases] = useState<MobileCase[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,7 +100,13 @@ export default function CasesScreen() {
         <View style={styles.header}>
           <Text style={styles.eyebrow}>Arbeitszentrale</Text>
           <Text style={styles.heading}>Deine Fallakten</Text>
-          <Text style={styles.intro}>Alle bestehenden Reklaio-Fälle werden direkt mit der Web-App synchronisiert.</Text>
+          <Text style={styles.intro}>Alle Fälle werden direkt mit der Reklaio-Web-App synchronisiert.</Text>
+          <Pressable
+            onPress={() => router.push("/case/new")}
+            style={({ pressed }) => [styles.createButton, pressed && styles.pressed]}
+          >
+            <Text style={styles.createButtonText}>+ Neue Fallakte</Text>
+          </Pressable>
           {error ? (
             <View style={styles.errorBox}>
               <Text style={styles.errorText}>{error}</Text>
@@ -113,11 +120,21 @@ export default function CasesScreen() {
       ListEmptyComponent={
         <View style={styles.empty}>
           <Text style={styles.emptyTitle}>Noch keine Fallakte</Text>
-          <Text style={styles.muted}>Die native Fallanlage folgt im nächsten Bauabschnitt.</Text>
+          <Text style={styles.muted}>Lege deinen ersten Fall direkt in der App an.</Text>
+          <Pressable
+            onPress={() => router.push("/case/new")}
+            style={({ pressed }) => [styles.emptyButton, pressed && styles.pressed]}
+          >
+            <Text style={styles.emptyButtonText}>Ersten Fall anlegen</Text>
+          </Pressable>
         </View>
       }
       renderItem={({ item }) => (
-        <View style={styles.card}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push(`/case/${item.id}`)}
+          style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+        >
           <View style={styles.cardTop}>
             <View style={styles.cardTitleWrap}>
               <Text style={styles.cardTitle}>{item.title}</Text>
@@ -140,7 +157,9 @@ export default function CasesScreen() {
               <Text style={styles.metaValue}>{item.documentCount}</Text>
             </View>
           </View>
-        </View>
+
+          <Text style={styles.openHint}>Fallakte öffnen →</Text>
+        </Pressable>
       )}
     />
   );
@@ -165,13 +184,19 @@ const styles = StyleSheet.create({
   heading: { color: colors.text, fontSize: 30, fontWeight: "900", marginTop: spacing.xs },
   intro: { color: colors.muted, lineHeight: 22, marginTop: spacing.sm },
   muted: { color: colors.muted, lineHeight: 21 },
+  createButton: { minHeight: 50, alignItems: "center", justifyContent: "center", borderRadius: radius.sm, backgroundColor: colors.accent, marginTop: spacing.lg },
+  createButtonText: { color: colors.white, fontSize: 16, fontWeight: "800" },
+  pressed: { opacity: 0.84 },
   errorBox: { marginTop: spacing.md, padding: spacing.md, borderRadius: radius.md, backgroundColor: "rgba(226,125,131,0.12)", borderWidth: 1, borderColor: "rgba(226,125,131,0.4)" },
   errorText: { color: colors.danger, lineHeight: 21 },
   retryButton: { marginTop: spacing.sm, alignSelf: "flex-start" },
   retryText: { color: colors.text, fontWeight: "800" },
   empty: { padding: spacing.lg, borderRadius: radius.md, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.panel },
   emptyTitle: { color: colors.text, fontSize: 20, fontWeight: "800", marginBottom: spacing.sm },
+  emptyButton: { minHeight: 48, alignItems: "center", justifyContent: "center", borderRadius: radius.sm, borderWidth: 1, borderColor: colors.line, marginTop: spacing.lg },
+  emptyButtonText: { color: colors.text, fontWeight: "800" },
   card: { padding: spacing.md, marginBottom: spacing.md, borderRadius: radius.md, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.panel },
+  cardPressed: { opacity: 0.82, transform: [{ scale: 0.995 }] },
   cardTop: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: spacing.md },
   cardTitleWrap: { flex: 1 },
   cardTitle: { color: colors.text, fontSize: 19, fontWeight: "800" },
@@ -180,5 +205,6 @@ const styles = StyleSheet.create({
   metaGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginTop: spacing.lg },
   metaItem: { minWidth: "30%", flexGrow: 1, padding: spacing.sm, borderRadius: radius.sm, backgroundColor: colors.panelSoft },
   metaLabel: { color: colors.muted, fontSize: 12 },
-  metaValue: { color: colors.text, fontWeight: "700", marginTop: 4 }
+  metaValue: { color: colors.text, fontWeight: "700", marginTop: 4 },
+  openHint: { color: colors.accentSoft, fontSize: 13, fontWeight: "800", textAlign: "right", marginTop: spacing.md }
 });
