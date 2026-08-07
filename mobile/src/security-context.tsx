@@ -117,7 +117,6 @@ export function SecurityProvider({ children }: { children: ReactNode }) {
 
     if (status !== "authenticated") {
       setLocked(false);
-      void clearDeadlineReminders().catch(() => undefined);
       return;
     }
 
@@ -128,11 +127,20 @@ export function SecurityProvider({ children }: { children: ReactNode }) {
         setLocked(true);
       }
     }
+  }, [ready, status, biometricEnabled]);
+
+  useEffect(() => {
+    if (!ready) return;
+
+    if (status !== "authenticated") {
+      void clearDeadlineReminders().catch(() => undefined);
+      return;
+    }
 
     if (remindersEnabled) {
       void refreshDeadlineReminders().catch(() => undefined);
     }
-  }, [ready, status, biometricEnabled, remindersEnabled, refreshDeadlineReminders]);
+  }, [ready, status, remindersEnabled, refreshDeadlineReminders]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextState) => {
