@@ -18,6 +18,68 @@ export type MobileCase = {
   documentCount: number;
 };
 
+export type MobileCaseType = {
+  slug: string;
+  value: string;
+  title: string;
+  description: string;
+  icon: string;
+  checklistTitle: string;
+  checklist: string[];
+};
+
+export type MobileCaseEvent = {
+  id: string;
+  type: string;
+  title: string;
+  details: string | null;
+  occurredAt: string;
+};
+
+export type MobileCaseDeadline = {
+  id: string;
+  title: string;
+  dueAt: string;
+  completedAt: string | null;
+};
+
+export type MobileCaseDocument = {
+  id: string;
+  originalName: string;
+  mimeType: string;
+  sizeBytes: number;
+  documentType: string | null;
+  createdAt: string;
+};
+
+export type MobileCaseDetail = {
+  id: string;
+  type: string;
+  status: string;
+  title: string;
+  companyName: string | null;
+  orderReference: string | null;
+  amountCents: number | null;
+  currency: string;
+  incidentDate: string | null;
+  summary: string | null;
+  createdAt: string;
+  updatedAt: string;
+  events: MobileCaseEvent[];
+  deadlines: MobileCaseDeadline[];
+  documents: MobileCaseDocument[];
+};
+
+export type CreateCaseInput = {
+  type: string;
+  title: string;
+  companyName: string;
+  orderReference: string;
+  amount: string;
+  incidentDate: string;
+  summary: string;
+};
+
 export type MobileDeadline = {
   id: string;
   caseId: string;
@@ -94,6 +156,22 @@ export function logoutRequest(token: string) {
 
 export function casesRequest(token: string) {
   return apiRequest<{ cases: MobileCase[] }>("/api/mobile/v1/cases", { token });
+}
+
+export function caseTypesRequest(token: string) {
+  return apiRequest<{ caseTypes: MobileCaseType[] }>("/api/mobile/v1/case-types", { token });
+}
+
+export function caseRequest(token: string, caseId: string) {
+  return apiRequest<{ case: MobileCaseDetail }>(`/api/mobile/v1/cases/${encodeURIComponent(caseId)}`, { token });
+}
+
+export function createCaseRequest(token: string, input: CreateCaseInput) {
+  return apiRequest<{ case: { id: string } }>("/api/mobile/v1/cases", {
+    method: "POST",
+    token,
+    body: JSON.stringify(input)
+  });
 }
 
 export function deadlinesRequest(token: string) {
