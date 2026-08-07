@@ -72,7 +72,9 @@ export function SecurityProvider({ children }: { children: ReactNode }) {
         SecureStore.getItemAsync(REMINDERS_KEY),
         LocalAuthentication.hasHardwareAsync().catch(() => false),
         LocalAuthentication.isEnrolledAsync().catch(() => false),
-        LocalAuthentication.supportedAuthenticationTypesAsync().catch(() => [])
+        LocalAuthentication.supportedAuthenticationTypesAsync().catch(
+          (): LocalAuthentication.AuthenticationType[] => []
+        )
       ]);
 
       if (!active) return;
