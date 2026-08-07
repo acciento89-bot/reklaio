@@ -18,6 +18,15 @@
     },
     "plugins": [
       "expo-router",
+      "expo-document-picker",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Erlaube Reklaio den Zugriff auf Fotos, damit du Belege zu deiner Fallakte hinzufügen kannst.",
+          "cameraPermission": "Erlaube Reklaio den Zugriff auf die Kamera, damit du Belege direkt fotografieren kannst.",
+          "microphonePermission": false
+        }
+      ],
       [
         "expo-secure-store",
         {

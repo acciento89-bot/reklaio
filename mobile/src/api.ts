@@ -91,6 +91,22 @@ export type MobileDeadline = {
   state: "overdue" | "soon" | "open" | "completed";
 };
 
+export type DocumentTypeValue = "invoice" | "email" | "photo" | "tracking" | "other";
+
+export type UploadDocumentFile = {
+  uri: string;
+  name: string;
+  mimeType: string;
+};
+
+export const mobileDocumentTypes: Array<{ value: DocumentTypeValue; label: string }> = [
+  { value: "invoice", label: "Rechnung oder Bestellbeleg" },
+  { value: "email", label: "E-Mail oder Schriftverkehr" },
+  { value: "photo", label: "Foto oder Screenshot" },
+  { value: "tracking", label: "Versand- oder Trackingbeleg" },
+  { value: "other", label: "Sonstiger Beleg" }
+];
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -110,7 +126,8 @@ type RequestOptions = RequestInit & {
 async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const headers = new Headers(options.headers);
   headers.set("Accept", "application/json");
-  if (options.body && !headers.has("Content-Type")) {
+  const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
+  if (options.body && !isFormData && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
   if (options.token) {
@@ -172,6 +189,30 @@ export function createCaseRequest(token: string, input: CreateCaseInput) {
     token,
     body: JSON.stringify(input)
   });
+}
+
+export function uploadDocumentRequest(
+  token: string,
+  caseId: string,
+  documentType: DocumentTypeValue,
+  file: UploadDocumentFile
+) {
+  const formData = new FormData();
+  formData.append("documentType", documentType);
+  formData.append("document", {
+    uri: file.uri,
+    name: file.name,
+    type: file.mimeType
+  } as unknown as Blob);
+
+  return apiRequest<{ document: MobileCaseDocument }>(
+    `/api/mobile/v1/cases/${encodeURIComponent(caseId)}/documents`,
+    {
+      method: "POST",
+      token,
+      body: formData
+    }
+  );
 }
 
 export function deadlinesRequest(token: string) {
