@@ -165,10 +165,10 @@ const styles = StyleSheet.create({
   card: { padding: spacing.md, marginBottom: spacing.md, borderRadius: radius.md, backgroundColor: colors.panel, borderWidth: 1, borderColor: colors.line },
   cardOverdue: { borderColor: "rgba(226,125,131,0.5)" },
   cardTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing.sm },
-  date: { color: colors.text, fontWeight: "850" },
+  date: { color: colors.text, fontWeight: "800" },
   state: { color: colors.accentSoft, fontSize: 12, fontWeight: "800" },
   stateOverdue: { color: colors.danger },
-  title: { color: colors.text, fontSize: 18, fontWeight: "850", marginTop: spacing.md },
+  title: { color: colors.text, fontSize: 18, fontWeight: "800", marginTop: spacing.md },
   caseTitle: { color: colors.muted, marginTop: spacing.xs },
   company: { color: colors.muted, fontSize: 13, marginTop: 3 }
 });
