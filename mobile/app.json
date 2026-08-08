@@ -3,7 +3,7 @@
     "name": "Reklaio",
     "slug": "reklaio",
     "owner": "kamilunavo",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "orientation": "portrait",
     "scheme": "reklaio",
     "userInterfaceStyle": "automatic",
@@ -18,14 +18,14 @@
       "supportsTablet": true,
       "bundleIdentifier": "de.kamilunavo.reklaio",
       "appleTeamId": "TKG684N5GL",
-      "buildNumber": "3",
+      "buildNumber": "4",
       "config": {
         "usesNonExemptEncryption": false
       }
     },
     "android": {
       "package": "de.kamilunavo.reklaio",
-      "versionCode": 3,
+      "versionCode": 4,
       "predictiveBackGestureEnabled": false,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
