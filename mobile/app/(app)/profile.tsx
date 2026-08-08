@@ -9,6 +9,7 @@ import {
   Text,
   View
 } from "react-native";
+import { useRouter } from "expo-router";
 import { useAuth } from "@/src/auth-context";
 import { useSecurity } from "@/src/security-context";
 import { colors, radius, spacing } from "@/src/theme";
@@ -16,6 +17,7 @@ import { colors, radius, spacing } from "@/src/theme";
 type SettingKey = "biometric" | "reminders" | "logout" | null;
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const { user, logout } = useAuth();
   const {
     ready,
@@ -134,7 +136,7 @@ export default function ProfileScreen() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Kontoverwaltung</Text>
         <Text style={styles.copy}>
-          Profil, Passwort, Datenexport und Kontolöschung sind über die sichere Web-Kontoverwaltung erreichbar. Eine vollständig native Kontolöschung folgt vor der Store-Einreichung.
+          Profil, Passwort und Datenexport sind über die sichere Web-Kontoverwaltung erreichbar. Dein Konto und alle damit verbundenen Fallakten kannst du direkt in der App löschen.
         </Text>
         <Pressable
           onPress={() => void Linking.openURL("https://reklaio.de/einstellungen")}
@@ -142,12 +144,24 @@ export default function ProfileScreen() {
         >
           <Text style={styles.secondaryButtonText}>Kontoverwaltung öffnen</Text>
         </Pressable>
+        <Pressable
+          onPress={() => router.push("/account-delete")}
+          style={({ pressed }) => [styles.dangerButton, pressed && styles.pressed]}
+        >
+          <Text style={styles.dangerButtonText}>Konto und Daten löschen</Text>
+        </Pressable>
       </View>
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Datenschutz & Hilfe</Text>
         <Pressable onPress={() => void Linking.openURL("https://reklaio.de/datenschutz")}>
           <Text style={styles.link}>Datenschutzerklärung</Text>
+        </Pressable>
+        <Pressable onPress={() => void Linking.openURL("https://reklaio.de/agb")}>
+          <Text style={styles.link}>Allgemeine Geschäftsbedingungen</Text>
+        </Pressable>
+        <Pressable onPress={() => void Linking.openURL("https://reklaio.de/impressum")}>
+          <Text style={styles.link}>Impressum</Text>
         </Pressable>
         <Pressable onPress={() => void Linking.openURL("https://reklaio.de/hilfe")}>
           <Text style={styles.link}>Hilfe und Support</Text>
@@ -190,6 +204,8 @@ const styles = StyleSheet.create({
   unavailable: { color: colors.warning, fontSize: 12, lineHeight: 18, marginTop: spacing.sm },
   secondaryButton: { minHeight: 48, alignItems: "center", justifyContent: "center", borderRadius: radius.sm, borderWidth: 1, borderColor: colors.line, marginTop: spacing.lg },
   secondaryButtonText: { color: colors.text, fontWeight: "800" },
+  dangerButton: { minHeight: 48, alignItems: "center", justifyContent: "center", borderRadius: radius.sm, borderWidth: 1, borderColor: "rgba(226,125,131,0.45)", backgroundColor: "rgba(226,125,131,0.1)", marginTop: spacing.sm },
+  dangerButtonText: { color: colors.danger, fontWeight: "800" },
   link: { color: colors.accentSoft, fontWeight: "700", paddingVertical: spacing.sm },
   logoutButton: { minHeight: 50, alignItems: "center", justifyContent: "center", borderRadius: radius.sm, backgroundColor: "rgba(226,125,131,0.12)", borderWidth: 1, borderColor: "rgba(226,125,131,0.4)" },
   logoutText: { color: colors.danger, fontWeight: "800" },
