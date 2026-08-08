@@ -17,6 +17,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "de.kamilunavo.reklaio",
+      "appleTeamId": "TKG684N5GL",
       "buildNumber": "2"
     },
     "android": {
