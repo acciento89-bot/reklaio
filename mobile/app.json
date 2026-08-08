@@ -22,7 +22,6 @@
     "android": {
       "package": "de.kamilunavo.reklaio",
       "versionCode": 2,
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
