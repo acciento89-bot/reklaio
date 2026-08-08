@@ -192,6 +192,14 @@ export function logoutRequest(token: string) {
   });
 }
 
+export function deleteAccountRequest(token: string, password: string, confirmation: string) {
+  return apiRequest<void>("/api/mobile/v1/account/delete", {
+    method: "POST",
+    token,
+    body: JSON.stringify({ password, confirmation })
+  });
+}
+
 export function casesRequest(token: string) {
   return apiRequest<{ cases: MobileCase[] }>("/api/mobile/v1/cases", { token });
 }
