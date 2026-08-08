@@ -1,7 +1,7 @@
 import { legalAddressLines, legalOperator } from "@/lib/legal";
 
-export const AGB_VERSION = "2026-08-05-pro-v1";
-export const PRIVACY_VERSION = "2026-08-05-ads-v1";
+export const AGB_VERSION = "2026-08-08-store-v1";
+export const PRIVACY_VERSION = "2026-08-08-store-v1";
 export const WITHDRAWAL_VERSION = "2026-08-05-v1";
 
 export function getPaidContractSummary() {
@@ -10,9 +10,9 @@ export function getPaidContractSummary() {
     price: process.env.REKLAIO_PRO_PRICE_LABEL?.trim() || "Preis wird im Checkout angezeigt",
     interval: process.env.REKLAIO_PRO_INTERVAL_LABEL?.trim() || "monatlich, automatisch verlängernd",
     taxNotice: process.env.REKLAIO_TAX_LABEL?.trim() || "Der im Checkout angezeigte Gesamtpreis ist maßgeblich.",
-    cancellation: "Jederzeit zum Ende des laufenden Abrechnungszeitraums über das Stripe-Kundenportal kündbar.",
+    cancellation: "Web-Abonnements sind zum Ende des laufenden Abrechnungszeitraums über das Stripe-Kundenportal kündbar. In der mobilen App abgeschlossene Abonnements werden im jeweiligen Apple- oder Google-Konto verwaltet.",
     minimumTerm: "Ein Abrechnungszeitraum",
-    paymentProvider: "Stripe"
+    paymentProvider: "Stripe im Web; Apple beziehungsweise Google in der mobilen App"
   };
 }
 

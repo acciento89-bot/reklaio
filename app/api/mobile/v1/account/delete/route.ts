@@ -5,6 +5,7 @@ import { getDb } from "@/lib/db";
 import { resolveStoragePath } from "@/lib/documents";
 import { getMobileUser } from "@/lib/mobile-auth";
 import { verifyPassword } from "@/lib/password";
+import { deleteRevenueCatCustomer } from "@/lib/revenuecat";
 
 export const runtime = "nodejs";
 
@@ -76,7 +77,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "Bitte kündige dein aktives Pro-Abonnement zuerst über die Kontoverwaltung. Nach dem Ende des Abonnements kann das Konto gelöscht werden."
+            "Bitte kündige dein direkt über Reklaio abgeschlossenes Stripe-Abonnement zuerst über die Web-Kontoverwaltung. Store-Abonnements werden separat bei Apple oder Google verwaltet."
         },
         { status: 409 }
       );
@@ -104,8 +105,8 @@ export async function POST(request: Request) {
     client.release();
   }
 
-  await Promise.all(
-    storageKeys.map(async (storageKey) => {
+  await Promise.all([
+    ...storageKeys.map(async (storageKey) => {
       try {
         await fs.unlink(resolveStoragePath(storageKey));
       } catch (error) {
@@ -114,8 +115,11 @@ export async function POST(request: Request) {
           console.error("Deleted mobile account file could not be removed", storageKey, error);
         }
       }
+    }),
+    deleteRevenueCatCustomer(user.id).catch((error) => {
+      console.error("Deleted mobile account could not be removed from RevenueCat", error);
     })
-  );
+  ]);
 
   return new NextResponse(null, { status: 204 });
 }

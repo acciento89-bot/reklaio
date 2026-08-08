@@ -47,10 +47,11 @@ export async function POST(request: Request) {
     email: string;
     display_name: string | null;
     role: "user" | "admin";
+    plan_code: "free" | "pro";
     password_hash: string | null;
     suspended_at: string | null;
   }>(
-    `SELECT id, email, display_name, role, password_hash, suspended_at
+    `SELECT id, email, display_name, role, plan_code, password_hash, suspended_at
      FROM app_users
      WHERE LOWER(email) = $1
      LIMIT 1`,
@@ -74,7 +75,8 @@ export async function POST(request: Request) {
         id: user.id,
         email: user.email,
         displayName: user.display_name,
-        role: user.role === "admin" ? "admin" : "user"
+        role: user.role === "admin" ? "admin" : "user",
+        planCode: user.plan_code === "pro" ? "pro" : "free"
       }
     },
     { headers: { "Cache-Control": "no-store" } }

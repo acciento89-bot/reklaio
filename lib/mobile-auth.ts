@@ -8,6 +8,7 @@ export type MobileUser = {
   email: string;
   displayName: string | null;
   role: "user" | "admin";
+  planCode: "free" | "pro";
 };
 
 function hashToken(token: string) {
@@ -44,9 +45,10 @@ export async function getMobileUser(request: Request): Promise<MobileUser | null
     email: string;
     display_name: string | null;
     role: "user" | "admin";
+    plan_code: "free" | "pro";
     suspended_at: string | null;
   }>(
-    `SELECT u.id, u.email, u.display_name, u.role, u.suspended_at
+    `SELECT u.id, u.email, u.display_name, u.role, u.plan_code, u.suspended_at
      FROM auth_sessions s
      JOIN app_users u ON u.id = s.user_id
      WHERE s.token_hash = $1
@@ -69,7 +71,8 @@ export async function getMobileUser(request: Request): Promise<MobileUser | null
     id: user.id,
     email: user.email,
     displayName: user.display_name,
-    role: user.role === "admin" ? "admin" : "user"
+    role: user.role === "admin" ? "admin" : "user",
+    planCode: user.plan_code === "pro" ? "pro" : "free"
   };
 }
 

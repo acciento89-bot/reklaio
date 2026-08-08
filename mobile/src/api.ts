@@ -3,6 +3,17 @@ export type MobileUser = {
   email: string;
   displayName: string | null;
   role: "user" | "admin";
+  planCode: "free" | "pro";
+};
+
+export type SubscriptionSyncResult = {
+  planCode: "free" | "pro";
+  planSource: "beta" | "stripe" | "app_store" | "google_play" | "manual" | "admin" | null;
+  provider: "app_store" | "google_play" | null;
+  productId: string | null;
+  status: string | null;
+  expiresAt: string | null;
+  managementUrl: string | null;
 };
 
 export type MobileCaseStatus =
@@ -197,6 +208,13 @@ export function deleteAccountRequest(token: string, password: string, confirmati
     method: "POST",
     token,
     body: JSON.stringify({ password, confirmation })
+  });
+}
+
+export function syncSubscriptionRequest(token: string) {
+  return apiRequest<SubscriptionSyncResult>("/api/mobile/v1/subscription/sync", {
+    method: "POST",
+    token
   });
 }
 

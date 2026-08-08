@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
-  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -15,11 +14,13 @@ import {
 import { Stack, useRouter } from "expo-router";
 import { deleteAccountRequest } from "@/src/api";
 import { useAuth } from "@/src/auth-context";
+import { usePurchases } from "@/src/purchases-context";
 import { colors, radius, spacing } from "@/src/theme";
 
 export default function AccountDeleteScreen() {
   const router = useRouter();
   const { token, logout } = useAuth();
+  const { openSubscriptionManagement } = usePurchases();
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -37,7 +38,7 @@ export default function AccountDeleteScreen() {
       await logout().catch(() => undefined);
       Alert.alert(
         "Konto gelöscht",
-        "Dein Reklaio-Konto und die damit verbundenen Fallakten wurden gelöscht."
+        "Dein Reklaio-Konto und die damit verbundenen Fallakten wurden gelöscht. Ein Apple- oder Google-Abonnement muss separat im jeweiligen Store gekündigt werden."
       );
       router.replace("/login");
     } catch (cause) {
@@ -72,15 +73,15 @@ export default function AccountDeleteScreen() {
         </Text>
 
         <View style={styles.warningCard}>
-          <Text style={styles.warningTitle}>Vorher beachten</Text>
+          <Text style={styles.warningTitle}>Abonnement separat kündigen</Text>
           <Text style={styles.copy}>
-            Ein aktives Pro-Abonnement muss zuerst beendet werden. Bereits bezahlte Abonnementzeiträume werden durch die Kontolöschung nicht automatisch erstattet.
+            Eine Kontolöschung beendet kein über Apple oder Google abgeschlossenes Abonnement. Die Abrechnung läuft beim Store weiter, bis du dort kündigst. Du darfst dein Reklaio-Konto trotzdem sofort löschen.
           </Text>
           <Pressable
-            onPress={() => void Linking.openURL("https://reklaio.de/einstellungen")}
+            onPress={() => void openSubscriptionManagement()}
             style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed]}
           >
-            <Text style={styles.secondaryButtonText}>Abonnement verwalten</Text>
+            <Text style={styles.secondaryButtonText}>Store-Abonnement verwalten</Text>
           </Pressable>
         </View>
 

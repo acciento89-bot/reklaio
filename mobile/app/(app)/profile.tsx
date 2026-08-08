@@ -86,6 +86,30 @@ export default function ProfileScreen() {
         <Text style={styles.value}>{user?.email}</Text>
       </View>
 
+      <View style={[styles.card, styles.proCard]}>
+        <View style={styles.proHeader}>
+          <View style={styles.settingCopy}>
+            <Text style={styles.cardTitle}>Reklaio Pro</Text>
+            <Text style={styles.copy}>
+              {user?.planCode === "pro"
+                ? "Dein Pro-Zugang ist aktiv. Hier kannst du Store-Käufe wiederherstellen oder dein Abonnement verwalten."
+                : "Schalte KI-Dokumentanalysen, individuelle Schreiben und die erweiterten Pro-Kontingente frei."}
+            </Text>
+          </View>
+          <Text style={[styles.planBadge, user?.planCode === "pro" && styles.planBadgeActive]}>
+            {user?.planCode === "pro" ? "PRO" : "FREE"}
+          </Text>
+        </View>
+        <Pressable
+          onPress={() => router.push("/pro")}
+          style={({ pressed }) => [styles.proButton, pressed && styles.pressed]}
+        >
+          <Text style={styles.proButtonText}>
+            {user?.planCode === "pro" ? "Pro verwalten" : "Reklaio Pro ansehen"}
+          </Text>
+        </Pressable>
+      </View>
+
       <View style={styles.card}>
         <View style={styles.settingRow}>
           <View style={styles.settingCopy}>
@@ -194,6 +218,12 @@ const styles = StyleSheet.create({
   error: { color: colors.danger, lineHeight: 20, padding: spacing.md, borderRadius: radius.sm, backgroundColor: "rgba(226,125,131,0.12)", marginBottom: spacing.md },
   noticeBox: { color: colors.success, lineHeight: 20, padding: spacing.md, borderRadius: radius.sm, backgroundColor: "rgba(117,189,169,0.12)", marginBottom: spacing.md },
   card: { padding: spacing.lg, marginBottom: spacing.md, borderRadius: radius.md, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.panel },
+  proCard: { borderColor: "rgba(143,199,187,0.4)" },
+  proHeader: { flexDirection: "row", alignItems: "flex-start", gap: spacing.md },
+  planBadge: { color: colors.muted, fontSize: 12, fontWeight: "900", borderWidth: 1, borderColor: colors.line, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
+  planBadgeActive: { color: colors.success, borderColor: "rgba(117,189,169,0.5)", backgroundColor: "rgba(117,189,169,0.12)" },
+  proButton: { minHeight: 48, alignItems: "center", justifyContent: "center", borderRadius: radius.sm, backgroundColor: colors.accent, marginTop: spacing.lg },
+  proButtonText: { color: colors.white, fontWeight: "900" },
   label: { color: colors.muted, fontSize: 12, textTransform: "uppercase", letterSpacing: 0.8 },
   value: { color: colors.text, fontSize: 17, fontWeight: "700", marginTop: spacing.xs },
   divider: { height: 1, backgroundColor: colors.line, marginVertical: spacing.md },

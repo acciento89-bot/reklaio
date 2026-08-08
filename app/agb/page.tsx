@@ -36,26 +36,26 @@ export default function AgbPage() {
 
       <section>
         <h2>6. Vertragsschluss bei Reklaio Pro</h2>
-        <p>Vor dem kostenpflichtigen Bestellvorgang werden Leistung, Gesamtpreis, Abrechnungszeitraum, automatische Verlängerung, Kündigung, AGB und Widerrufsbelehrung angezeigt. Der Nutzer bestätigt die erforderlichen Erklärungen und startet den Zahlungsvorgang über eine eindeutig als zahlungspflichtig bezeichnete Schaltfläche.</p>
-        <p>Die Zahlungsabwicklung erfolgt über Stripe. Der Pro-Vertrag wird wirksam, wenn der Bestell- und Zahlungsvorgang erfolgreich abgeschlossen und der Status an Reklaio übermittelt wurde. Eine Vertragsbestätigung wird per E-Mail versendet.</p>
+        <p>Vor einem kostenpflichtigen Bestellvorgang werden Leistung, Gesamtpreis, Abrechnungszeitraum, automatische Verlängerung und Kündigung angezeigt. Der Vertrag wird wirksam, sobald der jeweilige Bestell- und Zahlungsvorgang erfolgreich bestätigt und der Pro-Status an Reklaio übermittelt wurde.</p>
+        <p>Auf der Website erfolgt die Zahlungsabwicklung über Stripe. In der iOS-App erfolgt sie über Apple In-App Purchase und in der Android-App über Google Play Billing. Für Store-Käufe gelten ergänzend die Zahlungs-, Abrechnungs- und Erstattungsbedingungen des jeweiligen Stores.</p>
       </section>
 
       <section>
         <h2>7. Preise und Zahlung</h2>
-        <p>Es gilt der unmittelbar vor der Bestellung hervorgehoben angezeigte Gesamtpreis. Angaben zu Steuern, Abrechnungsintervall und akzeptierten Zahlungsmitteln werden im Bestellprozess angezeigt. Reklaio speichert keine vollständigen Kartendaten.</p>
-        <p>Bei fehlgeschlagener, zurückgebuchter oder ausbleibender Zahlung kann der Pro-Zugang nach angemessener Prüfung eingeschränkt werden. Free-Daten bleiben grundsätzlich erhalten.</p>
+        <p>Es gilt der unmittelbar vor der Bestellung hervorgehoben angezeigte Gesamtpreis. Bei mobilen Käufen ist der im Apple App Store beziehungsweise bei Google Play angezeigte lokalisierte Preis maßgeblich. Reklaio speichert keine vollständigen Karten-, Bank- oder Store-Zahlungsdaten.</p>
+        <p>Apple, Google oder Stripe können Zahlungs-, Steuer-, Rechnungs- und Transaktionsdaten nach ihren eigenen Bedingungen verarbeiten. Bei fehlgeschlagener, zurückgebuchter oder ausbleibender Zahlung kann der Pro-Zugang nach angemessener Prüfung eingeschränkt werden. Free-Daten bleiben grundsätzlich erhalten.</p>
       </section>
 
       <section>
         <h2>8. Laufzeit, Verlängerung und Kündigung</h2>
-        <p>Das Pro-Abonnement läuft für den angezeigten Abrechnungszeitraum und verlängert sich automatisch um einen weiteren Zeitraum, sofern es nicht rechtzeitig über das Stripe-Kundenportal gekündigt wird. Die Kündigung wirkt grundsätzlich zum Ende der laufenden Periode.</p>
-        <p>Ein kostenloses Konto kann unabhängig davon in den Einstellungen gelöscht werden. Eine Kontolöschung ersetzt nicht automatisch die Kündigung eines noch bei Stripe bestehenden Abonnements.</p>
+        <p>Das Pro-Abonnement läuft für den angezeigten Abrechnungszeitraum und verlängert sich automatisch, sofern es nicht vor dem nächsten Verlängerungszeitpunkt gekündigt wird.</p>
+        <p>Web-Abonnements werden über das Stripe-Kundenportal verwaltet. In der iOS-App abgeschlossene Abonnements werden in den Apple-Abonnementeinstellungen und Android-Abonnements im Google-Play-Konto verwaltet. Eine Kontolöschung bei Reklaio beendet ein Store-Abonnement nicht automatisch; Nutzer werden vor der Löschung hierauf hingewiesen und erhalten einen direkten Verwaltungslink.</p>
       </section>
 
       <section>
-        <h2>9. Widerrufsrecht</h2>
-        <p>Verbrauchern steht grundsätzlich ein gesetzliches Widerrufsrecht zu. Die aktuelle Widerrufsbelehrung und das Musterformular sind unter <a href="/widerruf">/widerruf</a> abrufbar und werden im Bestellprozess bereitgestellt.</p>
-        <p>Verlangt der Nutzer ausdrücklich, dass Reklaio Pro vor Ablauf der Widerrufsfrist bereitgestellt wird, kann im Widerrufsfall für die bis dahin erbrachte Leistung ein angemessener anteiliger Betrag geschuldet sein, soweit die gesetzlichen Voraussetzungen erfüllt sind.</p>
+        <h2>9. Widerruf und Erstattungen</h2>
+        <p>Für direkt auf der Reklaio-Website abgeschlossene Verträge stehen die Widerrufsbelehrung und das Musterformular unter <a href="/widerruf">/widerruf</a> bereit.</p>
+        <p>Bei über Apple oder Google abgeschlossenen Käufen werden Abrechnung, Stornierung und Erstattungsanträge über den jeweiligen Store abgewickelt. Gesetzlich zwingende Verbraucherrechte bleiben unberührt.</p>
       </section>
 
       <section>

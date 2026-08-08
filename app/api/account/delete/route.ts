@@ -6,6 +6,7 @@ import { getDb } from "@/lib/db";
 import { resolveStoragePath } from "@/lib/documents";
 import { verifyPassword } from "@/lib/password";
 import { publicUrl } from "@/lib/public-url";
+import { deleteRevenueCatCustomer } from "@/lib/revenuecat";
 import { deleteCurrentSession } from "@/lib/session";
 
 export const runtime = "nodejs";
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
 
     if (account.stripe_subscription_id && ["active","trialing","past_due","unpaid","paused","incomplete"].includes(account.subscription_status ?? "")) {
       await client.query("ROLLBACK");
-      return settingsError("Bitte kündige dein verwaltetes Pro-Abonnement zuerst über „Abo verwalten“. Nach dem Ende des Abonnements kann das Konto gelöscht werden.");
+      return settingsError("Bitte kündige dein direkt über Reklaio abgeschlossenes Stripe-Abonnement zuerst über „Abo verwalten“. Store-Abonnements werden separat bei Apple oder Google verwaltet.");
     }
 
     const documentResult = await client.query<{ storage_key: string }>(
@@ -59,10 +60,16 @@ export async function POST(request: Request) {
     return settingsError("Das Konto konnte gerade nicht gelöscht werden.");
   } finally { client.release(); }
 
-  await Promise.all(storageKeys.map(async storageKey => {
-    try { await fs.unlink(resolveStoragePath(storageKey)); }
-    catch (error) { const nodeError = error as NodeJS.ErrnoException; if (nodeError.code !== "ENOENT") console.error("Deleted account file could not be removed", storageKey, error); }
-  }));
-  await deleteCurrentSession().catch(error => console.error("Deleted account session cookie cleanup failed", error));
-  const url = publicUrl("/anmelden"); url.searchParams.set("deleted", "1"); return NextResponse.redirect(url, 303);
+  await Promise.all([
+    ...storageKeys.map(async storageKey => {
+      try { await fs.unlink(resolveStoragePath(storageKey)); }
+      catch (error) { const nodeError = error as NodeJS.ErrnoException; if (nodeError.code !== "ENOENT") console.error("Deleted account file could not be removed", storageKey, error); }
+    }),
+    deleteRevenueCatCustomer(user.id).catch(error => console.error("Deleted web account could not be removed from RevenueCat", error)),
+    deleteCurrentSession().catch(error => console.error("Deleted account session cookie cleanup failed", error))
+  ]);
+
+  const url = publicUrl("/anmelden");
+  url.searchParams.set("deleted", "1");
+  return NextResponse.redirect(url, 303);
 }

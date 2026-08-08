@@ -1,13 +1,13 @@
 # Reklaio – Store-Release (Deutsch)
 
-Stand: Version 0.3.0
+Stand: Version 0.4.0
 
 ## Öffentliche URLs
 
 - Marketing: https://reklaio.de
 - Support: https://reklaio.de/hilfe
 - Datenschutz: https://reklaio.de/datenschutz
-- Datenschutzoptionen / Kontolöschung: https://reklaio.de/konto-loeschen
+- Kontolöschung: https://reklaio.de/konto-loeschen
 - AGB: https://reklaio.de/agb
 - Impressum: https://reklaio.de/impressum
 
@@ -39,6 +39,8 @@ Funktionen:
 • Fristen erfassen, erledigen und lokal auf dem Gerät erinnern lassen
 • Fallstatus und nächste Schritte jederzeit im Blick behalten
 • Persönliche Fallakten mit Face ID, Fingerabdruck oder Gerätecode schützen
+• Reklaio Pro mit KI-Dokumentanalyse und individuellen Schreiben abonnieren
+• Käufe wiederherstellen und Abonnements über Apple verwalten
 • Konto und zugehörige Daten direkt in der App löschen
 
 Deine Fristerinnerungen werden lokal auf deinem Gerät geplant. Fallinhalte werden dafür nicht an einen Push-Dienst übertragen.
@@ -60,6 +62,48 @@ Dienstprogramme
 **Copyright**
 
 2026 Kamilunavo / Piotr Kaminski
+
+## Apple-Abonnement
+
+- Gruppe: `Reklaio Pro`
+- Produkt: `Reklaio Pro Monatlich`
+- Product ID: `de.kamilunavo.reklaio.pro.monthly`
+- Laufzeit: 1 Monat
+- Zielpreis Deutschland: 9,99 €
+- RevenueCat Entitlement: `pro`
+- RevenueCat Offering: `default`
+- RevenueCat Package: `$rc_monthly`
+
+Deutsche Produktbeschreibung:
+
+> Erweiterte KI-Funktionen und Pro-Kontingente für deine Reklaio-Fallakten.
+
+## App-Review-Hinweise
+
+- Die App verwendet dasselbe Reklaio-Konto wie die Webanwendung.
+- Ein neues Free-Testkonto bereitstellen, damit der Reviewer den Pro-Kaufbildschirm öffnen kann.
+- Der Reviewer kann mindestens einen Beispielfall, eine Frist und ein hochgeladenes Testdokument prüfen.
+- Kaufpfad: Konto → Reklaio Pro → Monatsabo abschließen.
+- Wiederherstellung: Konto → Reklaio Pro → Käufe wiederherstellen.
+- Verwaltung: Konto → Reklaio Pro → Apple-Abonnement verwalten.
+- Face ID beziehungsweise Biometrie ist optional und kann im Profil aktiviert werden.
+- Fristerinnerungen sind lokale Benachrichtigungen. Es werden keine Fallinhalte an einen externen Push-Dienst übertragen.
+- Kontolöschung: Konto → Kontoverwaltung → Konto und Daten löschen.
+- Reklaio bietet keine Rechtsberatung.
+
+## Apple App Privacy – Arbeitsgrundlage
+
+Mit dem Nutzer verknüpfte Daten für **App-Funktionalität**:
+
+- Kontaktinformationen: E-Mail-Adresse, optional Anzeigename
+- Nutzerinhalte: Fallangaben, Texte, hochgeladene Fotos und Dokumente
+- Kennungen: interne Nutzer- und Sitzungskennung
+- Käufe: Produktkennung, Abonnement- und Berechtigungsstatus, Kauf-/Ablaufstatus
+- Diagnosedaten: technische Server-, Sicherheits- und Synchronisationsprotokolle in begrenztem Umfang
+
+Nicht für Drittwerbung oder Tracking in der mobilen App verwenden.
+
+RevenueCat erhält als App User ID ausschließlich die interne Reklaio-UUID, nicht die E-Mail-Adresse. Apple verarbeitet Zahlungs- und Store-Kontodaten nach eigenen Bedingungen. Reklaio erhält keine vollständigen Karten- oder Bankdaten.
 
 ## Google Play – Store-Haupteintrag
 
@@ -87,52 +131,39 @@ Funktionen:
 • Fristen planen und als erledigt markieren
 • Fallstatus jederzeit nachvollziehen
 • App-Zugriff mit Biometrie oder Gerätecode schützen
+• Reklaio Pro abonnieren und Käufe wiederherstellen
 • Konto und zugehörige Daten direkt löschen
 
 Reklaio organisiert deine Unterlagen und hilft dir bei einer vollständigen Dokumentation. Reklaio bietet keine Rechtsberatung.
 
-## App-Review-Hinweise
-
-- Die App verwendet dasselbe Reklaio-Konto wie die Webanwendung.
-- Testkonto mit vollständig freigeschaltetem Zugriff in App Store Connect und Play Console hinterlegen.
-- Der Reviewer muss mindestens einen Beispielfall, eine Frist und ein hochgeladenes Testdokument prüfen können.
-- Face ID beziehungsweise Biometrie ist optional und kann im Profil aktiviert werden.
-- Fristerinnerungen sind lokale Benachrichtigungen. Es werden keine Fallinhalte an einen externen Push-Dienst übertragen.
-- Kontolöschung: Konto → Kontoverwaltung → Konto und Daten löschen.
-- Reklaio bietet keine Rechtsberatung.
-
-## Apple App Privacy – Arbeitsgrundlage
-
-Die Antworten müssen vor Einreichung mit dem produktiven Stand abgeglichen werden.
-
-Voraussichtlich erfasste und mit dem Nutzer verknüpfte Daten für **App-Funktionalität**:
-
-- Kontaktinformationen: E-Mail-Adresse, optional Anzeigename
-- Nutzerinhalte: Fallangaben, Texte, hochgeladene Fotos und Dokumente
-- Kennungen: interne Nutzer- und Sitzungskennung
-- Käufe: Abonnementstatus, sobald native Store-Abonnements integriert sind
-- Diagnosedaten: technische Server- und Sicherheitsprotokolle in begrenztem Umfang
-
-Nicht für Drittwerbung oder Tracking in der mobilen App verwenden.
-
 ## Google Play Data Safety – Arbeitsgrundlage
-
-Die Angaben müssen vor Einreichung mit dem produktiven Stand und allen eingebundenen SDKs abgeglichen werden.
 
 - Daten werden verschlüsselt übertragen: Ja, HTTPS
 - Nutzer können Löschung beantragen: Ja, in der App und unter https://reklaio.de/konto-loeschen
 - E-Mail-Adresse: Kontoerstellung und App-Funktionalität, mit Nutzer verknüpft
 - Fotos und Dokumente: App-Funktionalität, freiwillig hochgeladen, mit Nutzer verknüpft
 - Sonstige nutzergenerierte Inhalte: App-Funktionalität, mit Nutzer verknüpft
+- Käufe: Produktkennung, Abonnement- und Berechtigungsstatus
 - Finanzinformationen: Reklaio speichert keine vollständigen Karten- oder Bankdaten
-- Werbung/Tracking in der mobilen App: Nein, solange kein entsprechendes SDK eingebunden wird
+- Werbung/Tracking in der mobilen App: Nein
 
-## Noch offene Release-Blocker
+## Apple – noch manuell abzuschließen
 
-1. Native Apple- und Google-Abonnements für Reklaio Pro integrieren und Wiederherstellung anbieten.
-2. Store-Produkte und Preise in App Store Connect und Play Console anlegen.
-3. Datenschutzerklärungen um native Store-Abrechnung ergänzen.
-4. Finale Smartphone-Screenshots für beide Stores erstellen.
-5. Altersfreigabe, App-Privacy und Data-Safety-Fragebögen abschließen.
-6. Testkonto für die Review-Teams anlegen.
-7. Release-Builds erzeugen und vor Einreichung vollständig testen.
+1. Paid Applications Agreement, Steuer- und Bankdaten abschließen.
+2. Apple-Abonnement mit der festgelegten Product ID anlegen.
+3. RevenueCat-Apple-App, Produkt, Entitlement und Offering verbinden.
+4. Öffentlichen Apple SDK Key als EAS-Produktionsvariable setzen.
+5. RevenueCat Secret API Key und Webhook-Authorization auf dem Reklaio-Server setzen.
+6. Server neu deployen und Migration ausführen.
+7. Version 0.4.0 neu zu TestFlight bauen.
+8. Kauf, Wiederherstellung, Kündigung und plattformübergreifenden Pro-Zugang mit einem Free-Testkonto prüfen.
+9. Screenshots, Altersfreigabe und App-Privacy-Fragebogen abschließen.
+10. App-Version und erstes Abonnement gemeinsam zur Prüfung einreichen.
+
+## Danach Google
+
+1. Google-Play-App und Store-Abo anlegen.
+2. Google Play mit demselben RevenueCat-Projekt verbinden.
+3. Android SDK Key als EAS-Produktionsvariable setzen.
+4. Android App Bundle erstellen und intern testen.
+5. Data-Safety, Inhaltsfreigabe und Store-Eintrag abschließen.
