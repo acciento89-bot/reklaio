@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { LegalLayout } from "@/components/legal-layout";
+import { PRIVACY_VERSION } from "@/lib/legal-documents";
 import { legalOperator } from "@/lib/legal";
 
 export default function AccountDeletionPage() {
   return (
-    <LegalLayout eyebrow="Datenschutz" title="Reklaio-Konto löschen">
+    <LegalLayout eyebrow="Datenschutz" title="Reklaio-Konto löschen" updated={PRIVACY_VERSION}>
       <section>
         <h2>Konto und zugehörige Daten löschen</h2>
         <p>
