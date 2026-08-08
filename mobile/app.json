@@ -15,10 +15,10 @@
       "backgroundColor": "#081926"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "de.kamilunavo.reklaio",
       "appleTeamId": "TKG684N5GL",
-      "buildNumber": "5",
+      "buildNumber": "6",
       "config": {
         "usesNonExemptEncryption": false
       }
