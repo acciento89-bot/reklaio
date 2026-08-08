@@ -40,10 +40,16 @@ export default function ProScreen() {
   } = usePurchases();
   const [notice, setNotice] = useState<string | null>(null);
 
+  const isIos = Platform.OS === "ios";
+  const storeName = isIos ? "App Store" : "Google Play";
+  const storeAccountName = isIos ? "Apple-ID" : "Google-Konto";
+  const subscriptionManagementName = isIos ? "Apple-Abonnements" : "Google-Play-Abonnements";
+
   // Reklaio is currently available only in the German App Store. During TestFlight,
   // StoreKit/RevenueCat can expose a stale US display string even though Apple's
-  // confirmation sheet correctly charges the German storefront price.
-  const displayedPrice = Platform.OS === "ios"
+  // confirmation sheet correctly charges the German storefront price. Google Play
+  // uses its live localized price string directly.
+  const displayedPrice = isIos
     ? GERMANY_IOS_PRICE_LABEL
     : priceLabel || GERMANY_IOS_PRICE_LABEL;
 
@@ -67,7 +73,7 @@ export default function ProScreen() {
       const restored = await restorePurchases();
       setNotice(restored
         ? "Dein Reklaio-Pro-Kauf wurde wiederhergestellt."
-        : "Für diese Apple-ID wurde kein aktives Reklaio-Pro-Abo gefunden.");
+        : `Für dieses ${storeAccountName} wurde kein aktives Reklaio-Pro-Abo gefunden.`);
     } catch {
       // The context exposes the user-facing error.
     }
@@ -139,13 +145,13 @@ export default function ProScreen() {
               <ActivityIndicator color={colors.white} />
             ) : (
               <Text style={styles.primaryButtonText}>
-                {priceLabel ? `Für ${displayedPrice} abonnieren` : "App-Store-Preis wird geladen …"}
+                {priceLabel ? `Für ${displayedPrice} abonnieren` : `${storeName}-Preis wird geladen …`}
               </Text>
             )}
           </Pressable>
         ) : (
           <Text style={styles.unavailable}>
-            Der App-Store-Kauf ist in diesem Build noch nicht konfiguriert.
+            Der {storeName}-Kauf ist in diesem Build noch nicht konfiguriert.
           </Text>
         )}
       </View>
@@ -153,9 +159,9 @@ export default function ProScreen() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Abonnement verwalten</Text>
         <Text style={styles.copy}>
-          Die Zahlung wird deiner Apple-ID belastet. Das Abonnement verlängert sich automatisch,
-          sofern es nicht spätestens 24 Stunden vor Ende des laufenden Zeitraums gekündigt wird.
-          Verwaltung und Kündigung erfolgen über deine Apple-Abonnements.
+          Die Zahlung wird deinem {storeAccountName} belastet. Das Abonnement verlängert sich
+          automatisch, sofern es nicht vor Ende des laufenden Zeitraums gekündigt wird. Verwaltung
+          und Kündigung erfolgen über deine {subscriptionManagementName}.
         </Text>
 
         <Pressable
@@ -171,7 +177,7 @@ export default function ProScreen() {
             onPress={() => void openSubscriptionManagement()}
             style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed]}
           >
-            <Text style={styles.secondaryButtonText}>Apple-Abonnement verwalten</Text>
+            <Text style={styles.secondaryButtonText}>{subscriptionManagementName} verwalten</Text>
           </Pressable>
         ) : null}
 
@@ -187,9 +193,9 @@ export default function ProScreen() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Vertragsinformationen</Text>
         <Text style={styles.copy}>
-          Laufzeit: ein Monat. Nach Bestätigung wird der Kauf über Apple abgewickelt. Der im
-          Apple-Kaufdialog bestätigte App-Store-Preis ist maßgeblich. Reklaio speichert keine
-          vollständigen Zahlungsdaten.
+          Laufzeit: ein Monat. Nach Bestätigung wird der Kauf über {storeName} abgewickelt. Der im
+          Kaufdialog bestätigte Preis ist maßgeblich. Reklaio speichert keine vollständigen
+          Zahlungsdaten.
         </Text>
         <Pressable onPress={() => void Linking.openURL("https://reklaio.de/agb")}>
           <Text style={styles.link}>Allgemeine Geschäftsbedingungen</Text>
