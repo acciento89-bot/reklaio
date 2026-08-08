@@ -12,6 +12,7 @@ type AuthContextValue = {
   user: MobileUser | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<MobileUser | null>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -47,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(storedToken);
         setUser(response.user);
         setStatus("authenticated");
-      } catch (error) {
+      } catch {
         await clearToken().catch(() => undefined);
         if (!active) return;
         setToken(null);
@@ -70,6 +71,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setStatus("authenticated");
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    if (!token) return null;
+    const response = await meRequest(token);
+    setUser(response.user);
+    return response.user;
+  }, [token]);
+
   const logout = useCallback(async () => {
     const currentToken = token;
     setToken(null);
@@ -85,8 +93,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [token]);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ status, token, user, login, logout }),
-    [status, token, user, login, logout]
+    () => ({ status, token, user, login, logout, refreshUser }),
+    [status, token, user, login, logout, refreshUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
