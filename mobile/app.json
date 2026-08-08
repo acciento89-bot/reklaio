@@ -25,7 +25,7 @@
     },
     "android": {
       "package": "de.kamilunavo.reklaio",
-      "versionCode": 5,
+      "versionCode": 6,
       "predictiveBackGestureEnabled": false,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
