@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -20,6 +21,8 @@ const features = [
   "Pro-Zugang auch im Webkonto"
 ];
 
+const GERMANY_IOS_PRICE_LABEL = "9,99 €";
+
 export default function ProScreen() {
   const {
     ready,
@@ -36,6 +39,13 @@ export default function ProScreen() {
     clearError
   } = usePurchases();
   const [notice, setNotice] = useState<string | null>(null);
+
+  // Reklaio is currently available only in the German App Store. During TestFlight,
+  // StoreKit/RevenueCat can expose a stale US display string even though Apple's
+  // confirmation sheet correctly charges the German storefront price.
+  const displayedPrice = Platform.OS === "ios"
+    ? GERMANY_IOS_PRICE_LABEL
+    : priceLabel || GERMANY_IOS_PRICE_LABEL;
 
   async function purchase() {
     setNotice(null);
@@ -82,7 +92,8 @@ export default function ProScreen() {
           title: "Reklaio Pro",
           headerStyle: { backgroundColor: colors.background },
           headerTintColor: colors.text,
-          headerShadowVisible: false
+          headerShadowVisible: false,
+          headerBackButtonDisplayMode: "minimal"
         }}
       />
 
@@ -97,7 +108,7 @@ export default function ProScreen() {
 
       <View style={styles.heroCard}>
         <Text style={styles.planName}>Pro Monatlich</Text>
-        <Text style={styles.price}>{priceLabel || "9,99 €"}</Text>
+        <Text style={styles.price}>{displayedPrice}</Text>
         <Text style={styles.interval}>pro Monat, automatisch verlängernd</Text>
         <View style={styles.featureList}>
           {features.map((feature) => (
@@ -128,7 +139,7 @@ export default function ProScreen() {
               <ActivityIndicator color={colors.white} />
             ) : (
               <Text style={styles.primaryButtonText}>
-                {priceLabel ? `Für ${priceLabel} abonnieren` : "App-Store-Preis wird geladen …"}
+                {priceLabel ? `Für ${displayedPrice} abonnieren` : "App-Store-Preis wird geladen …"}
               </Text>
             )}
           </Pressable>
@@ -176,8 +187,9 @@ export default function ProScreen() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Vertragsinformationen</Text>
         <Text style={styles.copy}>
-          Laufzeit: ein Monat. Nach Bestätigung wird der Kauf über Apple abgewickelt. Der angezeigte
-          App-Store-Preis ist maßgeblich. Reklaio speichert keine vollständigen Zahlungsdaten.
+          Laufzeit: ein Monat. Nach Bestätigung wird der Kauf über Apple abgewickelt. Der im
+          Apple-Kaufdialog bestätigte App-Store-Preis ist maßgeblich. Reklaio speichert keine
+          vollständigen Zahlungsdaten.
         </Text>
         <Pressable onPress={() => void Linking.openURL("https://reklaio.de/agb")}>
           <Text style={styles.link}>Allgemeine Geschäftsbedingungen</Text>
