@@ -39,3 +39,6 @@ jobs:
 
       - name: Typecheck mobile app
         run: npm run typecheck
+
+      - name: Generate Android native project
+        run: npx expo prebuild --no-install --platform android
