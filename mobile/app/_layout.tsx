@@ -4,6 +4,7 @@ import * as Notifications from "expo-notifications";
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { AuthProvider } from "@/src/auth-context";
+import { PurchasesProvider } from "@/src/purchases-context";
 import { AppLockGate, SecurityProvider } from "@/src/security-context";
 import { colors } from "@/src/theme";
 
@@ -39,19 +40,21 @@ function NotificationNavigation() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <SecurityProvider>
-        <AppLockGate>
-          <StatusBar style="light" />
-          <NotificationNavigation />
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: colors.background },
-              animation: "fade"
-            }}
-          />
-        </AppLockGate>
-      </SecurityProvider>
+      <PurchasesProvider>
+        <SecurityProvider>
+          <AppLockGate>
+            <StatusBar style="light" />
+            <NotificationNavigation />
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: colors.background },
+                animation: "fade"
+              }}
+            />
+          </AppLockGate>
+        </SecurityProvider>
+      </PurchasesProvider>
     </AuthProvider>
   );
 }
