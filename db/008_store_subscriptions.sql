@@ -65,3 +65,45 @@ CREATE INDEX IF NOT EXISTS idx_store_entitlements_user_active
 
 CREATE INDEX IF NOT EXISTS idx_store_entitlements_provider_product
   ON store_entitlements(provider, product_id);
+
+CREATE OR REPLACE FUNCTION preserve_active_store_plan()
+RETURNS TRIGGER AS $$
+DECLARE
+  active_provider TEXT;
+BEGIN
+  SELECT provider INTO active_provider
+  FROM store_entitlements
+  WHERE user_id = NEW.id
+    AND entitlement_id = 'pro'
+    AND status IN ('active', 'canceled', 'billing_issue')
+    AND (expires_at IS NULL OR expires_at > NOW())
+  ORDER BY expires_at DESC NULLS FIRST
+  LIMIT 1;
+
+  IF NEW.plan_code = 'free' AND active_provider IS NOT NULL THEN
+    NEW.plan_code := 'pro';
+    NEW.plan_source := active_provider;
+  ELSIF NEW.plan_code = 'pro' AND NEW.plan_source IS NULL THEN
+    IF NEW.subscription_status = 'beta' THEN
+      NEW.plan_source := 'beta';
+    ELSIF NEW.stripe_subscription_id IS NOT NULL THEN
+      NEW.plan_source := 'stripe';
+    ELSIF active_provider IS NOT NULL THEN
+      NEW.plan_source := active_provider;
+    ELSE
+      NEW.plan_source := 'manual';
+    END IF;
+  ELSIF NEW.plan_code = 'free' THEN
+    NEW.plan_source := NULL;
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_preserve_active_store_plan ON app_users;
+CREATE TRIGGER trg_preserve_active_store_plan
+BEFORE UPDATE OF plan_code, plan_source, subscription_status, stripe_subscription_id
+ON app_users
+FOR EACH ROW
+EXECUTE FUNCTION preserve_active_store_plan();
