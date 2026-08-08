@@ -46,9 +46,17 @@ export default function AccountDeletionPage() {
       </section>
 
       <section>
-        <h2>Aktive Abonnements und Aufbewahrung</h2>
+        <h2>Abonnements und Kontolöschung</h2>
         <p>
-          Ein aktives Abonnement muss vor der vollständigen Kontolöschung beendet werden.
+          Ein direkt auf reklaio.de über Stripe abgeschlossenes und noch aktives Abonnement muss
+          vor der Kontolöschung über die Web-Kontoverwaltung beendet werden.
+        </p>
+        <p>
+          Ein über Apple oder Google abgeschlossenes Abonnement hindert die sofortige Löschung des
+          Reklaio-Kontos nicht. Es wird durch die Kontolöschung jedoch nicht automatisch gekündigt
+          und muss separat in den Apple- beziehungsweise Google-Abonnementeinstellungen beendet werden.
+        </p>
+        <p>
           Abrechnungs-, Vertrags- oder Sicherheitsdaten können im gesetzlich erforderlichen Umfang
           länger gespeichert bleiben. Gelöschte Inhalte können bis zum Ablauf der geschützten
           Backup-Rotation technisch noch in Sicherungen enthalten sein.
