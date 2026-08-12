@@ -2,7 +2,8 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { formatDate } from "@/lib/cases";
 import { query } from "@/lib/db";
-import { escapeHtml, isMailConfigured, sendMail } from "@/lib/mail";
+import { renderReklaioEmail } from "@/lib/email-template";
+import { isMailConfigured, sendMail } from "@/lib/mail";
 import { publicUrl } from "@/lib/public-url";
 
 export const runtime = "nodejs";
@@ -43,8 +44,30 @@ function reminderCopy(candidate: ReminderCandidate) {
   const state = overdue ? "ist bereits überfällig" : "läuft in Kürze ab";
   const provider = candidate.company_name ? ` bei ${candidate.company_name}` : "";
   const caseUrl = publicUrl(`/faelle/${candidate.case_id}`).toString();
-  const text = `${salutation}\n\ndie Frist „${candidate.deadline_title}“ im Fall „${candidate.case_title}“${provider} ${state}.\n\nFällig am: ${formatDate(candidate.due_at)}\nFall öffnen: ${caseUrl}\n\nDiese automatische Erinnerung dient nur deiner Organisation und ist keine Rechtsberatung.`;
-  const html = `<p>${escapeHtml(salutation)}</p><p>Die Frist <strong>${escapeHtml(candidate.deadline_title)}</strong> im Fall <strong>${escapeHtml(candidate.case_title)}</strong>${candidate.company_name ? ` bei ${escapeHtml(candidate.company_name)}` : ""} ${escapeHtml(state)}.</p><p><strong>Fällig am:</strong> ${escapeHtml(formatDate(candidate.due_at))}</p><p><a href="${escapeHtml(caseUrl)}">Fall in Reklaio öffnen</a></p><p style="color:#666;font-size:12px">Diese automatische Erinnerung dient nur deiner Organisation und ist keine Rechtsberatung.</p>`;
+  const dueDate = formatDate(candidate.due_at);
+  const text = `${salutation}\n\ndie Frist „${candidate.deadline_title}“ im Fall „${candidate.case_title}“${provider} ${state}.\n\nFällig am: ${dueDate}\nFall öffnen: ${caseUrl}\n\nDiese automatische Erinnerung dient nur deiner Organisation und ist keine Rechtsberatung.`;
+  const html = renderReklaioEmail({
+    preheader: overdue
+      ? `Die Frist „${candidate.deadline_title}“ ist überfällig.`
+      : `Die Frist „${candidate.deadline_title}“ läuft in Kürze ab.`,
+    title: overdue ? "Frist überfällig" : "Frist bald fällig",
+    greeting: salutation,
+    paragraphs: [
+      `Die Frist „${candidate.deadline_title}“ im Fall „${candidate.case_title}“${provider} ${state}.`
+    ],
+    details: [
+      { label: "Frist", value: candidate.deadline_title },
+      { label: "Fall", value: candidate.case_title },
+      ...(candidate.company_name ? [{ label: "Unternehmen", value: candidate.company_name }] : []),
+      { label: "Fällig am", value: dueDate }
+    ],
+    action: {
+      label: "Fall in Reklaio öffnen",
+      url: caseUrl
+    },
+    notice: "Diese automatische Erinnerung dient deiner Organisation und ersetzt keine rechtliche Prüfung oder Beratung.",
+    tone: overdue ? "warning" : "brand"
+  });
 
   return { subject, text, html };
 }
