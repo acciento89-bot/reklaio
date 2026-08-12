@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { sendPasswordChangedEmail } from "@/lib/account-email";
 import { hashAuthEmailToken } from "@/lib/auth-email-tokens";
 import { getDb } from "@/lib/db";
 import { hashPassword } from "@/lib/password";
@@ -42,13 +43,19 @@ export async function POST(request: Request) {
   try {
     await client.query("BEGIN");
 
-    const result = await client.query<{ id: string; user_id: string }>(
-      `SELECT id, user_id
-       FROM auth_email_tokens
-       WHERE token_hash = $1
-         AND purpose = 'reset_password'
-         AND used_at IS NULL
-         AND expires_at > NOW()
+    const result = await client.query<{
+      id: string;
+      user_id: string;
+      email: string;
+      display_name: string | null;
+    }>(
+      `SELECT t.id, t.user_id, u.email, u.display_name
+       FROM auth_email_tokens t
+       JOIN app_users u ON u.id = t.user_id
+       WHERE t.token_hash = $1
+         AND t.purpose = 'reset_password'
+         AND t.used_at IS NULL
+         AND t.expires_at > NOW()
        FOR UPDATE`,
       [hashAuthEmailToken(parsed.data.token)]
     );
@@ -81,6 +88,12 @@ export async function POST(request: Request) {
     );
 
     await client.query("COMMIT");
+
+    await sendPasswordChangedEmail({
+      userId: resetToken.user_id,
+      email: resetToken.email,
+      displayName: resetToken.display_name
+    }).catch(error => console.error("Password reset notification failed", resetToken.user_id, error));
 
     const url = publicUrl("/anmelden");
     url.searchParams.set("notice", "Passwort geändert. Du kannst dich jetzt anmelden.");

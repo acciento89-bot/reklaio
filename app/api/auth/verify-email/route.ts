@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { sendWelcomeEmail } from "@/lib/account-email";
 import { getCurrentUser } from "@/lib/auth";
 import { hashAuthEmailToken } from "@/lib/auth-email-tokens";
 import { getDb } from "@/lib/db";
@@ -22,13 +23,20 @@ export async function GET(request: Request) {
   try {
     await client.query("BEGIN");
 
-    const result = await client.query<{ id: string; user_id: string }>(
-      `SELECT id, user_id
-       FROM auth_email_tokens
-       WHERE token_hash = $1
-         AND purpose = 'verify_email'
-         AND used_at IS NULL
-         AND expires_at > NOW()
+    const result = await client.query<{
+      id: string;
+      user_id: string;
+      email: string;
+      display_name: string | null;
+      email_verified_at: string | Date | null;
+    }>(
+      `SELECT t.id, t.user_id, u.email, u.display_name, u.email_verified_at
+       FROM auth_email_tokens t
+       JOIN app_users u ON u.id = t.user_id
+       WHERE t.token_hash = $1
+         AND t.purpose = 'verify_email'
+         AND t.used_at IS NULL
+         AND t.expires_at > NOW()
        FOR UPDATE`,
       [hashAuthEmailToken(token)]
     );
@@ -59,6 +67,15 @@ export async function GET(request: Request) {
     );
 
     await client.query("COMMIT");
+
+    if (!emailToken.email_verified_at) {
+      await sendWelcomeEmail({
+        userId: emailToken.user_id,
+        email: emailToken.email,
+        displayName: emailToken.display_name
+      }).catch(error => console.error("Welcome email failed", emailToken.user_id, error));
+    }
+
     target.searchParams.set("notice", "E-Mail-Adresse erfolgreich bestätigt.");
     return NextResponse.redirect(target, 303);
   } catch (error) {
