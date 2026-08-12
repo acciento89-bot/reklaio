@@ -8,17 +8,17 @@ import { CaseTypeIcon } from "@/components/case-type-icon";
 import { HomeSeoJsonLd } from "@/components/home-seo-json-ld";
 
 export const metadata: Metadata = {
-  title: "Reklamationen organisieren, Fristen und Belege im Blick",
+  title: "Reklamation mit KI erstellen | Reklaio",
   description:
-    "Reklaio hilft dir, Reklamationen, Beschwerden, Rückzahlungen und Kündigungen mit Belegen, Fristen, Chronik und eigenen Schreiben übersichtlich zu organisieren.",
+    "Beschreibe dein Problem und erstelle mit Reklaio ein professionelles Reklamationsschreiben. Belege, Kommunikation und Fristen bleiben anschließend übersichtlich in einer Fallakte gebündelt.",
   alternates: {
     canonical: "/"
   },
   openGraph: {
     url: "/",
-    title: "Reklaio – Reklamationen und Verbraucherfälle organisieren",
+    title: "Reklaio – Reklamationsschreiben mit KI erstellen",
     description:
-      "Belege, Kommunikation, Fristen und eigene Schreiben in einer nachvollziehbaren digitalen Fallakte bündeln."
+      "Reklamation erstellen, Belege sammeln und Fristen im Blick behalten – alles in einer nachvollziehbaren digitalen Fallakte."
   }
 };
 
@@ -62,21 +62,22 @@ export default async function HomePage() {
 
       <section className="hero hero-brand-copy container">
         <div className="hero-content">
-          <div className="eyebrow">Digitales Fallmanagement für Verbraucher</div>
-          <h1>Reklamationen klar dokumentieren. <span>Fristen sicher im Blick behalten.</span></h1>
+          <div className="eyebrow">Reklamationsschreiben mit KI erstellen</div>
+          <h1>Deine Reklamation. <span>Professionell formuliert.</span></h1>
           <p className="hero-copy">
-            Reklaio bündelt Belege, Kommunikation, Fristen und Schreiben in einer nachvollziehbaren Fallakte – vom ersten Problem bis zum Abschluss.
+            Beschreibe dein Problem und Reklaio hilft dir, ein passendes Reklamationsschreiben zu erstellen. Danach behältst du Belege, Kommunikation und Fristen übersichtlich in einer Fallakte im Blick.
           </p>
           <div className="hero-actions">
             <Link className="button button-primary" href={user ? "/neuer-fall" : "/registrieren"}>
-              Fallakte anlegen
+              Reklamation kostenlos erstellen
             </Link>
             <Link className="button button-secondary" href="/preise">Free und Pro vergleichen</Link>
           </div>
+          {!user && <p className="hero-copy" style={{ marginTop: "0.8rem", fontSize: "0.95rem" }}>Kostenlos starten · keine Kreditkarte erforderlich</p>}
           <div className="trust-row" aria-label="Vorteile">
+            <span>KI-gestützte Schreiben</span>
             <span>Geschützte Dokumente</span>
             <span>Automatische Fristerinnerungen</span>
-            <span>Geführte nächste Schritte</span>
             <span>Keine Rechtsberatung</span>
           </div>
         </div>
@@ -162,11 +163,11 @@ export default async function HomePage() {
 
       <section className="container closing-cta">
         <div>
-          <span className="eyebrow">Bereit für den ersten Fall?</span>
-          <h2>Aus einzelnen Nachrichten wird eine vollständige, geführte Fallakte.</h2>
+          <span className="eyebrow">Bereit für deine Reklamation?</span>
+          <h2>Problem beschreiben, Schreiben vorbereiten und den gesamten Fall übersichtlich weiterverfolgen.</h2>
         </div>
         <div className="hero-actions">
-          <Link className="button button-primary" href={user ? "/neuer-fall" : "/registrieren"}>Jetzt Fallakte anlegen</Link>
+          <Link className="button button-primary" href={user ? "/neuer-fall" : "/registrieren"}>Reklamation kostenlos erstellen</Link>
           <Link className="button button-secondary" href="/preise">Tarife ansehen</Link>
         </div>
       </section>
