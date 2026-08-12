@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { sendPasswordChangedEmail } from "@/lib/account-email";
 import { getCurrentUser } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { hashPassword, verifyPassword } from "@/lib/password";
@@ -80,6 +81,13 @@ export async function POST(request: Request) {
     }
 
     await client.query("COMMIT");
+
+    await sendPasswordChangedEmail({
+      userId: user.id,
+      email: user.email,
+      displayName: user.displayName
+    }).catch(error => console.error("Password change notification failed", user.id, error));
+
     return settingsRedirect("notice", "Passwort geändert. Andere Sitzungen wurden abgemeldet.");
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
