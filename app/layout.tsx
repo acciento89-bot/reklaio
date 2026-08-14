@@ -23,6 +23,7 @@ import "./admin.css";
 import "./checkout.css";
 import "./consent.css";
 import "./ratgeber.css";
+import "./app-store.css";
 import { GlobalAppNavigation } from "@/components/global-app-navigation";
 import { GlobalLegalLinks } from "@/components/global-legal-links";
 import { GoogleConsentManager } from "@/components/google-consent-manager";
@@ -35,7 +36,7 @@ export const metadata: Metadata = {
     template: "%s | Reklaio"
   },
   description:
-    "Reklamationen, Rückzahlungen, Kündigungen, Belege und Fristen in einer nachvollziehbaren digitalen Fallakte organisieren.",
+    "Reklamationen, Rückzahlungen, Kündigungen, Belege und Fristen in einer nachvollziehbaren digitalen Fallakte organisieren – im Web und auf dem iPhone.",
   applicationName: "Reklaio",
   manifest: "/manifest.webmanifest",
   icons: {
@@ -49,13 +50,13 @@ export const metadata: Metadata = {
     url: "https://reklaio.de",
     siteName: "Reklaio",
     title: "Reklaio – Dein Fall. Deine Frist. Dein Überblick.",
-    description: "Belege, Chronik, Fristen, Schreiben und empfohlene nächste Schritte in einer vollständigen digitalen Fallakte.",
+    description: "Belege, Chronik, Fristen, Schreiben und empfohlene nächste Schritte in einer vollständigen digitalen Fallakte – im Web und auf dem iPhone.",
     images: [{ url: "/reklaio-banner.svg", width: 2048, height: 682, alt: "Reklaio – Dein Fall. Deine Frist. Dein Überblick." }]
   },
   twitter: {
     card: "summary_large_image",
     title: "Reklaio – Dein Fall. Deine Frist. Dein Überblick.",
-    description: "Belege, Chronik, Fristen und empfohlene nächste Schritte an einem Ort.",
+    description: "Belege, Chronik, Fristen und empfohlene nächste Schritte an einem Ort – im Web und auf dem iPhone.",
     images: ["/reklaio-banner.svg"]
   }
 };

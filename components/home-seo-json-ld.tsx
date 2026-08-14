@@ -51,6 +51,17 @@ const structuredData = [
         url: "https://reklaio.de/preise"
       }
     ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "MobileApplication",
+    name: "Reklaio",
+    url: "https://apps.apple.com/de/app/reklaio/id6799375798",
+    installUrl: "https://apps.apple.com/de/app/reklaio/id6799375798",
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "iOS",
+    inLanguage: "de-DE",
+    description: "Reklaio für iPhone – Verbraucherfälle, Dokumente, Chronik und Fristen auch unterwegs organisieren."
   }
 ];
 

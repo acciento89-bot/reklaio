@@ -7,6 +7,8 @@ import { seoGuides } from "@/lib/seo-guides";
 import { CaseTypeIcon } from "@/components/case-type-icon";
 import { HomeSeoJsonLd } from "@/components/home-seo-json-ld";
 
+const APP_STORE_URL = "https://apps.apple.com/de/app/reklaio/id6799375798";
+
 export const metadata: Metadata = {
   title: "Reklamation mit KI erstellen | Reklaio",
   description:
@@ -39,6 +41,7 @@ export default async function HomePage() {
           <Link className="text-link" href="/ratgeber">Ratgeber</Link>
           <Link className="text-link" href="/preise">Preise</Link>
           <Link className="text-link" href="/kontakt">Kontakt</Link>
+          <a className="text-link" href={APP_STORE_URL} target="_blank" rel="noreferrer">iOS-App</a>
           {user ? (
             <Link className="button button-primary" href="/dashboard">Zum Dashboard</Link>
           ) : (
@@ -71,6 +74,7 @@ export default async function HomePage() {
             <Link className="button button-primary" href={user ? "/neuer-fall" : "/registrieren"}>
               Reklamation kostenlos erstellen
             </Link>
+            <a className="button button-secondary" href={APP_STORE_URL} target="_blank" rel="noreferrer">Für iPhone laden</a>
             <Link className="button button-secondary" href="/preise">Free und Pro vergleichen</Link>
           </div>
           {!user && <p className="hero-copy" style={{ marginTop: "0.8rem", fontSize: "0.95rem" }}>Kostenlos starten · keine Kreditkarte erforderlich</p>}
@@ -78,7 +82,7 @@ export default async function HomePage() {
             <span>KI-gestützte Schreiben</span>
             <span>Geschützte Dokumente</span>
             <span>Automatische Fristerinnerungen</span>
-            <span>Keine Rechtsberatung</span>
+            <span>Web + iPhone</span>
           </div>
         </div>
       </section>
@@ -88,7 +92,24 @@ export default async function HomePage() {
           <div><strong>Eine Fallakte</strong><span>Alle Informationen an einem Ort</span></div>
           <div><strong>Klare Chronik</strong><span>Zusagen und Ereignisse nachvollziehbar</span></div>
           <div><strong>Fallassistent</strong><span>Vollständigkeit und nächsten Schritt sehen</span></div>
-          <div><strong>Free + Pro</strong><span>Kernfunktionen kostenlos, KI optional im Pro-Tarif</span></div>
+          <div><strong>Web + iOS</strong><span>Im Browser und auf dem iPhone verfügbar</span></div>
+        </div>
+      </section>
+
+      <section className="container section app-store-section" id="ios-app">
+        <div className="app-store-card">
+          <div className="app-store-icon" aria-hidden="true">R</div>
+          <div className="app-store-copy">
+            <span className="eyebrow">Reklaio für iPhone</span>
+            <h2>Deine Fallakte jetzt auch unterwegs.</h2>
+            <p>
+              Reklaio ist zusätzlich zur Web-App als iOS-App verfügbar. Melde dich mit deinem bestehenden Konto an und greife auch unterwegs auf deine Fälle, Dokumente und Fristen zu.
+            </p>
+          </div>
+          <a className="app-store-button" href={APP_STORE_URL} target="_blank" rel="noreferrer" aria-label="Reklaio im App Store öffnen">
+            <span>Download im</span>
+            <strong>App Store</strong>
+          </a>
         </div>
       </section>
 
@@ -168,6 +189,7 @@ export default async function HomePage() {
         </div>
         <div className="hero-actions">
           <Link className="button button-primary" href={user ? "/neuer-fall" : "/registrieren"}>Reklamation kostenlos erstellen</Link>
+          <a className="button button-secondary" href={APP_STORE_URL} target="_blank" rel="noreferrer">iPhone-App laden</a>
           <Link className="button button-secondary" href="/preise">Tarife ansehen</Link>
         </div>
       </section>
@@ -177,7 +199,7 @@ export default async function HomePage() {
           <span className="brand-mark">R</span>
           <span className="brand-copy"><strong>Reklaio</strong><small>by Kamilunavo</small></span>
         </Link>
-        <p>Digitale Organisation von Verbraucherfällen · Keine Rechtsberatung.</p>
+        <p>Digitale Organisation von Verbraucherfällen · Web und iOS · Keine Rechtsberatung.</p>
       </footer>
     </main>
   );
