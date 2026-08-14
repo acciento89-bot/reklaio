@@ -1,0 +1,104 @@
+.app-store-section {
+  padding-top: 28px;
+}
+
+.app-store-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 28px;
+  padding: 30px;
+  border: 1px solid rgba(83, 239, 232, 0.2);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 82% 20%, rgba(83, 239, 232, 0.1), transparent 32%),
+    linear-gradient(145deg, rgba(22, 36, 84, 0.94), rgba(8, 19, 48, 0.98));
+  box-shadow: 0 28px 75px rgba(2, 6, 22, 0.32);
+}
+
+.app-store-icon {
+  width: 88px;
+  height: 88px;
+  display: grid;
+  place-items: center;
+  border-radius: 24px;
+  background: linear-gradient(145deg, #26366f, #0b1431);
+  border: 1px solid rgba(112, 132, 205, 0.45);
+  color: #f7f8ff;
+  font-size: 2.35rem;
+  font-weight: 850;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.09), 0 18px 42px rgba(2,6,22,.28);
+}
+
+.app-store-copy h2 {
+  margin: 2px 0 10px;
+  font-size: clamp(1.65rem, 3vw, 2.5rem);
+  letter-spacing: -.035em;
+}
+
+.app-store-copy p {
+  max-width: 720px;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.app-store-button {
+  min-width: 170px;
+  padding: 12px 18px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 13px;
+  background: #05070d;
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 16px 36px rgba(0,0,0,.25);
+  transition: transform .2s ease, border-color .2s ease;
+}
+
+.app-store-button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(83, 239, 232, .45);
+}
+
+.app-store-button span {
+  font-size: .72rem;
+  line-height: 1.1;
+  opacity: .82;
+}
+
+.app-store-button strong {
+  margin-top: 2px;
+  font-size: 1.15rem;
+  line-height: 1.1;
+  letter-spacing: -.02em;
+}
+
+@media (max-width: 800px) {
+  .app-store-card {
+    grid-template-columns: auto 1fr;
+  }
+
+  .app-store-button {
+    grid-column: 1 / -1;
+    width: 100%;
+    align-items: center;
+  }
+}
+
+@media (max-width: 560px) {
+  .app-store-card {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 22px;
+  }
+
+  .app-store-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+  }
+}
