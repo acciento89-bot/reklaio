@@ -7,6 +7,8 @@ import { seoGuides } from "@/lib/seo-guides";
 import { CaseTypeIcon } from "@/components/case-type-icon";
 import { HomeSeoJsonLd } from "@/components/home-seo-json-ld";
 
+const REKLAIO_APP_STORE_URL = "https://apps.apple.com/de/app/reklaio/id6799375798";
+
 export const metadata: Metadata = {
   title: "Reklamation mit KI erstellen | Reklaio",
   description:
@@ -71,6 +73,7 @@ export default async function HomePage() {
             <Link className="button button-primary" href={user ? "/neuer-fall" : "/registrieren"}>
               Reklamation kostenlos erstellen
             </Link>
+            <a className="button button-secondary" href={REKLAIO_APP_STORE_URL} target="_blank" rel="noreferrer" aria-label="Reklaio im Apple App Store laden">Im App Store laden ↗</a>
             <Link className="button button-secondary" href="/preise">Free und Pro vergleichen</Link>
           </div>
           {!user && <p className="hero-copy" style={{ marginTop: "0.8rem", fontSize: "0.95rem" }}>Kostenlos starten · keine Kreditkarte erforderlich</p>}
