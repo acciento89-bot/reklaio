@@ -73,7 +73,21 @@ export default async function HomePage() {
             <Link className="button button-primary" href={user ? "/neuer-fall" : "/registrieren"}>
               Reklamation kostenlos erstellen
             </Link>
-            <a className="button button-secondary" href={REKLAIO_APP_STORE_URL} target="_blank" rel="noreferrer" aria-label="Reklaio im Apple App Store laden">Im App Store laden ↗</a>
+            <a
+              href={REKLAIO_APP_STORE_URL}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Reklaio im App Store laden"
+              style={{ display: "inline-block", lineHeight: 0 }}
+            >
+              <img
+                src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/de-de?size=250x83"
+                alt="Laden im App Store"
+                width="170"
+                height="56"
+                style={{ display: "block", width: "170px", height: "auto" }}
+              />
+            </a>
             <Link className="button button-secondary" href="/preise">Free und Pro vergleichen</Link>
           </div>
           {!user && <p className="hero-copy" style={{ marginTop: "0.8rem", fontSize: "0.95rem" }}>Kostenlos starten · keine Kreditkarte erforderlich</p>}
