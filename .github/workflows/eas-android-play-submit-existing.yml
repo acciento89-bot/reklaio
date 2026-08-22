@@ -1,0 +1,56 @@
+name: Reklaio Android Play Submit Existing
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/eas-android-play-submit-existing.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reklaio-android-play-submit-existing
+  cancel-in-progress: false
+
+jobs:
+  submit-existing:
+    name: Submit existing Reklaio Android build to Play internal
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      REKLAIO_EAS_BUILD_ID: f7721ba0-b714-4708-8bd0-7b6f627891b8
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Check Expo token
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          test -n "$EXPO_TOKEN"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Submit exact successful production build to Google Play internal
+        run: |
+          set -euo pipefail
+          eas submit --platform android --id "$REKLAIO_EAS_BUILD_ID" --profile production --wait --non-interactive
+
+      - name: Existing-build Play gate passed
+        run: |
+          echo "Google Play internal submission completed successfully."
+          echo "EAS build ID: $REKLAIO_EAS_BUILD_ID"
