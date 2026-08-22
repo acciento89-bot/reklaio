@@ -2,6 +2,9 @@ name: Reklaio Android Play Internal
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/eas-android-play-internal.yml'
 
 permissions:
   contents: read
@@ -14,7 +17,7 @@ jobs:
   build-and-submit:
     name: Build Android and submit to Google Play internal
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     defaults:
       run:
         working-directory: mobile
@@ -49,11 +52,42 @@ jobs:
       - name: Validate Expo project link
         run: npm run config:check
 
+      - name: Google Play repository preflight
+        run: node scripts/google-play-preflight.mjs
+
+      - name: Verify RevenueCat Android key in EAS production
+        run: |
+          set -euo pipefail
+          eas env:exec production 'test -n "$EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY" && case "$EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY" in goog_*) exit 0 ;; *) exit 1 ;; esac' --non-interactive
+          echo "RevenueCat Android production key is present and uses the goog_ SDK-key format."
+
       - name: Typecheck mobile app
         run: npm run typecheck
 
       - name: Validate Android native project
         run: npx expo prebuild --no-install --platform android
 
-      - name: Build and submit to Google Play internal
-        run: eas build --platform android --profile production --auto-submit --non-interactive --no-wait
+      - name: Build production Android AAB and wait for completion
+        run: |
+          set -euo pipefail
+          eas build --platform android --profile production --wait --json --non-interactive > /tmp/reklaio-eas-build.json
+          node - <<'NODE'
+          const fs = require('fs');
+          const data = JSON.parse(fs.readFileSync('/tmp/reklaio-eas-build.json', 'utf8'));
+          const build = Array.isArray(data) ? data[0] : data;
+          if (!build?.id) throw new Error('EAS build did not return a build id');
+          fs.appendFileSync(process.env.GITHUB_ENV, `REKLAIO_EAS_BUILD_ID=${build.id}\n`);
+          console.log(`Production Android build completed: ${build.id}`);
+          NODE
+
+      - name: Submit exact build to Google Play internal and wait
+        run: |
+          set -euo pipefail
+          test -n "$REKLAIO_EAS_BUILD_ID"
+          eas submit --platform android --id "$REKLAIO_EAS_BUILD_ID" --profile production --wait --non-interactive
+
+      - name: Internal-track release gate passed
+        run: |
+          echo "Reklaio Android production AAB built successfully."
+          echo "Exact EAS build ID: $REKLAIO_EAS_BUILD_ID"
+          echo "Google Play internal submission completed successfully."
