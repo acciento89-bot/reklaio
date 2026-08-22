@@ -17,7 +17,8 @@ function assert(condition, message) {
 
 assert(app.expo?.android?.package === "de.kamilunavo.reklaio", "Unexpected Android package");
 assert(Number(app.expo?.android?.versionCode) >= 6, "Android versionCode must be >= 6");
-assert(app.expo?.version === "0.4.1", "Unexpected Reklaio app version");
+assert(app.expo?.version === "0.4.2", "Unexpected Reklaio app version");
+assert(pkg.version === app.expo?.version, "package.json version must match Expo app version");
 assert(String(pkg.dependencies?.expo || "").startsWith("~57."), "Expo SDK 57 is required for the API 36 release lane");
 assert(pkg.dependencies?.["react-native-purchases"], "react-native-purchases is missing");
 assert(eas.build?.production?.environment === "production", "EAS production build must use the production environment");
@@ -29,5 +30,4 @@ assert(purchases.includes("PLAY_SUBSCRIPTIONS_URL"), "Google Play subscription m
 assert(api.includes("/api/mobile/v1/subscription/sync"), "Server subscription sync call is missing");
 assert(api.includes("/api/mobile/v1/account/delete"), "Account deletion API call is missing");
 
-console.log("Reklaio Google Play repository preflight passed.");
-console.log("External gate remains: EAS production must contain EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY=goog_...");
+console.log("Reklaio Google Play repository preflight passed for 0.4.2.");
