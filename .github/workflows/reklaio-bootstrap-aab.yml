@@ -1,0 +1,75 @@
+name: Reklaio Android Bootstrap AAB
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/reklaio-bootstrap-aab.yml'
+      - 'mobile/**'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Validate Expo token
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$EXPO_TOKEN"
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Repository preflight
+        run: |
+          npm run config:check
+          npm run typecheck
+          node scripts/google-play-preflight.mjs
+
+      - name: Build signed production AAB on EAS
+        shell: bash
+        run: |
+          set -euo pipefail
+          eas build --platform android --profile production --non-interactive --wait --json > /tmp/eas-build.json
+          cat /tmp/eas-build.json
+          node <<'NODE'
+          const fs = require('fs');
+          const raw = fs.readFileSync('/tmp/eas-build.json', 'utf8');
+          const parsed = JSON.parse(raw);
+          const build = Array.isArray(parsed) ? parsed[0] : parsed;
+          const url = build?.artifacts?.buildUrl || build?.artifact?.buildUrl || build?.buildUrl;
+          if (!url) {
+            console.error('No EAS Android AAB URL found in build JSON.');
+            process.exit(1);
+          }
+          fs.writeFileSync('/tmp/reklaio-aab-url.txt', url + '\n');
+          NODE
+          curl --fail --location "$(cat /tmp/reklaio-aab-url.txt)" --output Reklaio-bootstrap-production.aab
+          test -s Reklaio-bootstrap-production.aab
+
+      - name: Upload bootstrap Play AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: Reklaio-bootstrap-production-aab
+          path: mobile/Reklaio-bootstrap-production.aab
+          if-no-files-found: error
+          retention-days: 14
