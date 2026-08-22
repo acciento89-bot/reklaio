@@ -14,7 +14,7 @@ jobs:
   build:
     name: Build Android App Bundle
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     defaults:
       run:
         working-directory: mobile
@@ -52,8 +52,23 @@ jobs:
       - name: Typecheck mobile app
         run: npm run typecheck
 
+      - name: Validate Google Play release contract
+        run: node scripts/google-play-preflight.mjs
+
       - name: Validate Android native project
         run: npx expo prebuild --no-install --platform android
+
+      - name: Verify generated package and API 36 toolchain
+        run: |
+          grep -R -q 'de.kamilunavo.reklaio' android/app/build.gradle android/app/build.gradle.kts android/app/src/main/AndroidManifest.xml 2>/dev/null
+          grep -R -q 'compileSdkVersion.*36\|compileSdk.*36' android 2>/dev/null || {
+            echo "Generated Android project does not expose compileSdk 36."
+            exit 1
+          }
+          grep -R -q 'targetSdkVersion.*36\|targetSdk.*36' android 2>/dev/null || {
+            echo "Generated Android project does not expose targetSdk 36."
+            exit 1
+          }
 
       - name: Build production AAB
         run: eas build --platform android --profile production --non-interactive --no-wait
