@@ -10,7 +10,7 @@ import {
   Text,
   View
 } from "react-native";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { usePurchases } from "@/src/purchases-context";
 import { colors, radius, spacing } from "@/src/theme";
 
@@ -24,6 +24,7 @@ const features = [
 const GERMANY_IOS_PRICE_LABEL = "9,99 €";
 
 export default function ProScreen() {
+  const router = useRouter();
   const {
     ready,
     available,
@@ -99,7 +100,21 @@ export default function ProScreen() {
           headerStyle: { backgroundColor: colors.background },
           headerTintColor: colors.text,
           headerShadowVisible: false,
-          headerBackButtonDisplayMode: "minimal"
+          headerBackVisible: false,
+          headerLeft: () => (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Zurück"
+              hitSlop={16}
+              onPress={() => {
+                if (router.canGoBack()) router.back();
+                else router.replace("/(app)/profile");
+              }}
+              style={({ pressed }) => [styles.headerBack, pressed && styles.pressed]}
+            >
+              <Text style={styles.headerBackText}>←</Text>
+            </Pressable>
+          )
         }}
       />
 
@@ -217,6 +232,18 @@ export default function ProScreen() {
 }
 
 const styles = StyleSheet.create({
+  headerBack: {
+    width: 48,
+    height: 44,
+    alignItems: "flex-start",
+    justifyContent: "center"
+  },
+  headerBackText: {
+    color: colors.text,
+    fontSize: 30,
+    fontWeight: "700",
+    lineHeight: 34
+  },
   screen: {
     flexGrow: 1,
     padding: spacing.md,
