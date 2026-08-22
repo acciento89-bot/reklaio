@@ -5,6 +5,10 @@ on:
   pull_request:
     paths:
       - '.github/workflows/eas-android-aab.yml'
+      - 'mobile/app.json'
+      - 'mobile/eas.json'
+      - 'mobile/package.json'
+      - 'mobile/scripts/google-play-preflight.mjs'
 
 permissions:
   contents: read
