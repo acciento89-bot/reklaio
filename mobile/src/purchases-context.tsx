@@ -43,10 +43,28 @@ function platformApiKey() {
 }
 
 function messageFromError(cause: unknown) {
-  if (cause && typeof cause === "object" && "message" in cause && typeof cause.message === "string") {
-    return cause.message;
+  const raw = cause && typeof cause === "object" && "message" in cause && typeof cause.message === "string"
+    ? cause.message
+    : "";
+  if (__DEV__ && raw) console.warn("RevenueCat/Store error", raw);
+  const normalized = raw.toLowerCase();
+  if (normalized.includes("configuration") || normalized.includes("offering") || normalized.includes("product")) {
+    return "Google Play kann das Reklaio-Pro-Abo gerade noch nicht laden. Bitte versuche es gleich noch einmal.";
   }
-  return "Der App-Store konnte gerade nicht erreicht werden.";
+  return raw || "Der App-Store konnte gerade nicht erreicht werden.";
+}
+
+async function getOfferingsWithRetry() {
+  let lastError: unknown = null;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      return await Purchases.getOfferings();
+    } catch (cause) {
+      lastError = cause;
+      if (attempt === 0) await new Promise((resolve) => setTimeout(resolve, 1200));
+    }
+  }
+  throw lastError;
 }
 
 function wasCancelled(cause: unknown) {
@@ -75,11 +93,9 @@ export function PurchasesProvider({ children }: { children: ReactNode }) {
 
   const loadStoreState = useCallback(async () => {
     if (!available || !user) return;
-    const [info, offerings] = await Promise.all([
-      Purchases.getCustomerInfo(),
-      Purchases.getOfferings()
-    ]);
+    const info = await Purchases.getCustomerInfo();
     setCustomerInfo(info);
+    const offerings = await getOfferingsWithRetry();
     setCurrentOffering(offerings.current ?? null);
   }, [available, user]);
 
