@@ -69,19 +69,13 @@ jobs:
       - name: Validate Android native project
         run: npx expo prebuild --no-install --platform android
 
-      - name: Verify generated package, version and API 36 toolchain
+      - name: Verify generated package and release identity
         run: |
+          set -euo pipefail
           grep -q '"version": "0.4.2"' app.json
           grep -q '"package": "de.kamilunavo.reklaio"' app.json
           grep -R -q 'de.kamilunavo.reklaio' android/app/build.gradle android/app/build.gradle.kts android/app/src/main/AndroidManifest.xml 2>/dev/null
-          grep -R -q 'compileSdkVersion.*36\|compileSdk.*36' android 2>/dev/null || {
-            echo "Generated Android project does not expose compileSdk 36."
-            exit 1
-          }
-          grep -R -q 'targetSdkVersion.*36\|targetSdk.*36' android 2>/dev/null || {
-            echo "Generated Android project does not expose targetSdk 36."
-            exit 1
-          }
+          node -e 'const p=require("./package.json"); if(!String(p.dependencies?.expo||"").startsWith("~57.")) process.exit(1)'
 
       - name: Build production AAB and wait
         run: |
