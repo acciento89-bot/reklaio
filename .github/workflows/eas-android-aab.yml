@@ -2,6 +2,9 @@ name: Reklaio Android AAB
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/eas-android-aab.yml'
 
 permissions:
   contents: read
@@ -14,7 +17,7 @@ jobs:
   build:
     name: Build Android App Bundle
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     defaults:
       run:
         working-directory: mobile
@@ -49,6 +52,10 @@ jobs:
       - name: Validate Expo project link
         run: npm run config:check
 
+      - name: Validate RevenueCat Android production key
+        run: |
+          eas env:exec production 'test -n "$EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY" && case "$EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY" in goog_*) exit 0 ;; *) exit 1 ;; esac' --non-interactive
+
       - name: Typecheck mobile app
         run: npm run typecheck
 
@@ -58,8 +65,10 @@ jobs:
       - name: Validate Android native project
         run: npx expo prebuild --no-install --platform android
 
-      - name: Verify generated package and API 36 toolchain
+      - name: Verify generated package, version and API 36 toolchain
         run: |
+          grep -q '"version": "0.4.2"' app.json
+          grep -q '"package": "de.kamilunavo.reklaio"' app.json
           grep -R -q 'de.kamilunavo.reklaio' android/app/build.gradle android/app/build.gradle.kts android/app/src/main/AndroidManifest.xml 2>/dev/null
           grep -R -q 'compileSdkVersion.*36\|compileSdk.*36' android 2>/dev/null || {
             echo "Generated Android project does not expose compileSdk 36."
@@ -70,5 +79,35 @@ jobs:
             exit 1
           }
 
-      - name: Build production AAB
-        run: eas build --platform android --profile production --non-interactive --no-wait
+      - name: Build production AAB and wait
+        run: |
+          set -euo pipefail
+          eas build --platform android --profile production --wait --json --non-interactive > /tmp/reklaio-build.json
+          node - <<'NODE'
+          const fs = require('fs');
+          const builds = JSON.parse(fs.readFileSync('/tmp/reklaio-build.json', 'utf8'));
+          const build = Array.isArray(builds) ? builds[0] : builds;
+          if (!build?.id) throw new Error('EAS build id missing');
+          if (build.status && build.status !== 'FINISHED') throw new Error(`EAS build status is ${build.status}`);
+          const url = build?.artifacts?.buildUrl || build?.artifacts?.applicationArchiveUrl;
+          if (!url) throw new Error('EAS AAB download URL missing');
+          fs.appendFileSync(process.env.GITHUB_ENV, `REKLAIO_EAS_BUILD_ID=${build.id}\nREKLAIO_AAB_URL=${url}\n`);
+          NODE
+
+      - name: Download and hash production AAB
+        run: |
+          set -euo pipefail
+          curl --fail --location "$REKLAIO_AAB_URL" --output Reklaio-0.4.2-PlayStore.aab
+          test -s Reklaio-0.4.2-PlayStore.aab
+          sha256sum Reklaio-0.4.2-PlayStore.aab > Reklaio-0.4.2-PlayStore.aab.sha256
+          cat Reklaio-0.4.2-PlayStore.aab.sha256
+
+      - name: Upload Reklaio Play bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: Reklaio-0.4.2-PlayStore
+          path: |
+            mobile/Reklaio-0.4.2-PlayStore.aab
+            mobile/Reklaio-0.4.2-PlayStore.aab.sha256
+          if-no-files-found: error
+          retention-days: 14
