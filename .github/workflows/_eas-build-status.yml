@@ -1,0 +1,28 @@
+name: Reklaio EAS Build Status
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/_eas-build-status.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  status:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: Latest Android production builds
+        run: eas build:list --platform android --build-profile production --limit 3 --json --non-interactive
