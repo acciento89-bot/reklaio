@@ -21,9 +21,14 @@ export default function ImprintPage() {
         <p>Über das Kontaktformular ist eine direkte elektronische Nachricht möglich. Die Antwort erfolgt an die dort angegebene E-Mail-Adresse.</p>
       </section>
 
+      <section>
+        <h2>Wirtschafts-Identifikationsnummer</h2>
+        <p>Wirtschafts-Identifikationsnummer gemäß § 139c AO: DE464473083-00001</p>
+      </section>
+
       {legalOperator.vatId || legalOperator.registerNumber ? (
         <section>
-          <h2>Register- und Steuerangaben</h2>
+          <h2>Weitere Register- und Steuerangaben</h2>
           {legalOperator.registerNumber ? <p>{legalOperator.registerName || "Register"}: {legalOperator.registerNumber}</p> : null}
           {legalOperator.vatId ? <p>Umsatzsteuer-Identifikationsnummer: {legalOperator.vatId}</p> : null}
         </section>
