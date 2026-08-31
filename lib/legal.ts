@@ -1,4 +1,4 @@
-export const LEGAL_VERSION = "2026-08-05";
+export const LEGAL_VERSION = "2026-08-31";
 
 export const legalOperator = {
   serviceName: "Reklaio",
@@ -8,7 +8,7 @@ export const legalOperator = {
   postalCity: process.env.LEGAL_POSTAL_CITY?.trim() || "40595 Düsseldorf",
   country: process.env.LEGAL_COUNTRY?.trim() || "Deutschland",
   email: process.env.LEGAL_EMAIL?.trim() || "reklaio@kamilunavo.com",
-  phone: process.env.LEGAL_PHONE?.trim() || "",
+  phone: process.env.LEGAL_PHONE?.trim() || "+49 151 14082801",
   vatId: process.env.LEGAL_VAT_ID?.trim() || "",
   registerName: process.env.LEGAL_REGISTER_NAME?.trim() || "",
   registerNumber: process.env.LEGAL_REGISTER_NUMBER?.trim() || "",
