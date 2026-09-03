@@ -36,6 +36,18 @@ export const metadata: Metadata = {
   },
   description:
     "Reklamationen, Rückzahlungen, Kündigungen, Belege und Fristen in einer nachvollziehbaren digitalen Fallakte organisieren.",
+  keywords: [
+    "Reklamation schreiben",
+    "Reklamationsschreiben",
+    "Paket nicht angekommen",
+    "Rückzahlung fehlt",
+    "defekte Ware reklamieren",
+    "Kündigung wird ignoriert"
+  ],
+  authors: [{ name: "Kamilunavo", url: "https://kamilunavo.com" }],
+  creator: "Kamilunavo",
+  publisher: "Kamilunavo",
+  category: "Verbraucherservice",
   applicationName: "Reklaio",
   manifest: "/manifest.webmanifest",
   icons: {
@@ -57,6 +69,17 @@ export const metadata: Metadata = {
     title: "Reklaio – Dein Fall. Deine Frist. Dein Überblick.",
     description: "Belege, Chronik, Fristen und empfohlene nächste Schritte an einem Ort.",
     images: ["/reklaio-banner.svg"]
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1
+    }
   }
 };
 

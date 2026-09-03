@@ -8,6 +8,12 @@ type SeoGuidePageProps = {
 
 function GuideJsonLd({ guide }: SeoGuidePageProps) {
   const canonicalUrl = `https://reklaio.de/${guide.slug}`;
+  const isNewGuide = [
+    "paket-nicht-angekommen",
+    "retoure-rueckzahlung-fehlt",
+    "falsche-lieferung-reklamieren",
+    "kuendigung-wird-ignoriert"
+  ].includes(guide.slug);
   const structuredData = [
     {
       "@context": "https://schema.org",
@@ -17,8 +23,8 @@ function GuideJsonLd({ guide }: SeoGuidePageProps) {
       url: canonicalUrl,
       mainEntityOfPage: canonicalUrl,
       inLanguage: "de-DE",
-      datePublished: "2026-08-07",
-      dateModified: "2026-08-07",
+      datePublished: isNewGuide ? "2026-09-03" : "2026-08-07",
+      dateModified: "2026-09-03",
       author: {
         "@type": "Organization",
         name: "Kamilunavo",
@@ -190,7 +196,7 @@ export function SeoGuidePage({ guide }: SeoGuidePageProps) {
                 ))}
               </ul>
               <p className="guide-source-note">
-                Stand: 7. August 2026. Die Inhalte dienen der allgemeinen Information und ersetzen keine individuelle Rechtsberatung.
+                Stand: <time dateTime="2026-09-03">3. September 2026</time>. Die Inhalte dienen der allgemeinen Information und ersetzen keine individuelle Rechtsberatung.
               </p>
             </section>
           </div>

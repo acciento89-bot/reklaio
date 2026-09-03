@@ -51,6 +51,44 @@ const structuredData = [
         url: "https://reklaio.de/preise"
       }
     ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "Kann ich Reklaio kostenlos nutzen?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Ja. Fallakten, Belege, Fristen, Aufgaben, Vorlagen, E-Mail-Versand, Fallassistent und PDF-Export gehören zum Free-Tarif. Freiwillige KI-Funktionen sind Reklaio Pro vorbehalten."
+        }
+      },
+      {
+        "@type": "Question",
+        name: "Erstellt Reklaio ein Reklamationsschreiben?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Reklaio stellt Vorlagen bereit und kann im Pro-Tarif aus bestätigten Falldaten einen individuellen Entwurf vorbereiten. Nutzer prüfen und versenden jedes Schreiben selbst."
+        }
+      },
+      {
+        "@type": "Question",
+        name: "Ist Reklaio eine Rechtsberatung?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Nein. Reklaio organisiert Informationen und unterstützt bei sachlichen Formulierungen, trifft aber keine verbindliche rechtliche Entscheidung."
+        }
+      },
+      {
+        "@type": "Question",
+        name: "Wo werden meine Dokumente gespeichert?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Fallakten und private Dokumente werden auf der Reklaio-Infrastruktur in Deutschland gespeichert und sind nicht öffentlich erreichbar."
+        }
+      }
+    ]
   }
 ];
 

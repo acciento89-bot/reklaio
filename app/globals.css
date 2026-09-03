@@ -199,6 +199,38 @@ img { max-width: 100%; }
 .workflow-step p { margin: 0; color: var(--muted); line-height: 1.65; font-size: .91rem; }
 .professional-workflow .workflow-step { background: linear-gradient(180deg, rgba(255,255,255,.012), transparent); }
 
+.home-faq-section { padding-top: 20px; }
+.home-faq {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.home-faq details {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel);
+}
+.home-faq summary {
+  min-height: 72px;
+  padding: 22px 54px 20px 22px;
+  position: relative;
+  cursor: pointer;
+  list-style: none;
+  font-weight: 740;
+  line-height: 1.4;
+}
+.home-faq summary::-webkit-details-marker { display: none; }
+.home-faq summary::after {
+  content: "+";
+  position: absolute;
+  top: 20px;
+  right: 22px;
+  color: var(--accent-2);
+  font-size: 1.2rem;
+}
+.home-faq details[open] summary::after { content: "−"; }
+.home-faq p { margin: 0; padding: 0 22px 22px; color: var(--muted); line-height: 1.7; }
+
 .closing-cta {
   display: flex;
   justify-content: space-between;
@@ -288,6 +320,7 @@ img { max-width: 100%; }
   .hero-actions .button, .closing-cta .button { width: 100%; }
   .trust-row { display: grid; gap: 10px; }
   .professional-strip-grid, .professional-case-grid, .case-grid, .workflow { grid-template-columns: 1fr; }
+  .home-faq { grid-template-columns: 1fr; }
   .professional-strip-grid > div { border-right: 0; border-bottom: 1px solid rgba(220,232,237,.09); }
   .professional-strip-grid > div:last-child { border-bottom: 0; }
   .workflow-step { border-right: 0; }

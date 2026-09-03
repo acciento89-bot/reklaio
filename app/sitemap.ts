@@ -1,36 +1,33 @@
 import type { MetadataRoute } from "next";
+import { seoGuides } from "@/lib/seo-guides";
 
 const BASE_URL = "https://reklaio.de";
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  const guidePages: MetadataRoute.Sitemap = seoGuides.map((guide) => ({
+    url: `${BASE_URL}/${guide.slug}`,
+    lastModified: new Date("2026-09-03"),
+    changeFrequency: "monthly",
+    priority: 0.9
+  }));
+
   return [
     {
       url: BASE_URL,
+      lastModified: new Date("2026-09-03"),
       changeFrequency: "weekly",
       priority: 1
     },
     {
       url: `${BASE_URL}/ratgeber`,
+      lastModified: new Date("2026-09-03"),
       changeFrequency: "weekly",
       priority: 0.9
     },
-    {
-      url: `${BASE_URL}/reklamation-schreiben`,
-      changeFrequency: "monthly",
-      priority: 0.9
-    },
-    {
-      url: `${BASE_URL}/defekte-ware-reklamieren`,
-      changeFrequency: "monthly",
-      priority: 0.9
-    },
-    {
-      url: `${BASE_URL}/rueckzahlung-fordern`,
-      changeFrequency: "monthly",
-      priority: 0.9
-    },
+    ...guidePages,
     {
       url: `${BASE_URL}/preise`,
+      lastModified: new Date("2026-09-03"),
       changeFrequency: "monthly",
       priority: 0.8
     },
@@ -43,6 +40,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${BASE_URL}/kontakt`,
       changeFrequency: "yearly",
       priority: 0.4
+    },
+    {
+      url: `${BASE_URL}/impressum`,
+      changeFrequency: "yearly",
+      priority: 0.2
+    },
+    {
+      url: `${BASE_URL}/datenschutz`,
+      changeFrequency: "yearly",
+      priority: 0.2
     }
   ];
 }

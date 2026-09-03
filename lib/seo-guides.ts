@@ -1,7 +1,11 @@
 export type SeoGuideSlug =
   | "reklamation-schreiben"
   | "defekte-ware-reklamieren"
-  | "rueckzahlung-fordern";
+  | "rueckzahlung-fordern"
+  | "paket-nicht-angekommen"
+  | "retoure-rueckzahlung-fehlt"
+  | "falsche-lieferung-reklamieren"
+  | "kuendigung-wird-ignoriert";
 
 export type SeoGuide = {
   slug: SeoGuideSlug;
@@ -326,7 +330,168 @@ export const seoGuides: SeoGuide[] = [
         href: "https://europa.eu/youreurope/citizens/consumers/shopping/guarantees/index_de.htm"
       }
     ],
-    related: ["reklamation-schreiben", "defekte-ware-reklamieren"]
+    related: ["reklamation-schreiben", "retoure-rueckzahlung-fehlt"]
+  },
+  {
+    slug: "paket-nicht-angekommen",
+    title: "Paket nicht angekommen: Händler richtig kontaktieren",
+    metaTitle: "Paket nicht angekommen? Händler anschreiben",
+    metaDescription:
+      "Dein Paket ist verspätet oder laut Tracking zugestellt? So sicherst du Nachweise, kontaktierst den Händler und setzt einen nachvollziehbaren Termin.",
+    eyebrow: "Lieferung fehlt",
+    lead:
+      "Wenn eine Online-Bestellung nicht ankommt, solltest du Tracking, Lieferanschrift und alle Zustellinformationen sichern und den Verkäufer schriftlich informieren.",
+    overview:
+      "Bei einem Verbrauchsgüterkauf trägt der Verkäufer das Versandrisiko grundsätzlich bis zur Übergabe. Eine Ausnahme kann bestehen, wenn du selbst einen nicht vom Händler benannten Transportdienst beauftragt hast. Ist kein Liefertermin vereinbart, muss die Ware grundsätzlich spätestens 30 Tage nach Vertragsschluss übergeben werden.",
+    keyPoints: [
+      "Trackingverlauf und angekündigten Liefertermin sichern",
+      "Ablageort, Nachbarn und Lieferanschrift prüfen",
+      "Den Händler schriftlich statt nur den Paketdienst kontaktieren",
+      "Antwort, Nachforschung und Erstattung dokumentieren"
+    ],
+    steps: [
+      { title: "Zustellstatus prüfen", text: "Speichere den vollständigen Trackingverlauf und prüfe Ablageort, Hausgemeinschaft, Paketshop und die beim Kauf verwendete Lieferanschrift." },
+      { title: "Nachweise sammeln", text: "Halte Bestellnummer, Kaufpreis, zugesagten Liefertermin und alle Benachrichtigungen fest. Fotografiere einen ungeeigneten Ablageort, falls das für den Fall relevant ist." },
+      { title: "Verkäufer informieren", text: "Melde die fehlende Lieferung schriftlich beim Händler. Bitte um Prüfung und eine klare Aussage, bis wann geliefert oder eine andere Lösung angeboten wird." },
+      { title: "Konkreten Termin nennen", text: "Setze keinen beliebigen Standardzeitraum, sondern ein nachvollziehbares Kalenderdatum, das zur bisherigen Verzögerung und zur Ware passt." },
+      { title: "Ergebnis nachhalten", text: "Dokumentiere Nachforschungsnummer, Antworten, Ersatzlieferung oder Rückzahlung. Bestätige telefonische Zusagen anschließend kurz schriftlich." }
+    ],
+    checklist: ["Bestellbestätigung", "Bestell- und Sendungsnummer", "Lieferanschrift", "Angekündigter Liefertermin", "Vollständiger Trackingverlauf", "Zustellbenachrichtigungen", "Kontakt mit Händler und Paketdienst", "Zahlungsnachweis"],
+    templateTitle: "Nachricht bei fehlender Lieferung",
+    templateIntro: "Passe den Text an den tatsächlichen Tracking- und Kommunikationsverlauf an.",
+    template: [
+      "Betreff: Bestellung [Bestellnummer] bislang nicht erhalten",
+      "Die für den [Datum] angekündigte Bestellung ist bei mir bislang nicht eingegangen. Im Tracking wird seit [Datum] der Status [Status] angezeigt.",
+      "Bitte prüfen Sie den Versand und teilen Sie mir bis zum [Datum] mit, wann die Lieferung erfolgt beziehungsweise wie Sie den Fall lösen.",
+      "Bestellbestätigung und Trackingverlauf habe ich als Nachweis beigefügt. Bitte bestätigen Sie den Eingang dieser Nachricht."
+    ],
+    faq: [
+      { question: "Muss ich mich an den Paketdienst wenden?", answer: "Dein Vertrag besteht normalerweise mit dem Händler. Du kannst den Paketdienst zusätzlich kontaktieren, solltest den Verkäufer aber ebenfalls schriftlich informieren und den Verlauf sichern." },
+      { question: "Was gilt, wenn das Tracking zugestellt anzeigt?", answer: "Bitte den Händler um Zustellnachweis und prüfe Ablageort sowie mögliche Empfangspersonen. Ein Trackingstatus allein klärt nicht in jedem Fall, ob die Ware wirksam übergeben wurde." },
+      { question: "Kann ich sofort eine Ersatzlieferung verlangen?", answer: "Welche Lösung besteht, hängt vom Vertrag und vom konkreten Versandverlauf ab. Dokumentiere den Sachverhalt und fordere den Händler zunächst zu einer klaren Klärung innerhalb eines nachvollziehbaren Zeitraums auf." }
+    ],
+    sources: [
+      { label: "§ 475 BGB – Lieferung und Versandrisiko", href: "https://www.gesetze-im-internet.de/bgb/__475.html" },
+      { label: "Verbraucherzentrale – Online-Bestellung kommt nicht an", href: "https://www.verbraucherzentrale.de/wissen/digitale-welt/onlinehandel/was-tun-wenn-meine-onlinebestellung-nach-dem-versand-nicht-ankommt-28083" }
+    ],
+    related: ["retoure-rueckzahlung-fehlt", "reklamation-schreiben"]
+  },
+  {
+    slug: "retoure-rueckzahlung-fehlt",
+    title: "Retoure zurückgeschickt, aber Rückzahlung fehlt",
+    metaTitle: "Retoure: Rückzahlung fehlt – was jetzt?",
+    metaDescription:
+      "Die Retoure wurde zugestellt, aber dein Geld fehlt? So dokumentierst du Widerruf, Rücksendung und Zahlung und formulierst eine sachliche Nachfrage.",
+    eyebrow: "Erstattung nach Retoure",
+    lead:
+      "Fehlt die Rückzahlung nach einer Retoure, sind Widerruf, Einlieferungsbeleg, Zustellung und die ursprüngliche Zahlung die wichtigsten Nachweise.",
+    overview:
+      "Nach einem wirksamen Widerruf sind empfangene Leistungen grundsätzlich spätestens nach 14 Tagen zurückzugewähren. Bei Waren darf der Händler die Rückzahlung jedoch zurückhalten, bis die Ware eingegangen ist oder du die Absendung nachgewiesen hast. Für die Rückzahlung ist grundsätzlich dasselbe Zahlungsmittel zu verwenden.",
+    keyPoints: ["Widerruf und Datum eindeutig belegen", "Einlieferungs- und Zustellnachweis sichern", "Zahlungsweg und Betrag kontrollieren", "Händler mit vollständigen Daten anschreiben"],
+    steps: [
+      { title: "Widerruf zuordnen", text: "Notiere, wann und auf welchem Weg du den Widerruf erklärt hast. Sichere Bestätigung, Bestellnummer und die verwendete E-Mail-Adresse." },
+      { title: "Rücksendung belegen", text: "Bewahre Einlieferungsbeleg, Sendungsnummer, Paketgewicht und Zustellstatus auf. Dokumentiere bei wertvoller Ware möglichst auch Inhalt und Verpackung." },
+      { title: "Zahlung prüfen", text: "Kontrolliere das ursprünglich verwendete Zahlungsmittel. Erfasse Kaufpreis, Versandkosten, Teilrückzahlungen, Gutscheine und das erwartete Erstattungsdatum getrennt." },
+      { title: "Sachlich nachfragen", text: "Sende dem Händler alle Zuordnungsdaten in einer Nachricht und bitte um Prüfung sowie Rückzahlung bis zu einem konkreten Datum." },
+      { title: "Antworten dokumentieren", text: "Speichere Eingangsbestätigungen und Begründungen. Halte fest, ob der Händler den Wareneingang, eine unvollständige Retoure oder eine bereits veranlasste Zahlung behauptet." }
+    ],
+    checklist: ["Bestellnummer", "Widerrufserklärung", "Retourenlabel", "Einlieferungsbeleg", "Sendungsnummer und Zustellung", "Kaufpreis und Zahlungsart", "Erwarteter Erstattungsbetrag", "Bisheriger Schriftverkehr"],
+    templateTitle: "Nachfrage zur ausstehenden Erstattung",
+    templateIntro: "Füge Kopien der Nachweise bei und bewahre die Originale auf.",
+    template: [
+      "Betreff: Ausstehende Rückzahlung zu Bestellung [Bestellnummer]",
+      "Den Vertrag habe ich am [Datum] widerrufen und die Ware am [Datum] unter der Sendungsnummer [Nummer] zurückgesandt. Laut Versandnachweis wurde die Retoure am [Datum] zugestellt.",
+      "Eine Rückzahlung in Höhe von [Betrag] Euro ist auf dem ursprünglich verwendeten Zahlungsmittel bislang nicht eingegangen.",
+      "Bitte prüfen Sie den Vorgang und veranlassen Sie die Rückzahlung bis zum [Datum]. Die Versandnachweise sind beigefügt."
+    ],
+    faq: [
+      { question: "Ab wann laufen die 14 Tage?", answer: "Die Frist knüpft grundsätzlich an den Widerruf an. Bei Waren darf der Händler die Erstattung aber zurückhalten, bis er die Ware erhalten hat oder du ihre Absendung nachweist." },
+      { question: "Darf der Händler nur einen Gutschein erstatten?", answer: "Grundsätzlich ist dasselbe Zahlungsmittel zu verwenden. Etwas anderes kann ausdrücklich vereinbart werden, sofern dir dadurch keine Kosten entstehen." },
+      { question: "Was tun, wenn die Retoure angeblich unvollständig war?", answer: "Bitte um eine konkrete Aufstellung und sichere deine Nachweise zu Inhalt, Gewicht, Verpackung und Versand. Antworte nur mit Tatsachen, die du belegen kannst." }
+    ],
+    sources: [
+      { label: "§ 357 BGB – Rückzahlung nach Widerruf", href: "https://www.gesetze-im-internet.de/bgb/__357.html" },
+      { label: "Verbraucherzentrale – Retoure richtig zurückschicken", href: "https://www.verbraucherzentrale.de/wissen/digitale-welt/onlinehandel/retoure-angeblich-unvollstaendig-so-schicken-sie-ware-richtig-zurueck-60722" }
+    ],
+    related: ["paket-nicht-angekommen", "rueckzahlung-fordern"]
+  },
+  {
+    slug: "falsche-lieferung-reklamieren",
+    title: "Falsche Lieferung reklamieren und Nachweise sichern",
+    metaTitle: "Falsche Lieferung reklamieren: Muster und Ablauf",
+    metaDescription:
+      "Falsches Produkt oder unvollständige Bestellung erhalten? So dokumentierst du die Abweichung und forderst beim Verkäufer eine passende Lösung an.",
+    eyebrow: "Ware falsch oder unvollständig",
+    lead:
+      "Weicht die Lieferung von deiner Bestellung ab, solltest du Verpackung, Etikett, Inhalt und Bestellbestätigung gemeinsam dokumentieren.",
+    overview:
+      "Eine andere als die vereinbarte Ware oder ein fehlender Bestandteil kann einen Sachmangel darstellen. Gewährleistungsansprüche richten sich grundsätzlich gegen den Verkäufer. Im Rahmen der Nacherfüllung kommen je nach Fall die Lieferung der bestellten Ware oder die Vervollständigung der Lieferung in Betracht.",
+    keyPoints: ["Paketetikett und gesamten Inhalt fotografieren", "Bestellung und gelieferte Variante vergleichen", "Verkäufer schriftlich informieren", "Rücksendung erst nach abgestimmter Abwicklung"],
+    steps: [
+      { title: "Lieferung vollständig aufnehmen", text: "Fotografiere Versandkarton, Etikett, Artikel, Seriennummern und sämtliches Zubehör. Entsorge Verpackung und Lieferschein vor der Klärung nicht." },
+      { title: "Abweichung genau benennen", text: "Vergleiche Produktname, Modell, Farbe, Größe, Menge und Lieferumfang mit der Bestellbestätigung. Liste die Unterschiede sachlich auf." },
+      { title: "Verkäufer anschreiben", text: "Teile Bestellnummer, Lieferdatum und Abweichung mit. Formuliere eindeutig, welche vertragsgemäße Lösung du erwartest." },
+      { title: "Rückgabe abstimmen", text: "Bitte um ein Rücksendeetikett oder eine Abholung. Versende die falsch gelieferte Ware nicht unfrei und nicht ohne nachvollziehbaren Nachweis." },
+      { title: "Austausch kontrollieren", text: "Prüfe die Ersatzlieferung sofort und dokumentiere Erstattung, Nachlieferung sowie die Rücksendung des falschen Artikels in einem Verlauf." }
+    ],
+    checklist: ["Bestellbestätigung", "Lieferschein", "Versandetikett", "Fotos von Karton und Inhalt", "Artikel- und Seriennummer", "Bestellte und gelieferte Variante", "Lieferdatum", "Kommunikation mit dem Verkäufer"],
+    templateTitle: "Reklamation einer Falschlieferung",
+    templateIntro: "Beschreibe nur die konkrete Abweichung und füge aussagekräftige Fotos bei.",
+    template: [
+      "Betreff: Falsche Lieferung zu Bestellung [Bestellnummer]",
+      "Am [Datum] erhielt ich statt des bestellten Artikels [Bestellung] den Artikel [gelieferte Ware]. Die Abweichung ist auf den beigefügten Fotos und der Bestellbestätigung erkennbar.",
+      "Ich bitte um Lieferung der bestellten Ware und um Mitteilung, wie die Falschlieferung kostenfrei zurückgegeben werden soll.",
+      "Bitte bestätigen Sie den weiteren Ablauf bis zum [Datum]."
+    ],
+    faq: [
+      { question: "Muss ich die falsche Ware bezahlen?", answer: "Wenn du etwas anderes bestellt hast, sollte der Vorgang zuerst eindeutig dem Vertrag zugeordnet werden. Nutze oder entsorge die Ware nicht und kläre die Rückgabe schriftlich mit dem Verkäufer." },
+      { question: "Wer trägt die Rücksendekosten?", answer: "Die für eine berechtigte Nacherfüllung erforderlichen Transportkosten trägt grundsätzlich der Verkäufer. Stimme den Versandweg vorher ab." },
+      { question: "Was gilt bei fehlendem Zubehör?", answer: "Vergleiche den vereinbarten Lieferumfang mit der tatsächlichen Lieferung und liste jedes fehlende Teil auf. Bitte um Vervollständigung oder eine andere passende Nacherfüllung." }
+    ],
+    sources: [
+      { label: "§ 434 BGB – Sachmangel", href: "https://www.gesetze-im-internet.de/bgb/__434.html" },
+      { label: "§ 439 BGB – Nacherfüllung und Kosten", href: "https://www.gesetze-im-internet.de/bgb/__439.html" }
+    ],
+    related: ["defekte-ware-reklamieren", "reklamation-schreiben"]
+  },
+  {
+    slug: "kuendigung-wird-ignoriert",
+    title: "Kündigung wird ignoriert: Zugang und Verlauf belegen",
+    metaTitle: "Kündigung wird ignoriert? So dokumentierst du sie",
+    metaDescription:
+      "Keine Kündigungsbestätigung oder weitere Abbuchungen? So sicherst du Zugangsnachweis, Vertragsdaten und Antworten und forderst Klärung.",
+    eyebrow: "Vertragsende ungeklärt",
+    lead:
+      "Bleibt eine Kündigungsbestätigung aus, kommt es vor allem darauf an, den Inhalt der Erklärung, den Zugang beim Anbieter und das richtige Vertragsende nachvollziehbar zu belegen.",
+    overview:
+      "Eine empfangsbedürftige Willenserklärung wird grundsätzlich mit ihrem Zugang wirksam. Eine Bestätigung ist daher nicht immer Voraussetzung für die Wirksamkeit, kann aber als Nachweis hilfreich sein. Ob Form, Frist und Vertragsende stimmen, hängt vom konkreten Vertrag und den gesetzlichen Vorgaben ab.",
+    keyPoints: ["Vertrag und Kündigungsfrist prüfen", "Wortlaut der Kündigung sichern", "Zugang beim richtigen Empfänger belegen", "Weitere Rechnungen und Abbuchungen getrennt dokumentieren"],
+    steps: [
+      { title: "Vertragsdaten prüfen", text: "Notiere Vertragspartner, Kunden- oder Vertragsnummer, Laufzeit, Kündigungsfrist und den gewünschten Beendigungszeitpunkt." },
+      { title: "Erklärung und Zugang sichern", text: "Bewahre die vollständige Kündigung sowie E-Mail-Header, Einschreibebeleg, Faxbericht, Portalbestätigung oder andere Zugangsnachweise auf." },
+      { title: "Bestätigung anfordern", text: "Bitte den Anbieter schriftlich um Bestätigung von Eingang und Vertragsende. Sende die Kündigung erneut als Kopie, ohne den ursprünglichen Zugang aufzugeben." },
+      { title: "Abweichungen widersprechen", text: "Wenn ein anderes Vertragsende genannt oder weiter abgebucht wird, widersprich konkret und verweise auf Kündigung, Zugang und deine Vertragsunterlagen." },
+      { title: "Fallchronik führen", text: "Halte jede Rechnung, Abbuchung, Rücklastschrift, Antwort und telefonische Zusage mit Datum fest. So bleibt der weitere Verlauf prüfbar." }
+    ],
+    checklist: ["Vertrag und AGB", "Kunden- oder Vertragsnummer", "Kündigungsschreiben", "Versand- oder Zugangsnachweis", "Gewünschtes Vertragsende", "Antworten des Anbieters", "Rechnungen nach der Kündigung", "Kontoauszüge zu weiteren Abbuchungen"],
+    templateTitle: "Nachfrage zum Vertragsende",
+    templateIntro: "Prüfe vor dem Versand Vertragspartner, Kündigungsfrist und das von dir genannte Datum.",
+    template: [
+      "Betreff: Bestätigung meiner Kündigung – Vertragsnummer [Nummer]",
+      "Meine Kündigung vom [Datum] ist Ihnen am [Datum] über [Versandweg] zugegangen. Den Nachweis füge ich erneut bei.",
+      "Bitte bestätigen Sie mir den Eingang sowie die Beendigung des Vertrags zum [Datum], hilfsweise zum nächstmöglichen Zeitpunkt.",
+      "Sollten Sie von einem anderen Vertragsende ausgehen, bitte ich bis zum [Datum] um eine nachvollziehbare Begründung unter Angabe der zugrunde gelegten Vertragsregelung."
+    ],
+    faq: [
+      { question: "Ist eine Kündigung ohne Bestätigung unwirksam?", answer: "Nicht zwingend. Entscheidend ist regelmäßig, ob die Erklärung form- und fristgerecht beim richtigen Empfänger zugegangen ist. Die Bestätigung erleichtert allerdings den Nachweis." },
+      { question: "Wie beweise ich den Zugang?", answer: "Geeignet können je nach Versandweg etwa Portalbestätigungen, E-Mail-Header, Faxberichte oder Zustellnachweise sein. Ein Beleg über den Versand beweist nicht in jedem Fall auch den Inhalt." },
+      { question: "Was mache ich bei weiteren Abbuchungen?", answer: "Dokumentiere Betrag, Datum und Verwendungszweck, widersprich dem Anbieter schriftlich und prüfe die konkrete Forderung. Bankmaßnahmen und Rückbuchungsfristen solltest du gesondert mit deiner Bank klären." }
+    ],
+    sources: [
+      { label: "§ 130 BGB – Wirksamwerden einer Willenserklärung", href: "https://www.gesetze-im-internet.de/bgb/__130.html" },
+      { label: "§ 312k BGB – Kündigung von Verbraucherverträgen im elektronischen Geschäftsverkehr", href: "https://www.gesetze-im-internet.de/bgb/__312k.html" }
+    ],
+    related: ["reklamation-schreiben", "retoure-rueckzahlung-fehlt"]
   }
 ];
 

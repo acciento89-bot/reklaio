@@ -178,6 +178,34 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section className="container section home-faq-section" aria-labelledby="home-faq-title">
+        <div className="section-heading professional-section-heading">
+          <div>
+            <span className="eyebrow">Häufige Fragen</span>
+            <h2 id="home-faq-title">Was Reklaio für dich übernimmt</h2>
+          </div>
+          <p>Klare Antworten zu Kosten, Datenschutz und dem Unterschied zwischen Organisation und Rechtsberatung.</p>
+        </div>
+        <div className="home-faq">
+          <details>
+            <summary>Kann ich Reklaio kostenlos nutzen?</summary>
+            <p>Ja. Fallakten, Belege, Fristen, Aufgaben, Vorlagen, E-Mail-Versand, Fallassistent und PDF-Export gehören zum Free-Tarif. Freiwillige KI-Funktionen sind Reklaio Pro vorbehalten.</p>
+          </details>
+          <details>
+            <summary>Erstellt Reklaio ein Reklamationsschreiben?</summary>
+            <p>Reklaio stellt bewährte Vorlagen bereit und kann im Pro-Tarif aus deinen bestätigten Falldaten einen individuellen Entwurf vorbereiten. Du prüfst und versendest jedes Schreiben selbst.</p>
+          </details>
+          <details>
+            <summary>Ist Reklaio eine Rechtsberatung?</summary>
+            <p>Nein. Reklaio organisiert Informationen und unterstützt bei sachlichen Formulierungen, prüft aber nicht verbindlich, ob ein Anspruch besteht oder welcher rechtliche Schritt im Einzelfall erforderlich ist.</p>
+          </details>
+          <details>
+            <summary>Wo werden meine Dokumente gespeichert?</summary>
+            <p>Deine Fallakten und privaten Dokumente werden auf der Reklaio-Infrastruktur in Deutschland gespeichert und sind nicht öffentlich erreichbar.</p>
+          </details>
+        </div>
+      </section>
+
       <section className="container closing-cta">
         <div>
           <span className="eyebrow">Bereit für deine Reklamation?</span>
