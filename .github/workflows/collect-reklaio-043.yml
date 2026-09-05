@@ -1,4 +1,4 @@
-name: Collect Reklaio 0.4.3 AAB
+name: Build and collect Reklaio 0.4.3 AAB
 
 on:
   push:
@@ -22,28 +22,16 @@ jobs:
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
-      - name: Wait for EAS build
-        env:
-          BUILD_ID: 5ebed222-f947-4e11-8025-1694e4785df1
+      - name: Install dependencies
+        run: npm install
+      - name: Build signed Android bundle
+        run: eas build --platform android --profile production --non-interactive --wait --json > build.json
+      - name: Download signed bundle
         run: |
-          for attempt in $(seq 1 80); do
-            eas build:list --platform android --limit 20 --json --non-interactive > builds.json
-            node -e "const fs=require('fs'); const bs=require('./builds.json'); const b=bs.find(x=>x.id===process.env.BUILD_ID); if(!b) process.exit(2); fs.writeFileSync('build.json', JSON.stringify(b))"
-            status=$(node -e "const b=require('./build.json'); console.log(b.status)")
-            echo "EAS build status: $status"
-            if [ "$status" = "FINISHED" ]; then
-              node -e "const fs=require('fs'); const b=require('./build.json'); fs.writeFileSync('build-url.txt', b.artifacts.buildUrl)"
-              break
-            fi
-            if [ "$status" = "ERRORED" ] || [ "$status" = "CANCELED" ]; then
-              exit 1
-            fi
-            sleep 30
-          done
-          test -s build-url.txt
-          curl -L --fail "$(cat build-url.txt)" -o reklaio-0.4.3-7.aab
+          node -e "const fs=require('fs'); const raw=require('./build.json'); const b=Array.isArray(raw)?raw[0]:raw; fs.writeFileSync('build-url.txt', b.artifacts.buildUrl)"
+          curl -L --fail "$(cat build-url.txt)" -o reklaio-0.4.3.aab
       - uses: actions/upload-artifact@v4
         with:
-          name: Reklaio-0.4.3-7-PlayStore
-          path: reklaio-0.4.3-7.aab
+          name: Reklaio-0.4.3-PlayStore
+          path: reklaio-0.4.3.aab
           if-no-files-found: error
