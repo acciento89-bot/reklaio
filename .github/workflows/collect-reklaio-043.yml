@@ -27,7 +27,8 @@ jobs:
           BUILD_ID: 5ebed222-f947-4e11-8025-1694e4785df1
         run: |
           for attempt in $(seq 1 80); do
-            eas build:view "$BUILD_ID" --json > build.json
+            eas build:list --platform android --limit 20 --json --non-interactive > builds.json
+            node -e "const fs=require('fs'); const bs=require('./builds.json'); const b=bs.find(x=>x.id===process.env.BUILD_ID); if(!b) process.exit(2); fs.writeFileSync('build.json', JSON.stringify(b))"
             status=$(node -e "const b=require('./build.json'); console.log(b.status)")
             echo "EAS build status: $status"
             if [ "$status" = "FINISHED" ]; then
