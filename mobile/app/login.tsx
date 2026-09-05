@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useRouter } from "expo-router";
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -45,9 +46,9 @@ export default function LoginScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={styles.screen}
     >
-      <View style={styles.brandMark}>
-        <Text style={styles.brandLetter}>R</Text>
-      </View>
+      <View pointerEvents="none" style={styles.glowPrimary} />
+      <View pointerEvents="none" style={styles.glowSecondary} />
+      <Image accessibilityIgnoresInvertColors source={require("../assets/icon.png")} style={styles.brandMark} />
       <Text style={styles.brand}>Reklaio</Text>
       <Text style={styles.claim}>Dein Fall. Deine Frist. Dein Überblick.</Text>
 
@@ -108,26 +109,51 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: spacing.lg,
-    backgroundColor: colors.background
+    backgroundColor: colors.background,
+    overflow: "hidden"
+  },
+  glowPrimary: {
+    position: "absolute",
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    top: -120,
+    right: -105,
+    backgroundColor: "rgba(129, 125, 255, 0.10)"
+  },
+  glowSecondary: {
+    position: "absolute",
+    width: 250,
+    height: 250,
+    borderRadius: 125,
+    bottom: -145,
+    left: -110,
+    backgroundColor: "rgba(83, 239, 232, 0.07)"
   },
   brandMark: {
-    width: 58,
-    height: 58,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: radius.md,
-    backgroundColor: colors.accent,
-    alignSelf: "center"
+    width: 76,
+    height: 76,
+    borderRadius: 18,
+    alignSelf: "center",
+    shadowColor: "#000000",
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 9 },
+    elevation: 10
   },
-  brandLetter: { color: colors.white, fontSize: 30, fontWeight: "900" },
   brand: { color: colors.text, fontSize: 30, fontWeight: "900", textAlign: "center", marginTop: spacing.md },
   claim: { color: colors.muted, textAlign: "center", marginTop: spacing.xs, marginBottom: spacing.xl },
   card: {
     padding: spacing.lg,
     borderRadius: radius.lg,
-    backgroundColor: colors.panel,
+    backgroundColor: "rgba(16, 26, 61, 0.96)",
     borderWidth: 1,
-    borderColor: colors.line
+    borderColor: colors.line,
+    shadowColor: "#000000",
+    shadowOpacity: 0.2,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 8
   },
   eyebrow: { color: colors.accentSoft, fontSize: 12, fontWeight: "800", letterSpacing: 1.2, textTransform: "uppercase" },
   title: { color: colors.text, fontSize: 25, fontWeight: "800", marginTop: spacing.sm },

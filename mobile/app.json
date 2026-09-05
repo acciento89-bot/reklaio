@@ -3,7 +3,8 @@
     "name": "Reklaio",
     "slug": "reklaio",
     "owner": "kamilunavo",
-    "version": "0.4.2",
+    "version": "0.4.3",
+    "backgroundColor": "#070D25",
     "orientation": "portrait",
     "scheme": "reklaio",
     "userInterfaceStyle": "automatic",
@@ -12,24 +13,24 @@
     "splash": {
       "image": "./assets/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#081926"
+      "backgroundColor": "#070D25"
     },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "de.kamilunavo.reklaio",
       "appleTeamId": "TKG684N5GL",
-      "buildNumber": "6",
+      "buildNumber": "7",
       "config": {
         "usesNonExemptEncryption": false
       }
     },
     "android": {
       "package": "de.kamilunavo.reklaio",
-      "versionCode": 6,
+      "versionCode": 7,
       "predictiveBackGestureEnabled": false,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#081926"
+        "backgroundColor": "#070D25"
       }
     },
     "web": {
@@ -37,6 +38,14 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-navigation-bar",
+        {
+          "enforceContrast": false,
+          "hidden": false,
+          "style": "dark"
+        }
+      ],
       "expo-document-picker",
       "expo-notifications",
       [

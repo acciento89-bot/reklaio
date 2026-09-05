@@ -4,8 +4,8 @@
 
 - App name: Reklaio
 - Package: `de.kamilunavo.reklaio`
-- Expo version: `0.4.1`
-- Android versionCode: `6`
+- Expo version: `0.4.3`
+- Android versionCode: `7`
 - Expo SDK: `57`
 - Android compile/target SDK: API 36 through Expo SDK 57
 - API: `https://reklaio.de`
