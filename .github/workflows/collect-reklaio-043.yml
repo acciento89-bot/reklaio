@@ -1,0 +1,47 @@
+name: Collect Reklaio 0.4.3 AAB
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/collect-reklaio-043.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: Wait for EAS build
+        env:
+          BUILD_ID: 5ebed222-f947-4e11-8025-1694e4785df1
+        run: |
+          for attempt in $(seq 1 80); do
+            eas build:view "$BUILD_ID" --json --non-interactive > build.json
+            status=$(node -e "const b=require('./build.json'); console.log(b.status)")
+            echo "EAS build status: $status"
+            if [ "$status" = "FINISHED" ]; then
+              node -e "const fs=require('fs'); const b=require('./build.json'); fs.writeFileSync('build-url.txt', b.artifacts.buildUrl)"
+              break
+            fi
+            if [ "$status" = "ERRORED" ] || [ "$status" = "CANCELED" ]; then
+              exit 1
+            fi
+            sleep 30
+          done
+          test -s build-url.txt
+          curl -L --fail "$(cat build-url.txt)" -o reklaio-0.4.3-7.aab
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Reklaio-0.4.3-7-PlayStore
+          path: reklaio-0.4.3-7.aab
+          if-no-files-found: error
