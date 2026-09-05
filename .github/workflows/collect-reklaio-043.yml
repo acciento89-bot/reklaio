@@ -26,7 +26,7 @@ jobs:
           BUILD_ID: 5ebed222-f947-4e11-8025-1694e4785df1
         run: |
           for attempt in $(seq 1 80); do
-            eas build:view "$BUILD_ID" --json --non-interactive > build.json
+            eas build:view "$BUILD_ID" --json > build.json
             status=$(node -e "const b=require('./build.json'); console.log(b.status)")
             echo "EAS build status: $status"
             if [ "$status" = "FINISHED" ]; then
