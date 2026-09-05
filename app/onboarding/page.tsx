@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { query } from "@/lib/db";
+import { getLocale, localizedPath } from "@/lib/i18n";
 
 const steps = [
   {
@@ -57,6 +58,8 @@ type OnboardingPageProps = {
 };
 
 export default async function OnboardingPage({ searchParams }: OnboardingPageProps) {
+  const locale = await getLocale();
+  const en = locale === "en";
   const user = await requireUser();
   const messages = await searchParams;
 
@@ -78,23 +81,30 @@ export default async function OnboardingPage({ searchParams }: OnboardingPagePro
     assistant: counts.case_count > 0
   };
   const completedCount = Object.values(completed).filter(Boolean).length;
+  const localizedSteps = en ? [
+    { key: "case", number: "01", title: "Create your first case", description: "Choose the relevant case type and enter the provider, reference and situation.", href: "/neuer-fall", action: "Create case" },
+    { key: "document", number: "02", title: "Add evidence", description: "Upload an invoice, email, photo or tracking record to the case file.", href: "/dashboard", action: "Open case" },
+    { key: "deadline", number: "03", title: "Record a deadline", description: "Add a date you can track or use the case assistant's recommendation.", href: "/fristen", action: "View deadlines" },
+    { key: "letter", number: "04", title: "Prepare a letter", description: "Use a neutral template or optionally create an AI draft and review it in full.", href: "/dashboard", action: "Open case" },
+    { key: "assistant", number: "05", title: "Check the next step", description: "The case assistant shows completeness, priority and the next useful organisational action.", href: "/dashboard", action: "Dashboard" }
+  ] as const : steps;
 
   return (
     <main className="onboarding-page">
       <header className="onboarding-header container">
-        <Link className="brand" href="/"><span className="brand-mark">R</span><span>Reklaio</span></Link>
-        <Link className="text-link" href="/dashboard">Zum Dashboard</Link>
+        <Link className="brand" href={localizedPath("/", locale)}><span className="brand-mark">R</span><span>Reklaio</span></Link>
+        <Link className="text-link" href={localizedPath("/dashboard", locale)}>{en ? "Dashboard" : "Zum Dashboard"}</Link>
       </header>
 
       <section className="onboarding-hero container">
         <div>
-          <span className="eyebrow">Geführter Einstieg</span>
-          <h1>Dein erster Fall in fünf klaren Schritten</h1>
-          <p>Du kannst die Einführung jederzeit unter Hilfe erneut öffnen. Alle Schritte sind freiwillig und lassen sich später vervollständigen.</p>
+          <span className="eyebrow">{en ? "Guided start" : "Geführter Einstieg"}</span>
+          <h1>{en ? "Your first case in five clear steps" : "Dein erster Fall in fünf klaren Schritten"}</h1>
+          <p>{en ? "You can reopen this guide from Help at any time. Every step is optional and can be completed later." : "Du kannst die Einführung jederzeit unter Hilfe erneut öffnen. Alle Schritte sind freiwillig und lassen sich später vervollständigen."}</p>
         </div>
         <div className="onboarding-progress-card">
-          <strong>{completedCount} von 5</strong>
-          <span>Schritten erledigt</span>
+          <strong>{completedCount} {en ? "of" : "von"} 5</strong>
+          <span>{en ? "steps completed" : "Schritten erledigt"}</span>
           <div className="onboarding-progress"><span style={{ width: `${completedCount * 20}%` }} /></div>
         </div>
       </section>
@@ -103,7 +113,7 @@ export default async function OnboardingPage({ searchParams }: OnboardingPagePro
       {messages.error ? <div className="form-error onboarding-notice container" role="alert">{messages.error}</div> : null}
 
       <section className="onboarding-steps container">
-        {steps.map((step) => {
+        {localizedSteps.map((step) => {
           const done = completed[step.key];
           return (
             <article className={`onboarding-step${done ? " is-complete" : ""}`} key={step.key}>
@@ -112,7 +122,7 @@ export default async function OnboardingPage({ searchParams }: OnboardingPagePro
                 <h2>{step.title}</h2>
                 <p>{step.description}</p>
               </div>
-              <Link className="button button-secondary" href={step.href}>{done ? "Erledigt" : step.action}</Link>
+              <Link className="button button-secondary" href={localizedPath(step.href, locale)}>{done ? (en ? "Done" : "Erledigt") : step.action}</Link>
             </article>
           );
         })}
@@ -120,12 +130,12 @@ export default async function OnboardingPage({ searchParams }: OnboardingPagePro
 
       <section className="onboarding-footer container">
         <div>
-          <strong>Einführung abschließen</strong>
-          <p>Dadurch werden keine Falldaten verändert. Der Einstieg verschwindet lediglich aus den Hinweisen.</p>
+          <strong>{en ? "Complete introduction" : "Einführung abschließen"}</strong>
+          <p>{en ? "This does not change any case data. The onboarding prompt simply disappears." : "Dadurch werden keine Falldaten verändert. Der Einstieg verschwindet lediglich aus den Hinweisen."}</p>
         </div>
         <form action="/api/onboarding/complete" method="post">
-          <button className="button button-primary" name="mode" value="complete" type="submit">Einführung abschließen</button>
-          <button className="button button-ghost" name="mode" value="dismiss" type="submit">Vorerst überspringen</button>
+          <button className="button button-primary" name="mode" value="complete" type="submit">{en ? "Complete introduction" : "Einführung abschließen"}</button>
+          <button className="button button-ghost" name="mode" value="dismiss" type="submit">{en ? "Skip for now" : "Vorerst überspringen"}</button>
         </form>
       </section>
     </main>

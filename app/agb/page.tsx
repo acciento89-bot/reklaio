@@ -1,8 +1,11 @@
 import { LegalLayout } from "@/components/legal-layout";
 import { AGB_VERSION, getPaidContractSummary } from "@/lib/legal-documents";
 import { legalOperator } from "@/lib/legal";
+import { getLocale } from "@/lib/i18n";
+import { TermsEn } from "@/components/legal-pages-en";
 
-export default function AgbPage() {
+export default async function AgbPage() {
+  if (await getLocale() === "en") return <TermsEn />;
   const paid = getPaidContractSummary();
 
   return (

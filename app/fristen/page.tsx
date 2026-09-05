@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { query } from "@/lib/db";
 import { formatDate, formatDateTime } from "@/lib/cases";
+import { getLocale, localizedPath } from "@/lib/i18n";
 
 type PageProps = {
   searchParams: Promise<{ error?: string }>;
@@ -28,6 +29,10 @@ const stateLabels: Record<DeadlineState, string> = {
 };
 
 export default async function DeadlinesPage({ searchParams }: PageProps) {
+  const locale = await getLocale();
+  const en = locale === "en";
+  const numberLocale = en ? "en-GB" : "de-DE";
+  const labels: Record<DeadlineState, string> = en ? { overdue: "Overdue", soon: "Due soon", open: "Open", completed: "Done" } : stateLabels;
   const user = await requireUser();
   const { error } = await searchParams;
   const accountName = user.displayName || user.email;
@@ -66,22 +71,22 @@ export default async function DeadlinesPage({ searchParams }: PageProps) {
   return (
     <main className="app-shell">
       <aside className="sidebar">
-        <Link className="brand" href="/">
+        <Link className="brand" href={localizedPath("/", locale)}>
           <span className="brand-mark">R</span>
           <span>Reklaio</span>
         </Link>
         <nav>
-          <Link href="/dashboard">Meine Fälle</Link>
-          <Link href="/neuer-fall">Neuer Fall</Link>
-          <Link className="active" href="/fristen">Fristen</Link>
-          <Link href="/dokumente">Dokumente</Link>
-          <Link href="/einstellungen">Einstellungen</Link>
+          <Link href={localizedPath("/dashboard", locale)}>{en ? "My cases" : "Meine Fälle"}</Link>
+          <Link href={localizedPath("/neuer-fall", locale)}>{en ? "New case" : "Neuer Fall"}</Link>
+          <Link className="active" href={localizedPath("/fristen", locale)}>{en ? "Deadlines" : "Fristen"}</Link>
+          <Link href={localizedPath("/dokumente", locale)}>{en ? "Documents" : "Dokumente"}</Link>
+          <Link href={localizedPath("/einstellungen", locale)}>{en ? "Settings" : "Einstellungen"}</Link>
         </nav>
         <div className="sidebar-account">
           <strong>{accountName}</strong>
           <span>{user.email}</span>
           <form action="/api/auth/logout" method="post">
-            <button type="submit">Abmelden</button>
+            <button type="submit">{en ? "Sign out" : "Abmelden"}</button>
           </form>
         </div>
       </aside>
@@ -89,45 +94,45 @@ export default async function DeadlinesPage({ searchParams }: PageProps) {
       <section className="app-content">
         <header className="app-header">
           <div>
-            <span className="eyebrow">Termine im Blick</span>
-            <h1>Fristen</h1>
-            <p className="dashboard-welcome">Alle Fristen deiner Fälle in einer gemeinsamen Übersicht.</p>
+            <span className="eyebrow">{en ? "Keep track of dates" : "Termine im Blick"}</span>
+            <h1>{en ? "Deadlines" : "Fristen"}</h1>
+            <p className="dashboard-welcome">{en ? "All deadlines from your cases in one overview." : "Alle Fristen deiner Fälle in einer gemeinsamen Übersicht."}</p>
           </div>
-          <Link className="button button-primary" href="/dashboard">Zu den Fällen</Link>
+          <Link className="button button-primary" href={localizedPath("/dashboard", locale)}>{en ? "View cases" : "Zu den Fällen"}</Link>
         </header>
 
         {error ? <div className="form-error deadline-page-error" role="alert">{error}</div> : null}
 
         <div className="stats-grid deadline-stats-grid">
           <div className="stat-card deadline-stat-card deadline-stat-overdue">
-            <span>Überfällig</span>
+            <span>{en ? "Overdue" : "Überfällig"}</span>
             <strong>{overdueCount}</strong>
-            <small>sofort prüfen</small>
+            <small>{en ? "review now" : "sofort prüfen"}</small>
           </div>
           <div className="stat-card deadline-stat-card deadline-stat-soon">
-            <span>Nächste 7 Tage</span>
+            <span>{en ? "Next 7 days" : "Nächste 7 Tage"}</span>
             <strong>{soonCount}</strong>
-            <small>bald fällig</small>
+            <small>{en ? "due soon" : "bald fällig"}</small>
           </div>
           <div className="stat-card deadline-stat-card">
-            <span>Offene Fristen</span>
+            <span>{en ? "Open deadlines" : "Offene Fristen"}</span>
             <strong>{openCount}</strong>
-            <small>{completedCount} erledigt</small>
+            <small>{completedCount} {en ? "completed" : "erledigt"}</small>
           </div>
         </div>
 
         <div className="panel deadline-overview-panel">
           <div className="panel-header">
-            <h2>Fristenübersicht</h2>
-            <span>{deadlines.length} {deadlines.length === 1 ? "Frist" : "Fristen"}</span>
+            <h2>{en ? "Deadline overview" : "Fristenübersicht"}</h2>
+            <span>{deadlines.length} {en ? (deadlines.length === 1 ? "deadline" : "deadlines") : (deadlines.length === 1 ? "Frist" : "Fristen")}</span>
           </div>
 
           {deadlines.length === 0 ? (
             <div className="empty-state">
               <div className="empty-state-icon">⌛</div>
-              <h3>Noch keine Frist vorhanden</h3>
-              <p>Öffne eine Fallakte und lege dort eine Antwort-, Zahlungs- oder Bearbeitungsfrist an.</p>
-              <Link className="button button-primary" href="/dashboard">Fall auswählen</Link>
+              <h3>{en ? "No deadlines yet" : "Noch keine Frist vorhanden"}</h3>
+              <p>{en ? "Open a case file and add a reply, payment or processing deadline." : "Öffne eine Fallakte und lege dort eine Antwort-, Zahlungs- oder Bearbeitungsfrist an."}</p>
+              <Link className="button button-primary" href={localizedPath("/dashboard", locale)}>{en ? "Select case" : "Fall auswählen"}</Link>
             </div>
           ) : (
             <div className="deadline-overview-list">
@@ -137,8 +142,8 @@ export default async function DeadlinesPage({ searchParams }: PageProps) {
                   key={deadline.id}
                 >
                   <div className="deadline-date-block">
-                    <strong>{formatDate(deadline.due_at)}</strong>
-                    <span>{stateLabels[deadline.deadline_state]}</span>
+                    <strong>{formatDate(deadline.due_at, numberLocale)}</strong>
+                    <span>{labels[deadline.deadline_state]}</span>
                   </div>
 
                   <div className="deadline-copy">
@@ -148,15 +153,15 @@ export default async function DeadlinesPage({ searchParams }: PageProps) {
                       {deadline.company_name ? ` · ${deadline.company_name}` : ""}
                     </p>
                     {deadline.completed_at ? (
-                      <small>Erledigt am {formatDateTime(deadline.completed_at)}</small>
+                      <small>{en ? "Completed on" : "Erledigt am"} {formatDateTime(deadline.completed_at, numberLocale)}</small>
                     ) : null}
                   </div>
 
                   <div className="deadline-row-actions">
-                    <Link href={`/faelle/${deadline.case_id}`}>Fall öffnen</Link>
+                    <Link href={localizedPath(`/faelle/${deadline.case_id}`, locale)}>{en ? "Open case" : "Fall öffnen"}</Link>
                     {deadline.deadline_state !== "completed" ? (
                       <form action={`/api/deadlines/${deadline.id}/complete`} method="post">
-                        <button type="submit">Erledigen</button>
+                        <button type="submit">{en ? "Complete" : "Erledigen"}</button>
                       </form>
                     ) : null}
                   </div>

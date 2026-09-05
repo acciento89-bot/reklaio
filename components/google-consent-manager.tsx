@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 const CONSENT_STORAGE_KEY = "reklaio-google-consent-v1";
 const OPEN_SETTINGS_EVENT = "reklaio:open-cookie-settings";
@@ -154,6 +155,8 @@ function disableGoogleTracking() {
 }
 
 export function GoogleConsentManager() {
+  const pathname = usePathname();
+  const english = pathname === "/en" || pathname.startsWith("/en/");
   const [choice, setChoice] = useState<ConsentChoice | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -189,21 +192,21 @@ export function GoogleConsentManager() {
     <div className="consent-shell" role="dialog" aria-modal="true" aria-labelledby="consent-title">
       <div className="consent-card">
         <div>
-          <span className="eyebrow">Datenschutz</span>
-          <h2 id="consent-title">{choice ? "Cookie-Einstellungen" : "Deine Datenschutz-Auswahl"}</h2>
+          <span className="eyebrow">{english ? "Privacy" : "Datenschutz"}</span>
+          <h2 id="consent-title">{choice ? (english ? "Cookie settings" : "Cookie-Einstellungen") : (english ? "Your privacy choice" : "Deine Datenschutz-Auswahl")}</h2>
           <p>
-            Notwendige Speicherungen sichern Anmeldung und Betrieb. Mit deiner freiwilligen Zustimmung laden wir das
-            Google-Tag, um Seitenaufrufe sowie Registrierungen und Pro-Abschlüsse aus Google Ads zu messen. Ohne
-            Zustimmung wird das Google-Tag nicht geladen.
+            {english
+              ? "Essential storage keeps sign-in and the service working. With your consent, we load the Google tag to measure page views, registrations and Pro purchases from Google Ads. Without consent, the Google tag is not loaded."
+              : "Notwendige Speicherungen sichern Anmeldung und Betrieb. Mit deiner freiwilligen Zustimmung laden wir das Google-Tag, um Seitenaufrufe sowie Registrierungen und Pro-Abschlüsse aus Google Ads zu messen. Ohne Zustimmung wird das Google-Tag nicht geladen."}
           </p>
-          <Link href="/datenschutz">Mehr in der Datenschutzerklärung</Link>
+          <Link href={english ? "/en/datenschutz" : "/datenschutz"}>{english ? "Read the privacy policy" : "Mehr in der Datenschutzerklärung"}</Link>
         </div>
         <div className="consent-actions">
           <button className="consent-button consent-button-secondary" type="button" onClick={reject}>
-            Nur notwendige
+            {english ? "Essential only" : "Nur notwendige"}
           </button>
           <button className="consent-button consent-button-primary" type="button" onClick={accept}>
-            Alle akzeptieren
+            {english ? "Accept all" : "Alle akzeptieren"}
           </button>
         </div>
       </div>

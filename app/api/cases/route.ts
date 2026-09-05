@@ -18,8 +18,8 @@ const caseSchema = z.object({
   summary: z.string().trim().max(5000).optional().default("")
 });
 
-function errorRedirect(message: string, selectedType = "") {
-  const url = publicUrl("/neuer-fall");
+function errorRedirect(message: string, selectedType = "", locale: "de" | "en" = "de") {
+  const url = publicUrl(locale === "en" ? "/en/neuer-fall" : "/neuer-fall");
   url.searchParams.set("error", message);
   if (selectedType) {
     url.searchParams.set("typ", selectedType);
@@ -34,6 +34,7 @@ export async function POST(request: Request) {
   }
 
   const formData = await request.formData();
+  const locale = formData.get("locale") === "en" ? "en" : "de";
   const parsed = caseSchema.safeParse({
     type: formData.get("type"),
     title: formData.get("title"),
@@ -45,19 +46,19 @@ export async function POST(request: Request) {
   });
 
   if (!parsed.success) {
-    return errorRedirect("Bitte prüfe die markierten Angaben.", String(formData.get("type") ?? ""));
+    return errorRedirect(locale === "en" ? "Please check the highlighted details." : "Bitte prüfe die markierten Angaben.", String(formData.get("type") ?? ""), locale);
   }
 
   const caseType = getCaseTypeBySlug(parsed.data.type);
   if (!caseType) {
-    return errorRedirect("Bitte wähle eine gültige Fallart.");
+    return errorRedirect(locale === "en" ? "Please select a valid case type." : "Bitte wähle eine gültige Fallart.", "", locale);
   }
 
   let amountCents: number | null;
   try {
     amountCents = parseAmountCents(parsed.data.amount);
   } catch {
-    return errorRedirect("Der Betrag ist ungültig. Beispiel: 129,90", caseType.slug);
+    return errorRedirect(locale === "en" ? "The amount is invalid. Example: 129.90" : "Der Betrag ist ungültig. Beispiel: 129,90", caseType.slug, locale);
   }
 
   const client = await getDb().connect();
@@ -88,16 +89,16 @@ export async function POST(request: Request) {
 
     await client.query(
       `INSERT INTO case_events (case_id, event_type, title, details, occurred_at)
-       VALUES ($1, 'case_created', 'Fall angelegt', 'Der Fall wurde in Reklaio erstellt.', NOW())`,
-      [caseId]
+       VALUES ($1, 'case_created', $2, $3, NOW())`,
+      [caseId, locale === "en" ? "Case created" : "Fall angelegt", locale === "en" ? "The case was created in Reklaio." : "Der Fall wurde in Reklaio erstellt."]
     );
 
     await client.query("COMMIT");
-    return NextResponse.redirect(publicUrl(`/faelle/${caseId}`), 303);
+    return NextResponse.redirect(publicUrl(locale === "en" ? `/en/faelle/${caseId}` : `/faelle/${caseId}`), 303);
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
     console.error("Case creation failed", error);
-    return errorRedirect("Der Fall konnte gerade nicht gespeichert werden.", caseType.slug);
+    return errorRedirect(locale === "en" ? "The case could not be saved right now." : "Der Fall konnte gerade nicht gespeichert werden.", caseType.slug, locale);
   } finally {
     client.release();
   }

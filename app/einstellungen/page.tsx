@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { formatDateTime } from "@/lib/cases";
 import { query } from "@/lib/db";
+import { getLocale, localizedPath } from "@/lib/i18n";
 
 type SettingsPageProps = {
   searchParams: Promise<{ notice?: string; error?: string }>;
@@ -16,6 +17,9 @@ type AccountRow = {
 };
 
 export default async function SettingsPage({ searchParams }: SettingsPageProps) {
+  const locale = await getLocale();
+  const en = locale === "en";
+  const numberLocale = en ? "en-GB" : "de-DE";
   const user = await requireUser();
   const { notice, error } = await searchParams;
 
@@ -33,19 +37,19 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   return (
     <main className="app-shell">
       <aside className="sidebar">
-        <Link className="brand" href="/"><span className="brand-mark">R</span><span>Reklaio</span></Link>
+        <Link className="brand" href={localizedPath("/", locale)}><span className="brand-mark">R</span><span>Reklaio</span></Link>
         <nav>
-          <Link href="/dashboard">Meine Fälle</Link>
-          <Link href="/neuer-fall">Neuer Fall</Link>
-          <Link href="/fristen">Fristen</Link>
-          <Link href="/dokumente">Dokumente</Link>
-          <Link className="active" href="/einstellungen">Einstellungen</Link>
+          <Link href={localizedPath("/dashboard", locale)}>{en ? "My cases" : "Meine Fälle"}</Link>
+          <Link href={localizedPath("/neuer-fall", locale)}>{en ? "New case" : "Neuer Fall"}</Link>
+          <Link href={localizedPath("/fristen", locale)}>{en ? "Deadlines" : "Fristen"}</Link>
+          <Link href={localizedPath("/dokumente", locale)}>{en ? "Documents" : "Dokumente"}</Link>
+          <Link className="active" href={localizedPath("/einstellungen", locale)}>{en ? "Settings" : "Einstellungen"}</Link>
         </nav>
         <div className="sidebar-account">
           <strong>{account?.display_name || account?.email || user.email}</strong>
           <span>{account?.email || user.email}</span>
           <form action="/api/auth/logout" method="post">
-            <button type="submit">Abmelden</button>
+            <button type="submit">{en ? "Sign out" : "Abmelden"}</button>
           </form>
         </div>
       </aside>
@@ -53,11 +57,11 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
       <section className="app-content settings-content">
         <header className="app-header">
           <div>
-            <span className="eyebrow">Konto & Sicherheit</span>
-            <h1>Einstellungen</h1>
-            <p className="dashboard-welcome">Verwalte dein Profil, Passwort und deine gespeicherten Daten.</p>
+            <span className="eyebrow">{en ? "Account & security" : "Konto & Sicherheit"}</span>
+            <h1>{en ? "Settings" : "Einstellungen"}</h1>
+            <p className="dashboard-welcome">{en ? "Manage your profile, password and stored data." : "Verwalte dein Profil, Passwort und deine gespeicherten Daten."}</p>
           </div>
-          <Link className="button button-primary" href="/dashboard">Zu den Fällen</Link>
+          <Link className="button button-primary" href={localizedPath("/dashboard", locale)}>{en ? "View cases" : "Zu den Fällen"}</Link>
         </header>
 
         {notice ? <div className="notice-card settings-notice" role="status"><strong>{notice}</strong></div> : null}
@@ -67,30 +71,30 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
           <section className="panel settings-panel">
             <div className="settings-panel-heading">
               <div>
-                <span className="eyebrow">Profil</span>
-                <h2>Persönliche Angaben</h2>
+                <span className="eyebrow">{en ? "Profile" : "Profil"}</span>
+                <h2>{en ? "Personal details" : "Persönliche Angaben"}</h2>
               </div>
-              <span>Mitglied seit {formatDateTime(account?.created_at ?? null)}</span>
+              <span>{en ? "Member since" : "Mitglied seit"} {formatDateTime(account?.created_at ?? null, numberLocale)}</span>
             </div>
 
             <form className="settings-form" action="/api/account/profile" method="post">
               <label className="field">
-                Anzeigename
+                {en ? "Display name" : "Anzeigename"}
                 <input
                   name="displayName"
                   type="text"
                   maxLength={80}
                   defaultValue={account?.display_name ?? ""}
-                  placeholder="Dein Name"
+                  placeholder={en ? "Your name" : "Dein Name"}
                   autoComplete="name"
                 />
               </label>
               <label className="field">
-                E-Mail-Adresse
+                {en ? "Email address" : "E-Mail-Adresse"}
                 <input type="email" value={account?.email ?? user.email} readOnly aria-readonly="true" />
-                <small>Die Adresse bleibt bis zu einer späteren, doppelt bestätigten E-Mail-Änderung schreibgeschützt.</small>
+                <small>{en ? "The address remains read-only until a future email change has been confirmed twice." : "Die Adresse bleibt bis zu einer späteren, doppelt bestätigten E-Mail-Änderung schreibgeschützt."}</small>
               </label>
-              <button className="button button-secondary" type="submit">Profil speichern</button>
+              <button className="button button-secondary" type="submit">{en ? "Save profile" : "Profil speichern"}</button>
             </form>
           </section>
 
@@ -98,18 +102,18 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             <div className="settings-panel-heading">
               <div>
                 <span className="eyebrow">E-Mail</span>
-                <h2>{emailVerified ? "Adresse bestätigt" : "Adresse bestätigen"}</h2>
+                <h2>{emailVerified ? (en ? "Address confirmed" : "Adresse bestätigt") : (en ? "Confirm address" : "Adresse bestätigen")}</h2>
               </div>
-              <span>{emailVerified ? "Aktiv" : "Ausstehend"}</span>
+              <span>{emailVerified ? (en ? "Active" : "Aktiv") : (en ? "Pending" : "Ausstehend")}</span>
             </div>
 
             {emailVerified ? (
-              <p>Bestätigt am {formatDateTime(account?.email_verified_at ?? null)}. Fristerinnerungen und direkter E-Mail-Versand sind für dieses Konto freigeschaltet.</p>
+              <p>{en ? "Confirmed on" : "Bestätigt am"} {formatDateTime(account?.email_verified_at ?? null, numberLocale)}. {en ? "Deadline reminders and direct email are enabled for this account." : "Fristerinnerungen und direkter E-Mail-Versand sind für dieses Konto freigeschaltet."}</p>
             ) : (
               <>
-                <p>Bestätige deine Adresse, damit Reklaio Fristerinnerungen senden und gespeicherte Schreiben direkt verschicken darf.</p>
+                <p>{en ? "Confirm your address so Reklaio can send deadline reminders and saved letters." : "Bestätige deine Adresse, damit Reklaio Fristerinnerungen senden und gespeicherte Schreiben direkt verschicken darf."}</p>
                 <form action="/api/account/verification/resend" method="post">
-                  <button className="button button-secondary" type="submit">Bestätigungslink senden</button>
+                  <button className="button button-secondary" type="submit">{en ? "Send confirmation link" : "Bestätigungslink senden"}</button>
                 </form>
               </>
             )}
@@ -118,59 +122,59 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
           <section className="panel settings-panel">
             <div className="settings-panel-heading">
               <div>
-                <span className="eyebrow">Sicherheit</span>
-                <h2>Passwort ändern</h2>
+                <span className="eyebrow">{en ? "Security" : "Sicherheit"}</span>
+                <h2>{en ? "Change password" : "Passwort ändern"}</h2>
               </div>
-              <span>Mindestens 10 Zeichen</span>
+              <span>{en ? "At least 10 characters" : "Mindestens 10 Zeichen"}</span>
             </div>
 
             <form className="settings-form" action="/api/account/password" method="post">
               <label className="field">
-                Aktuelles Passwort
+                {en ? "Current password" : "Aktuelles Passwort"}
                 <input name="currentPassword" type="password" minLength={10} maxLength={128} required autoComplete="current-password" />
               </label>
               <label className="field">
-                Neues Passwort
+                {en ? "New password" : "Neues Passwort"}
                 <input name="newPassword" type="password" minLength={10} maxLength={128} required autoComplete="new-password" />
               </label>
               <label className="field">
-                Neues Passwort wiederholen
+                {en ? "Repeat new password" : "Neues Passwort wiederholen"}
                 <input name="confirmPassword" type="password" minLength={10} maxLength={128} required autoComplete="new-password" />
               </label>
-              <button className="button button-secondary" type="submit">Passwort aktualisieren</button>
+              <button className="button button-secondary" type="submit">{en ? "Update password" : "Passwort aktualisieren"}</button>
             </form>
           </section>
 
           <section className="panel settings-panel settings-data-panel">
             <div className="settings-panel-heading">
               <div>
-                <span className="eyebrow">Datenschutz</span>
-                <h2>Kontodaten exportieren</h2>
+                <span className="eyebrow">{en ? "Privacy" : "Datenschutz"}</span>
+                <h2>{en ? "Export account data" : "Kontodaten exportieren"}</h2>
               </div>
             </div>
-            <p>Der JSON-Export enthält dein Profil, Fälle, Chronik, Fristen, Schreiben und Dokumentinformationen. Passwörter, Sitzungstoken und hochgeladene Binärdateien werden nicht hineingeschrieben.</p>
-            <a className="button button-secondary" href="/api/account/export">Meine Daten herunterladen</a>
+            <p>{en ? "The JSON export contains your profile, cases, timeline, deadlines, letters and document information. Passwords, session tokens and uploaded binary files are excluded." : "Der JSON-Export enthält dein Profil, Fälle, Chronik, Fristen, Schreiben und Dokumentinformationen. Passwörter, Sitzungstoken und hochgeladene Binärdateien werden nicht hineingeschrieben."}</p>
+            <a className="button button-secondary" href="/api/account/export">{en ? "Download my data" : "Meine Daten herunterladen"}</a>
           </section>
 
           <section className="panel settings-panel settings-danger-panel">
             <div className="settings-panel-heading">
               <div>
-                <span className="eyebrow">Gefahrenbereich</span>
-                <h2>Konto endgültig löschen</h2>
+                <span className="eyebrow">{en ? "Danger zone" : "Gefahrenbereich"}</span>
+                <h2>{en ? "Permanently delete account" : "Konto endgültig löschen"}</h2>
               </div>
             </div>
-            <p>Dadurch werden dein Konto, alle Fälle, Schreiben, Fristen, Chronikeinträge und hochgeladenen Dateien dauerhaft entfernt. Dieser Vorgang kann nicht rückgängig gemacht werden.</p>
+            <p>{en ? "This permanently removes your account, all cases, letters, deadlines, timeline entries and uploaded files. This cannot be undone." : "Dadurch werden dein Konto, alle Fälle, Schreiben, Fristen, Chronikeinträge und hochgeladenen Dateien dauerhaft entfernt. Dieser Vorgang kann nicht rückgängig gemacht werden."}</p>
 
             <form className="settings-form" action="/api/account/delete" method="post">
               <label className="field">
-                Aktuelles Passwort
+                {en ? "Current password" : "Aktuelles Passwort"}
                 <input name="password" type="password" minLength={10} maxLength={128} required autoComplete="current-password" />
               </label>
               <label className="field">
-                Zur Bestätigung LÖSCHEN eingeben
+                {en ? "Enter LÖSCHEN to confirm" : "Zur Bestätigung LÖSCHEN eingeben"}
                 <input name="confirmation" type="text" required autoComplete="off" />
               </label>
-              <button className="button settings-delete-button" type="submit">Konto unwiderruflich löschen</button>
+              <button className="button settings-delete-button" type="submit">{en ? "Permanently delete account" : "Konto unwiderruflich löschen"}</button>
             </form>
           </section>
         </div>

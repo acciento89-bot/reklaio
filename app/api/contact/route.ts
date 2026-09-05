@@ -17,15 +17,20 @@ const schema = z.object({
     "Technisches Problem",
     "Konto und Anmeldung",
     "Datenschutz",
-    "Abonnement und Rechnung"
+    "Abonnement und Rechnung",
+    "General question",
+    "Technical problem",
+    "Account and sign-in",
+    "Privacy",
+    "Subscription and billing"
   ]),
   message: z.string().trim().min(20).max(5000),
   privacyAccepted: z.literal(true),
   website: z.string().max(200).optional().default("")
 });
 
-function redirectError(message: string) {
-  const url = publicUrl("/kontakt");
+function redirectError(message: string, locale: "de" | "en" = "de") {
+  const url = publicUrl(locale === "en" ? "/en/kontakt" : "/kontakt");
   url.searchParams.set("error", message);
   return NextResponse.redirect(url, 303);
 }
@@ -43,6 +48,7 @@ function hashIp(ip: string) {
 
 export async function POST(request: Request) {
   const formData = await request.formData();
+  const locale = formData.get("locale") === "en" ? "en" : "de";
   const parsed = schema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -53,15 +59,15 @@ export async function POST(request: Request) {
   });
 
   if (!parsed.success) {
-    return redirectError("Bitte prüfe die Pflichtfelder und bestätige die Datenschutzerklärung.");
+    return redirectError(locale === "en" ? "Please check the required fields and accept the Privacy Policy." : "Bitte prüfe die Pflichtfelder und bestätige die Datenschutzerklärung.", locale);
   }
 
   if (parsed.data.website) {
-    return NextResponse.redirect(publicUrl("/kontakt?sent=1"), 303);
+    return NextResponse.redirect(publicUrl(locale === "en" ? "/en/kontakt?sent=1" : "/kontakt?sent=1"), 303);
   }
 
   if (!isMailConfigured()) {
-    return redirectError("Das Kontaktformular ist technisch noch nicht für den Versand eingerichtet.");
+    return redirectError(locale === "en" ? "The contact form is not yet configured for delivery." : "Das Kontaktformular ist technisch noch nicht für den Versand eingerichtet.", locale);
   }
 
   const user = await getCurrentUser();
@@ -75,7 +81,7 @@ export async function POST(request: Request) {
   );
 
   if ((recent.rows[0]?.count ?? 0) >= 5) {
-    return redirectError("Zu viele Nachrichten in kurzer Zeit. Bitte versuche es später erneut.");
+    return redirectError(locale === "en" ? "Too many messages in a short period. Please try again later." : "Zu viele Nachrichten in kurzer Zeit. Bitte versuche es später erneut.", locale);
   }
 
   const inserted = await query<{ id: string }>(
@@ -110,9 +116,9 @@ export async function POST(request: Request) {
       await query("UPDATE contact_messages SET delivered_at = NOW() WHERE id = $1", [messageId]);
     }
 
-    return NextResponse.redirect(publicUrl("/kontakt?sent=1"), 303);
+    return NextResponse.redirect(publicUrl(locale === "en" ? "/en/kontakt?sent=1" : "/kontakt?sent=1"), 303);
   } catch (error) {
     console.error("Contact message delivery failed", error);
-    return redirectError("Die Nachricht konnte gerade nicht versendet werden. Bitte nutze vorübergehend die E-Mail-Adresse im Impressum.");
+    return redirectError(locale === "en" ? "The message could not be sent right now. Please use the email address in the legal notice." : "Die Nachricht konnte gerade nicht versendet werden. Bitte nutze vorübergehend die E-Mail-Adresse im Impressum.", locale);
   }
 }

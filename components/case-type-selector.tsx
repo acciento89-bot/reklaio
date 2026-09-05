@@ -1,24 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { caseTypes } from "@/lib/case-types";
+import { getLocalizedCaseTypes } from "@/lib/case-types";
 import { CaseTypeIcon } from "@/components/case-type-icon";
+import type { Locale } from "@/lib/i18n-shared";
 
 type CaseTypeSelectorProps = {
   defaultValue: string;
+  locale: Locale;
 };
 
-export function CaseTypeSelector({ defaultValue }: CaseTypeSelectorProps) {
+export function CaseTypeSelector({ defaultValue, locale }: CaseTypeSelectorProps) {
+  const caseTypes = getLocalizedCaseTypes(locale);
+  const en = locale === "en";
   const initial = caseTypes.find((item) => item.slug === defaultValue) ?? caseTypes[0];
   const [selectedSlug, setSelectedSlug] = useState(initial.slug);
   const selected = caseTypes.find((item) => item.slug === selectedSlug) ?? caseTypes[0];
 
   return (
     <fieldset className="case-type-fieldset">
-      <legend className="case-type-legend">Welche Situation trifft zu?</legend>
+      <legend className="case-type-legend">{en ? "Which situation applies?" : "Welche Situation trifft zu?"}</legend>
       <div className="case-type-heading">
-        <p>Wähle die passendste Fallart. Die Angaben können später jederzeit ergänzt werden.</p>
-        <span>1 von 2</span>
+        <p>{en ? "Choose the closest case type. You can add more details at any time." : "Wähle die passendste Fallart. Die Angaben können später jederzeit ergänzt werden."}</p>
+        <span>{en ? "1 of 2" : "1 von 2"}</span>
       </div>
 
       <div className="case-type-layout">
@@ -51,7 +55,7 @@ export function CaseTypeSelector({ defaultValue }: CaseTypeSelectorProps) {
               <CaseTypeIcon type={selected.dbValue} />
             </span>
             <div>
-              <span>Vorbereitung</span>
+              <span>{en ? "Preparation" : "Vorbereitung"}</span>
               <h2>{selected.title}</h2>
             </div>
           </div>
@@ -61,7 +65,7 @@ export function CaseTypeSelector({ defaultValue }: CaseTypeSelectorProps) {
               <li key={item}>{item}</li>
             ))}
           </ul>
-          <small>Fehlende Angaben können auch später in der Fallakte ergänzt werden.</small>
+          <small>{en ? "You can add missing information to the case file later." : "Fehlende Angaben können auch später in der Fallakte ergänzt werden."}</small>
         </aside>
       </div>
     </fieldset>

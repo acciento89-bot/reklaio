@@ -10,11 +10,12 @@ export const runtime = "nodejs";
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token") ?? "";
+  const locale = url.searchParams.get("locale") === "en" ? "en" : "de";
   const currentUser = await getCurrentUser();
-  const target = currentUser ? publicUrl("/einstellungen") : publicUrl("/anmelden");
+  const target = currentUser ? publicUrl(locale === "en" ? "/en/einstellungen" : "/einstellungen") : publicUrl(locale === "en" ? "/en/anmelden" : "/anmelden");
 
   if (token.length < 20 || token.length > 200) {
-    target.searchParams.set("error", "Der Bestätigungslink ist ungültig oder abgelaufen.");
+    target.searchParams.set("error", locale === "en" ? "The confirmation link is invalid or has expired." : "Der Bestätigungslink ist ungültig oder abgelaufen.");
     return NextResponse.redirect(target, 303);
   }
 
@@ -44,7 +45,7 @@ export async function GET(request: Request) {
     const emailToken = result.rows[0];
     if (!emailToken) {
       await client.query("ROLLBACK");
-      target.searchParams.set("error", "Der Bestätigungslink ist ungültig oder abgelaufen.");
+      target.searchParams.set("error", locale === "en" ? "The confirmation link is invalid or has expired." : "Der Bestätigungslink ist ungültig oder abgelaufen.");
       return NextResponse.redirect(target, 303);
     }
 
@@ -72,16 +73,17 @@ export async function GET(request: Request) {
       await sendWelcomeEmail({
         userId: emailToken.user_id,
         email: emailToken.email,
-        displayName: emailToken.display_name
+        displayName: emailToken.display_name,
+        locale
       }).catch(error => console.error("Welcome email failed", emailToken.user_id, error));
     }
 
-    target.searchParams.set("notice", "E-Mail-Adresse erfolgreich bestätigt.");
+    target.searchParams.set("notice", locale === "en" ? "Email address confirmed successfully." : "E-Mail-Adresse erfolgreich bestätigt.");
     return NextResponse.redirect(target, 303);
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
     console.error("Email verification failed", error);
-    target.searchParams.set("error", "Die E-Mail-Adresse konnte gerade nicht bestätigt werden.");
+    target.searchParams.set("error", locale === "en" ? "The email address could not be confirmed right now." : "Die E-Mail-Adresse konnte gerade nicht bestätigt werden.");
     return NextResponse.redirect(target, 303);
   } finally {
     client.release();

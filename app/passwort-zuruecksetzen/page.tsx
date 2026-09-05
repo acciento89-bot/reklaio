@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { hashAuthEmailToken } from "@/lib/auth-email-tokens";
 import { query } from "@/lib/db";
+import { getLocale, localizedPath } from "@/lib/i18n";
 
 type ResetPasswordPageProps = {
   searchParams: Promise<{ token?: string; error?: string }>;
 };
 
 export default async function ResetPasswordPage({ searchParams }: ResetPasswordPageProps) {
+  const locale = await getLocale();
+  const en = locale === "en";
   const { token = "", error } = await searchParams;
   const tokenLooksValid = token.length >= 20 && token.length <= 200;
 
@@ -27,31 +30,32 @@ export default async function ResetPasswordPage({ searchParams }: ResetPasswordP
 
   return (
     <main className="auth-page container">
-      <Link className="brand" href="/"><span className="brand-mark">R</span><span>Reklaio</span></Link>
+      <Link className="brand" href={localizedPath("/", locale)}><span className="brand-mark">R</span><span>Reklaio</span></Link>
       <section className="auth-card">
-        <span className="eyebrow">Kontosicherheit</span>
-        <h1>Neues Passwort</h1>
+        <span className="eyebrow">{en ? "Account security" : "Kontosicherheit"}</span>
+        <h1>{en ? "New password" : "Neues Passwort"}</h1>
 
         {!isValid ? (
           <>
-            <div className="form-error" role="alert">Der Reset-Link ist ungültig oder abgelaufen.</div>
-            <p className="auth-switch"><Link href="/passwort-vergessen">Neuen Link anfordern</Link></p>
+            <div className="form-error" role="alert">{en ? "The reset link is invalid or has expired." : "Der Reset-Link ist ungültig oder abgelaufen."}</div>
+            <p className="auth-switch"><Link href={localizedPath("/passwort-vergessen", locale)}>{en ? "Request a new link" : "Neuen Link anfordern"}</Link></p>
           </>
         ) : (
           <>
-            <p>Lege ein neues Passwort mit mindestens 10 Zeichen fest.</p>
+            <p>{en ? "Choose a new password with at least 10 characters." : "Lege ein neues Passwort mit mindestens 10 Zeichen fest."}</p>
             {error ? <div className="form-error" role="alert">{error}</div> : null}
             <form className="auth-form" action="/api/auth/password/reset" method="post">
               <input name="token" type="hidden" value={token} />
+              <input name="locale" type="hidden" value={locale} />
               <label>
-                Neues Passwort
+                {en ? "New password" : "Neues Passwort"}
                 <input name="password" type="password" minLength={10} maxLength={128} required autoComplete="new-password" />
               </label>
               <label>
-                Passwort wiederholen
+                {en ? "Repeat password" : "Passwort wiederholen"}
                 <input name="confirmPassword" type="password" minLength={10} maxLength={128} required autoComplete="new-password" />
               </label>
-              <button className="button button-primary" type="submit">Passwort speichern</button>
+              <button className="button button-primary" type="submit">{en ? "Save password" : "Passwort speichern"}</button>
             </form>
           </>
         )}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { localizedPath, type Locale } from "@/lib/i18n-shared";
 
 type NavigationState = {
   authenticated: boolean;
@@ -11,7 +12,7 @@ type NavigationState = {
   admin?: boolean;
 };
 
-export function GlobalAppNavigation() {
+export function GlobalAppNavigation({ locale }: { locale: Locale }) {
   const pathname = usePathname();
   const [state, setState] = useState<NavigationState | null>(null);
 
@@ -27,13 +28,13 @@ export function GlobalAppNavigation() {
   if (!state?.authenticated) return null;
 
   return (
-    <nav className="global-app-navigation" aria-label="Schnellnavigation">
-      <Link className={pathname === "/dashboard" ? "active" : undefined} href="/dashboard">Fälle</Link>
-      {state.onboardingOpen ? <Link className={pathname === "/onboarding" ? "active onboarding-open" : "onboarding-open"} href="/onboarding">Onboarding</Link> : null}
-      <Link className={pathname === "/hilfe" ? "active" : undefined} href="/hilfe">Hilfe</Link>
-      <Link className={pathname.startsWith("/preise") ? "active" : undefined} href="/preise">{state.planCode === "pro" ? "Pro" : "Upgrade"}</Link>
-      {state.admin ? <Link className={pathname.startsWith("/admin") ? "active admin-link" : "admin-link"} href="/admin">Admin</Link> : null}
-      <Link className={pathname === "/einstellungen" ? "active" : undefined} href="/einstellungen">Konto</Link>
+    <nav className="global-app-navigation" aria-label={locale === "en" ? "Quick navigation" : "Schnellnavigation"}>
+      <Link className={pathname.endsWith("/dashboard") ? "active" : undefined} href={localizedPath("/dashboard", locale)}>{locale === "en" ? "Cases" : "Fälle"}</Link>
+      {state.onboardingOpen ? <Link className={pathname.endsWith("/onboarding") ? "active onboarding-open" : "onboarding-open"} href={localizedPath("/onboarding", locale)}>Onboarding</Link> : null}
+      <Link className={pathname.endsWith("/hilfe") ? "active" : undefined} href={localizedPath("/hilfe", locale)}>{locale === "en" ? "Help" : "Hilfe"}</Link>
+      <Link className={pathname.includes("/preise") ? "active" : undefined} href={localizedPath("/preise", locale)}>{state.planCode === "pro" ? "Pro" : "Upgrade"}</Link>
+      {state.admin ? <Link className={pathname.includes("/admin") ? "active admin-link" : "admin-link"} href={localizedPath("/admin", locale)}>Admin</Link> : null}
+      <Link className={pathname.endsWith("/einstellungen") ? "active" : undefined} href={localizedPath("/einstellungen", locale)}>{locale === "en" ? "Account" : "Konto"}</Link>
     </nav>
   );
 }

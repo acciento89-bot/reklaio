@@ -6,10 +6,20 @@ import { getCurrentUser } from "@/lib/auth";
 import { seoGuides } from "@/lib/seo-guides";
 import { CaseTypeIcon } from "@/components/case-type-icon";
 import { HomeSeoJsonLd } from "@/components/home-seo-json-ld";
+import { HomePageEn } from "@/components/home-page-en";
+import { getLocale } from "@/lib/i18n";
 
 const REKLAIO_APP_STORE_URL = "https://apps.apple.com/de/app/reklaio/id6799375798";
 
-export const metadata: Metadata = {
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  if (locale === "en") return {
+    title: "Create a complaint letter with AI | Reklaio",
+    description: "Describe your problem and create a professional complaint letter with Reklaio. Keep evidence, communication and deadlines together in one clear case file.",
+    alternates: { canonical: "/en", languages: { de: "/", en: "/en", "x-default": "/en" } },
+    openGraph: { url: "/en", title: "Reklaio – Create complaint letters with AI", description: "Create complaints, collect evidence and keep track of deadlines in one clear digital case file." }
+  };
+  return {
   title: "Reklamation mit KI erstellen | Reklaio",
   description:
     "Beschreibe dein Problem und erstelle mit Reklaio ein professionelles Reklamationsschreiben. Belege, Kommunikation und Fristen bleiben anschließend übersichtlich in einer Fallakte gebündelt.",
@@ -22,10 +32,13 @@ export const metadata: Metadata = {
     description:
       "Reklamation erstellen, Belege sammeln und Fristen im Blick behalten – alles in einer nachvollziehbaren digitalen Fallakte."
   }
-};
+  };
+}
 
 export default async function HomePage() {
+  const locale = await getLocale();
   const user = await getCurrentUser();
+  if (locale === "en") return <HomePageEn authenticated={Boolean(user)} />;
 
   return (
     <main className="marketing-page">

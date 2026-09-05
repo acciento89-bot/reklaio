@@ -331,3 +331,39 @@ img { max-width: 100%; }
   .form-card { margin-top: 38px; padding: 22px; }
   .closing-cta { padding: 28px 24px; }
 }
+/* Global locale control */
+.language-switcher {
+  position: fixed;
+  bottom: 0.9rem;
+  right: 0.9rem;
+  z-index: 120;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.36rem 0.52rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 999px;
+  background: rgba(7, 13, 36, 0.92);
+  color: #94a3b8;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(12px);
+}
+
+.language-switcher button {
+  border: 0;
+  padding: 0.15rem 0.2rem;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.language-switcher button.active { color: #fff; }
+.language-switcher button:focus-visible { outline: 2px solid #60a5fa; outline-offset: 3px; border-radius: 0.2rem; }
+
+@media (max-width: 720px) {
+  .language-switcher { right: 0.75rem; bottom: 4.6rem; }
+}

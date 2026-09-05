@@ -67,3 +67,42 @@ export function getCaseTypeBySlug(slug: string) {
 export function getCaseTypeByValue(value: string) {
   return caseTypes.find((item) => item.dbValue === value) ?? null;
 }
+
+export const caseTypesEn = [
+  {
+    ...caseTypes[0],
+    title: "Refund missing",
+    description: "Your return or cancellation was confirmed, but the money has not arrived.",
+    checklistTitle: "What you should have ready",
+    checklist: ["Order or contract number", "Return receipt or cancellation confirmation", "Promised refund date", "Bank statement or proof of payment"]
+  },
+  {
+    ...caseTypes[1],
+    title: "Delivery missing",
+    description: "Your parcel is late, missing or incorrectly marked as delivered.",
+    checklistTitle: "What you should have ready",
+    checklist: ["Order number and purchase date", "Tracking number and tracking history", "Announced delivery date", "Previous communication with the retailer or carrier"]
+  },
+  {
+    ...caseTypes[2],
+    title: "Product faulty or incorrect",
+    description: "A defect, shipping damage, incorrect item or incomplete order.",
+    checklistTitle: "What you should have ready",
+    checklist: ["Invoice or order confirmation", "Photos of the defect or incorrect item", "Delivery date and first complaint", "Preferred solution: replacement, repair or refund"]
+  },
+  {
+    ...caseTypes[3],
+    title: "Cancellation ignored",
+    description: "The provider does not confirm your cancellation, renews the contract or charges you again.",
+    checklistTitle: "What you should have ready",
+    checklist: ["Contract or customer number", "Cancellation notice and proof of delivery", "Requested contract end date", "Charges made after cancellation"]
+  }
+] as const;
+
+export function getLocalizedCaseTypes(locale: "de" | "en") {
+  return locale === "en" ? caseTypesEn : caseTypes;
+}
+
+export function getLocalizedCaseTypeByValue(value: string, locale: "de" | "en") {
+  return getLocalizedCaseTypes(locale).find((item) => item.dbValue === value) ?? null;
+}

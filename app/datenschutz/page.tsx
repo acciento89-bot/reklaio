@@ -1,8 +1,11 @@
 import { LegalLayout } from "@/components/legal-layout";
 import { PRIVACY_VERSION } from "@/lib/legal-documents";
 import { legalAddressLines, legalOperator } from "@/lib/legal";
+import { getLocale } from "@/lib/i18n";
+import { PrivacyEn } from "@/components/legal-pages-en";
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  if (await getLocale() === "en") return <PrivacyEn />;
   return (
     <LegalLayout eyebrow="Datenschutz" title="Datenschutzerklärung" updated={PRIVACY_VERSION}>
       <section><h2>1. Verantwortlicher</h2><div className="legal-address">{legalAddressLines().map(line=><span key={line}>{line}</span>)}<span>E-Mail: {legalOperator.email}</span></div></section>
