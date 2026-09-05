@@ -19,17 +19,18 @@ const registrationSchema = z.object({
   acknowledgePrivacy: z.literal(true)
 });
 
-function redirectWithError(message: string) {
-  const url = publicUrl("/registrieren");
+function redirectWithError(message: string, locale: "de" | "en" = "de") {
+  const url = publicUrl(locale === "en" ? "/en/registrieren" : "/registrieren");
   url.searchParams.set("error", message);
   return NextResponse.redirect(url, 303);
 }
 
 export async function POST(request: Request) {
-  const rate = await consumeRateLimit({ key: `register:${requestFingerprint(request, "register")}`, limit: 5, windowSeconds: 3600 });
-  if (!rate.allowed) return redirectWithError("Zu viele Registrierungsversuche. Bitte versuche es später erneut.");
-
   const formData = await request.formData();
+  const locale = formData.get("locale") === "en" ? "en" : "de";
+  const rate = await consumeRateLimit({ key: `register:${requestFingerprint(request, "register")}`, limit: 5, windowSeconds: 3600 });
+  if (!rate.allowed) return redirectWithError(locale === "en" ? "Too many registration attempts. Please try again later." : "Zu viele Registrierungsversuche. Bitte versuche es später erneut.", locale);
+
   const parsed = registrationSchema.safeParse({
     displayName: formData.get("displayName"),
     email: formData.get("email"),
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
   });
 
   if (!parsed.success) {
-    return redirectWithError("Bitte prüfe deine Eingaben, bestätige die Rechtstexte und verwende ein Passwort mit mindestens 10 Zeichen.");
+    return redirectWithError(locale === "en" ? "Please check your details, accept the legal terms and use a password with at least 10 characters." : "Bitte prüfe deine Eingaben, bestätige die Rechtstexte und verwende ein Passwort mit mindestens 10 Zeichen.", locale);
   }
 
   const passwordHash = await hashPassword(parsed.data.password);
@@ -57,27 +58,27 @@ export async function POST(request: Request) {
 
     const userId = result.rows[0].id;
     await createSession(userId);
-    const url = publicUrl("/onboarding");
+    const url = publicUrl(locale === "en" ? "/en/onboarding" : "/onboarding");
     url.searchParams.set("registered", "1");
 
     if (isMailConfigured()) {
       try {
-        await sendVerificationEmail({ userId, email: parsed.data.email, displayName: parsed.data.displayName });
-        url.searchParams.set("notice", "Bestätigungslink wurde per E-Mail gesendet.");
+        await sendVerificationEmail({ userId, email: parsed.data.email, displayName: parsed.data.displayName, locale });
+        url.searchParams.set("notice", locale === "en" ? "A confirmation link was sent by email." : "Bestätigungslink wurde per E-Mail gesendet.");
       } catch (error) {
         console.error("Registration verification email failed", error);
-        url.searchParams.set("notice", "Konto erstellt. Den Bestätigungslink kannst du in den Einstellungen erneut senden.");
+        url.searchParams.set("notice", locale === "en" ? "Account created. You can resend the confirmation link in Settings." : "Konto erstellt. Den Bestätigungslink kannst du in den Einstellungen erneut senden.");
       }
     } else {
-      url.searchParams.set("notice", "Konto erstellt. E-Mail-Versand ist noch nicht eingerichtet.");
+      url.searchParams.set("notice", locale === "en" ? "Account created. Email delivery is not configured yet." : "Konto erstellt. E-Mail-Versand ist noch nicht eingerichtet.");
     }
 
     return NextResponse.redirect(url, 303);
   } catch (error) {
     if (typeof error === "object" && error !== null && "code" in error && error.code === "23505") {
-      return redirectWithError("Für diese E-Mail-Adresse besteht bereits ein Konto.");
+      return redirectWithError(locale === "en" ? "An account already exists for this email address." : "Für diese E-Mail-Adresse besteht bereits ein Konto.", locale);
     }
     console.error("Registration failed", error);
-    return redirectWithError("Die Registrierung konnte gerade nicht abgeschlossen werden.");
+    return redirectWithError(locale === "en" ? "Registration could not be completed right now." : "Die Registrierung konnte gerade nicht abgeschlossen werden.", locale);
   }
 }

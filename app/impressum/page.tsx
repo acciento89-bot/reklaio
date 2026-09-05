@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { LegalLayout } from "@/components/legal-layout";
 import { LEGAL_VERSION, legalAddressLines, legalOperator } from "@/lib/legal";
+import { getLocale } from "@/lib/i18n";
+import { ImprintEn } from "@/components/legal-pages-en";
 
 
-export default function ImprintPage() {
+export default async function ImprintPage() {
+  if (await getLocale() === "en") return <ImprintEn />;
   return (
     <LegalLayout eyebrow="Rechtliche Angaben" title="Impressum" updated={LEGAL_VERSION}>
       <section>
@@ -57,4 +60,3 @@ export default function ImprintPage() {
     </LegalLayout>
   );
 }
-

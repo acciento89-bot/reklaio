@@ -15,35 +15,42 @@ export function getCaseStatus(value: string) {
   return caseStatuses.find((item) => item.value === value) ?? caseStatuses[0];
 }
 
-export function formatCurrency(cents: number | null, currency = "EUR") {
+export function getLocalizedCaseStatus(value: string, locale: "de" | "en") {
+  const status = getCaseStatus(value);
+  if (locale === "de") return status;
+  const labels: Record<string, string> = { draft: "Draft", collecting_evidence: "Collecting evidence", ready_to_contact: "Ready to contact", waiting_for_reply: "Waiting for reply", deadline_expired: "Deadline expired", escalation: "Review escalation", resolved: "Resolved", closed: "Closed" };
+  return { ...status, label: labels[status.value] ?? status.label };
+}
+
+export function formatCurrency(cents: number | null, currency = "EUR", locale = "de-DE") {
   if (cents === null) {
     return "–";
   }
 
-  return new Intl.NumberFormat("de-DE", {
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency
   }).format(cents / 100);
 }
 
-export function formatDate(value: string | Date | null) {
+export function formatDate(value: string | Date | null, locale = "de-DE") {
   if (!value) {
     return "–";
   }
 
-  return new Intl.DateTimeFormat("de-DE", {
+  return new Intl.DateTimeFormat(locale, {
     day: "2-digit",
     month: "2-digit",
     year: "numeric"
   }).format(new Date(value));
 }
 
-export function formatDateTime(value: string | Date | null) {
+export function formatDateTime(value: string | Date | null, locale = "de-DE") {
   if (!value) {
     return "–";
   }
 
-  return new Intl.DateTimeFormat("de-DE", {
+  return new Intl.DateTimeFormat(locale, {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",

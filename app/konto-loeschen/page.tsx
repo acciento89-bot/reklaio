@@ -2,8 +2,11 @@ import Link from "next/link";
 import { LegalLayout } from "@/components/legal-layout";
 import { PRIVACY_VERSION } from "@/lib/legal-documents";
 import { legalOperator } from "@/lib/legal";
+import { getLocale } from "@/lib/i18n";
+import { AccountDeletionEn } from "@/components/legal-pages-en";
 
-export default function AccountDeletionPage() {
+export default async function AccountDeletionPage() {
+  if (await getLocale() === "en") return <AccountDeletionEn />;
   return (
     <LegalLayout eyebrow="Datenschutz" title="Reklaio-Konto löschen" updated={PRIVACY_VERSION}>
       <section>

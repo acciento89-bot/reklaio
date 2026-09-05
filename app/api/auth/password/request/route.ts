@@ -11,25 +11,26 @@ const requestSchema = z.object({
   email: z.string().trim().toLowerCase().email()
 });
 
-function redirect(type: "notice" | "error", message: string) {
-  const url = publicUrl("/passwort-vergessen");
+function redirect(type: "notice" | "error", message: string, locale: "de" | "en") {
+  const url = publicUrl(locale === "en" ? "/en/passwort-vergessen" : "/passwort-vergessen");
   url.searchParams.set(type, message);
   return NextResponse.redirect(url, 303);
 }
 
 export async function POST(request: Request) {
   const formData = await request.formData();
+  const locale = formData.get("locale") === "en" ? "en" : "de";
   const parsed = requestSchema.safeParse({ email: formData.get("email") });
 
   if (!parsed.success) {
-    return redirect("error", "Bitte gib eine gültige E-Mail-Adresse ein.");
+    return redirect("error", locale === "en" ? "Please enter a valid email address." : "Bitte gib eine gültige E-Mail-Adresse ein.", locale);
   }
 
   if (!isMailConfigured()) {
-    return redirect("error", "Der E-Mail-Versand ist noch nicht eingerichtet.");
+    return redirect("error", locale === "en" ? "Email delivery is not configured yet." : "Der E-Mail-Versand ist noch nicht eingerichtet.", locale);
   }
 
-  const genericNotice = "Falls ein Konto zu dieser Adresse existiert, wurde ein Reset-Link gesendet.";
+  const genericNotice = locale === "en" ? "If an account exists for this address, a reset link has been sent." : "Falls ein Konto zu dieser Adresse existiert, wurde ein Reset-Link gesendet.";
 
   try {
     const result = await query<{
@@ -57,25 +58,26 @@ export async function POST(request: Request) {
 
     const account = result.rows[0];
     if (!account) {
-      return redirect("notice", genericNotice);
+      return redirect("notice", genericNotice, locale);
     }
 
     if (account.last_requested_at) {
       const lastRequested = new Date(account.last_requested_at).getTime();
       if (Date.now() - lastRequested < 5 * 60_000) {
-        return redirect("notice", genericNotice);
+        return redirect("notice", genericNotice, locale);
       }
     }
 
     await sendPasswordResetEmail({
       userId: account.id,
       email: account.email,
-      displayName: account.display_name
+      displayName: account.display_name,
+      locale
     });
 
-    return redirect("notice", genericNotice);
+    return redirect("notice", genericNotice, locale);
   } catch (error) {
     console.error("Password reset request failed", error);
-    return redirect("notice", genericNotice);
+    return redirect("notice", genericNotice, locale);
   }
 }

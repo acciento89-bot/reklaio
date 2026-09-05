@@ -6,17 +6,19 @@ import {
   formatCurrency,
   formatDate,
   formatDateTime,
-  getCaseStatus,
+  getLocalizedCaseStatus,
   type CaseStatus
 } from "@/lib/cases";
 import {
   caseTypes,
-  getCaseTypeByValue,
+  getLocalizedCaseTypeByValue,
+  getLocalizedCaseTypes,
   type CaseTypeValue
 } from "@/lib/case-types";
 import { assistantPriorityRank, getCaseAssistant } from "@/lib/case-assistant";
 import { CaseTypeIcon } from "@/components/case-type-icon";
 import { getProviderOutcome, getTaskPriority } from "@/lib/workflow";
+import { getLocale, localizedPath, type Locale } from "@/lib/i18n";
 
 type DashboardCase = {
   id: string;
@@ -101,7 +103,8 @@ function compareNullableNumbers(a: number | null, b: number | null, direction: "
 
 function dashboardHref(
   current: { q: string; status: string; type: string; scope: Scope; sort: SortMode },
-  changes: Partial<{ q: string; status: string; type: string; scope: Scope; sort: SortMode }>
+  changes: Partial<{ q: string; status: string; type: string; scope: Scope; sort: SortMode }>,
+  locale: Locale
 ) {
   const next = { ...current, ...changes };
   const params = new URLSearchParams();
@@ -111,10 +114,17 @@ function dashboardHref(
   if (next.scope !== "active") params.set("scope", next.scope);
   if (next.sort !== "updated_desc") params.set("sort", next.sort);
   const queryString = params.toString();
-  return queryString ? `/dashboard?${queryString}` : "/dashboard";
+  const path = localizedPath("/dashboard", locale);
+  return queryString ? `${path}?${queryString}` : path;
 }
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
+  const locale = await getLocale();
+  const en = locale === "en";
+  const numberLocale = en ? "en-GB" : "de-DE";
+  const localizedTypes = getLocalizedCaseTypes(locale);
+  const localizedScopes = en ? [{ value: "active", label: "Active" }, { value: "archived", label: "Archive" }, { value: "all", label: "All" }] as const : scopes;
+  const localizedSortModes = en ? [{ value: "updated_desc", label: "Recently updated" }, { value: "updated_asc", label: "Oldest update" }, { value: "amount_desc", label: "Amount descending" }, { value: "amount_asc", label: "Amount ascending" }, { value: "deadline_asc", label: "Next deadline first" }, { value: "deadline_desc", label: "Latest deadline first" }] as const : sortModes;
   const user = await requireUser();
   const accountName = user.displayName || user.email;
   const raw = await searchParams;
@@ -240,60 +250,60 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   return (
     <main className="app-shell">
       <aside className="sidebar">
-        <Link className="brand" href="/"><span className="brand-mark">R</span><span>Reklaio</span></Link>
+        <Link className="brand" href={localizedPath("/", locale)}><span className="brand-mark">R</span><span>Reklaio</span></Link>
         <nav>
-          <Link className="active" href="/dashboard">Meine Fälle</Link>
-          <Link href="/neuer-fall">Neuer Fall</Link>
-          <Link href="/fristen">Fristen</Link>
-          <Link href="/dokumente">Dokumente</Link>
-          <Link href="/einstellungen">Einstellungen</Link>
+          <Link className="active" href={localizedPath("/dashboard", locale)}>{en ? "My cases" : "Meine Fälle"}</Link>
+          <Link href={localizedPath("/neuer-fall", locale)}>{en ? "New case" : "Neuer Fall"}</Link>
+          <Link href={localizedPath("/fristen", locale)}>{en ? "Deadlines" : "Fristen"}</Link>
+          <Link href={localizedPath("/dokumente", locale)}>{en ? "Documents" : "Dokumente"}</Link>
+          <Link href={localizedPath("/einstellungen", locale)}>{en ? "Settings" : "Einstellungen"}</Link>
         </nav>
         <div className="sidebar-account">
           <strong>{accountName}</strong>
           <span>{user.email}</span>
-          <form action="/api/auth/logout" method="post"><button type="submit">Abmelden</button></form>
+          <form action="/api/auth/logout" method="post"><button type="submit">{en ? "Sign out" : "Abmelden"}</button></form>
         </div>
       </aside>
 
       <section className="app-content">
         <header className="app-header">
           <div>
-            <span className="eyebrow">Arbeitszentrale</span>
-            <h1>Meine Fälle</h1>
-            <p className="dashboard-welcome">Willkommen, {user.displayName || user.email}.</p>
+            <span className="eyebrow">{en ? "Workspace" : "Arbeitszentrale"}</span>
+            <h1>{en ? "My cases" : "Meine Fälle"}</h1>
+            <p className="dashboard-welcome">{en ? "Welcome" : "Willkommen"}, {user.displayName || user.email}.</p>
           </div>
-          <Link className="button button-primary" href="/neuer-fall">+ Neuer Fall</Link>
+          <Link className="button button-primary" href={localizedPath("/neuer-fall", locale)}>+ {en ? "New case" : "Neuer Fall"}</Link>
         </header>
 
         {raw.notice ? <div className="notice-card dashboard-notice" role="status"><strong>{raw.notice}</strong></div> : null}
         {raw.error ? <div className="form-error dashboard-notice" role="alert">{raw.error}</div> : null}
 
         <div className="stats-grid">
-          <div className="stat-card"><span>Aktive Fälle</span><strong>{activeCases.length}</strong><small>{archivedCount} archiviert · {allCases.length} insgesamt</small></div>
-          <div className="stat-card"><span>Offener Betrag</span><strong>{formatCurrency(openAmount)}</strong><small>über aktive Fälle</small></div>
-          <div className="stat-card"><span>Nächste Frist</span><strong>{nextDeadline ? formatDate(nextDeadline) : "Keine"}</strong><small>{nextDeadline ? "offene Frist" : "noch keine Frist erfasst"}</small></div>
+          <div className="stat-card"><span>{en ? "Active cases" : "Aktive Fälle"}</span><strong>{activeCases.length}</strong><small>{archivedCount} {en ? "archived" : "archiviert"} · {allCases.length} {en ? "total" : "insgesamt"}</small></div>
+          <div className="stat-card"><span>{en ? "Outstanding amount" : "Offener Betrag"}</span><strong>{formatCurrency(openAmount, "EUR", numberLocale)}</strong><small>{en ? "across active cases" : "über aktive Fälle"}</small></div>
+          <div className="stat-card"><span>{en ? "Next deadline" : "Nächste Frist"}</span><strong>{nextDeadline ? formatDate(nextDeadline, numberLocale) : (en ? "None" : "Keine")}</strong><small>{nextDeadline ? (en ? "open deadline" : "offene Frist") : (en ? "no deadline recorded yet" : "noch keine Frist erfasst")}</small></div>
         </div>
 
-        <section className="dashboard-task-summary" aria-label="Aufgabenübersicht">
-          <article className={overdueTaskCount ? "danger" : ""}><span>Überfällige Aufgaben</span><strong>{overdueTaskCount}</strong><small>sofort prüfen</small></article>
-          <article><span>Heute fällig</span><strong>{todayTaskCount}</strong><small>offene Aufgaben</small></article>
-          <article><span>Antwort ausstehend</span><strong>{waitingReplyCount}</strong><small>Fälle warten auf den Anbieter</small></article>
+        <section className="dashboard-task-summary" aria-label={en ? "Task overview" : "Aufgabenübersicht"}>
+          <article className={overdueTaskCount ? "danger" : ""}><span>{en ? "Overdue tasks" : "Überfällige Aufgaben"}</span><strong>{overdueTaskCount}</strong><small>{en ? "review now" : "sofort prüfen"}</small></article>
+          <article><span>{en ? "Due today" : "Heute fällig"}</span><strong>{todayTaskCount}</strong><small>{en ? "open tasks" : "offene Aufgaben"}</small></article>
+          <article><span>{en ? "Reply pending" : "Antwort ausstehend"}</span><strong>{waitingReplyCount}</strong><small>{en ? "cases waiting for the provider" : "Fälle warten auf den Anbieter"}</small></article>
         </section>
 
         <section className="panel dashboard-task-panel" id="aufgaben">
-          <div className="panel-header"><div><span className="eyebrow">Aufgaben</span><h2>Heute und als Nächstes</h2></div><span>{taskResult.rows.length} offen</span></div>
+          <div className="panel-header"><div><span className="eyebrow">{en ? "Tasks" : "Aufgaben"}</span><h2>{en ? "Today and next" : "Heute und als Nächstes"}</h2></div><span>{taskResult.rows.length} {en ? "open" : "offen"}</span></div>
           {taskResult.rows.length === 0 ? (
-            <div className="empty-state"><div className="empty-state-icon">✓</div><h3>Keine offenen Aufgaben</h3><p>Neue Aufgaben können in der Steuerung eines Falls angelegt werden.</p></div>
+            <div className="empty-state"><div className="empty-state-icon">✓</div><h3>{en ? "No open tasks" : "Keine offenen Aufgaben"}</h3><p>{en ? "You can add new tasks from a case's management view." : "Neue Aufgaben können in der Steuerung eines Falls angelegt werden."}</p></div>
           ) : (
             <div className="dashboard-task-list">
               {taskResult.rows.slice(0, 8).map((task) => {
                 const priority = getTaskPriority(task.priority);
                 return (
                   <article className={`dashboard-task-row dashboard-task-${task.due_state}`} key={task.id}>
-                    <Link className="dashboard-task-main" href={`/faelle/${task.case_id}/steuerung`}><strong>{task.title}</strong><span>{task.case_title}</span></Link>
-                    <span className="dashboard-task-due">{task.due_at ? formatDateTime(task.due_at) : "Ohne Fälligkeit"}</span>
+                    <Link className="dashboard-task-main" href={localizedPath(`/faelle/${task.case_id}/steuerung`, locale)}><strong>{task.title}</strong><span>{task.case_title}</span></Link>
+                    <span className="dashboard-task-due">{task.due_at ? formatDateTime(task.due_at, numberLocale) : (en ? "No due date" : "Ohne Fälligkeit")}</span>
                     <span className="dashboard-task-priority">{priority.label}</span>
-                    <form action={`/api/tasks/${task.id}/complete`} method="post"><input name="returnTo" type="hidden" value="/dashboard" /><button className="button button-secondary" type="submit">Erledigt</button></form>
+                    <form action={`/api/tasks/${task.id}/complete`} method="post"><input name="returnTo" type="hidden" value={localizedPath("/dashboard", locale)} /><button className="button button-secondary" type="submit">{en ? "Done" : "Erledigt"}</button></form>
                   </article>
                 );
               })}
@@ -303,14 +313,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
         {promiseResult.rows.length ? (
           <section className="panel dashboard-task-panel">
-            <div className="panel-header"><div><span className="eyebrow">Anbieterzusagen</span><h2>Zahlungen und Termine beobachten</h2></div><span>{promiseResult.rows.length} offen</span></div>
+            <div className="panel-header"><div><span className="eyebrow">{en ? "Provider promises" : "Anbieterzusagen"}</span><h2>{en ? "Track payments and dates" : "Zahlungen und Termine beobachten"}</h2></div><span>{promiseResult.rows.length} {en ? "open" : "offen"}</span></div>
             <div className="dashboard-task-list">
               {promiseResult.rows.slice(0, 5).map((promise) => (
                 <article className="dashboard-task-row" key={promise.id}>
-                  <Link className="dashboard-task-main" href={`/faelle/${promise.case_id}/steuerung`}><strong>{promise.case_title}</strong><span>{getProviderOutcome(promise.outcome).label}</span></Link>
-                  <span className="dashboard-task-due">{formatDate(promise.promised_due_at)}</span>
-                  <span className="dashboard-task-priority">{promise.promised_amount_cents !== null ? formatCurrency(promise.promised_amount_cents) : "Termin"}</span>
-                  <Link className="button button-secondary" href={`/faelle/${promise.case_id}/steuerung`}>Öffnen</Link>
+                  <Link className="dashboard-task-main" href={localizedPath(`/faelle/${promise.case_id}/steuerung`, locale)}><strong>{promise.case_title}</strong><span>{getProviderOutcome(promise.outcome).label}</span></Link>
+                  <span className="dashboard-task-due">{formatDate(promise.promised_due_at, numberLocale)}</span>
+                  <span className="dashboard-task-priority">{promise.promised_amount_cents !== null ? formatCurrency(promise.promised_amount_cents, "EUR", numberLocale) : (en ? "Date" : "Termin")}</span>
+                  <Link className="button button-secondary" href={localizedPath(`/faelle/${promise.case_id}/steuerung`, locale)}>{en ? "Open" : "Öffnen"}</Link>
                 </article>
               ))}
             </div>
@@ -318,22 +328,22 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         ) : null}
 
         <div className="assistant-summary-grid">
-          <Link className="assistant-summary-card assistant-summary-urgent" href="/fristen"><span>Dringend oder bald fällig</span><strong>{urgentCount}</strong><small>Fristen mit direktem Handlungsbedarf</small></Link>
-          <Link className="assistant-summary-card" href="/dashboard?scope=active&sort=deadline_asc"><span>Ohne offene Frist</span><strong>{withoutDeadlineCount}</strong><small>Assistent kann eine 7-Tage-Frist anlegen</small></Link>
-          <Link className="assistant-summary-card" href="#aufmerksamkeit"><span>Unvollständige Fallakten</span><strong>{incompleteCount}</strong><small>weniger als 70 % vollständig</small></Link>
+          <Link className="assistant-summary-card assistant-summary-urgent" href={localizedPath("/fristen", locale)}><span>{en ? "Urgent or due soon" : "Dringend oder bald fällig"}</span><strong>{urgentCount}</strong><small>{en ? "deadlines requiring action" : "Fristen mit direktem Handlungsbedarf"}</small></Link>
+          <Link className="assistant-summary-card" href={`${localizedPath("/dashboard", locale)}?scope=active&sort=deadline_asc`}><span>{en ? "No open deadline" : "Ohne offene Frist"}</span><strong>{withoutDeadlineCount}</strong><small>{en ? "the assistant can create a 7-day deadline" : "Assistent kann eine 7-Tage-Frist anlegen"}</small></Link>
+          <Link className="assistant-summary-card" href="#aufmerksamkeit"><span>{en ? "Incomplete case files" : "Unvollständige Fallakten"}</span><strong>{incompleteCount}</strong><small>{en ? "less than 70% complete" : "weniger als 70 % vollständig"}</small></Link>
         </div>
 
         <section className="panel dashboard-assistant-panel" id="aufmerksamkeit">
-          <div className="panel-header"><div><span className="eyebrow">Fallassistent</span><h2>Was jetzt wichtig ist</h2></div><span>{attentionCases.length} aktive Fälle bewertet</span></div>
+          <div className="panel-header"><div><span className="eyebrow">{en ? "Case assistant" : "Fallassistent"}</span><h2>{en ? "What matters now" : "Was jetzt wichtig ist"}</h2></div><span>{attentionCases.length} {en ? "active cases reviewed" : "aktive Fälle bewertet"}</span></div>
           {attentionCases.length === 0 ? (
-            <div className="empty-state"><div className="empty-state-icon">✓</div><h3>Keine offenen Empfehlungen</h3><p>Aktuell gibt es keinen aktiven Fall, der deine Aufmerksamkeit benötigt.</p></div>
+            <div className="empty-state"><div className="empty-state-icon">✓</div><h3>{en ? "No open recommendations" : "Keine offenen Empfehlungen"}</h3><p>{en ? "No active case currently needs your attention." : "Aktuell gibt es keinen aktiven Fall, der deine Aufmerksamkeit benötigt."}</p></div>
           ) : (
             <div className="dashboard-assistant-list">
               {attentionCases.slice(0, 5).map(({ item, assistant }) => (
-                <Link className={`dashboard-assistant-row assistant-row-${assistant.priority}`} href={`/faelle/${item.id}/assistent`} key={item.id}>
+                <Link className={`dashboard-assistant-row assistant-row-${assistant.priority}`} href={localizedPath(`/faelle/${item.id}/assistent`, locale)} key={item.id}>
                   <span className="dashboard-assistant-icon"><CaseTypeIcon type={item.type} /></span>
                   <span className="dashboard-assistant-copy"><strong>{item.title}</strong><span>{assistant.headline}</span></span>
-                  <span className="dashboard-assistant-progress"><strong>{assistant.completeness}%</strong><small>vollständig</small></span>
+                  <span className="dashboard-assistant-progress"><strong>{assistant.completeness}%</strong><small>{en ? "complete" : "vollständig"}</small></span>
                   <span className={`assistant-priority assistant-priority-${assistant.priority}`}>{assistant.priorityLabel}</span>
                   <span className="case-row-arrow" aria-hidden="true">→</span>
                 </Link>
@@ -343,32 +353,32 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         </section>
 
         <section className="dashboard-tools panel">
-          <div className="dashboard-scope-tabs" aria-label="Fallansicht">{scopes.map((item) => <Link className={scope === item.value ? "active" : ""} href={dashboardHref(filterState, { scope: item.value })} key={item.value}>{item.label}</Link>)}</div>
-          <form className="dashboard-filter-form" action="/dashboard" method="get">
+          <div className="dashboard-scope-tabs" aria-label={en ? "Case view" : "Fallansicht"}>{localizedScopes.map((item) => <Link className={scope === item.value ? "active" : ""} href={dashboardHref(filterState, { scope: item.value }, locale)} key={item.value}>{item.label}</Link>)}</div>
+          <form className="dashboard-filter-form" action={localizedPath("/dashboard", locale)} method="get">
             <input name="scope" type="hidden" value={scope} />
-            <label className="dashboard-search-field"><span>Suche</span><input name="q" type="search" defaultValue={q} placeholder="Titel, Anbieter oder Referenz" maxLength={100} /></label>
-            <label><span>Status</span><select name="status" defaultValue={selectedStatus}><option value="">Alle Status</option>{caseStatuses.map((item) => <option value={item.value} key={item.value}>{item.label}</option>)}</select></label>
-            <label><span>Fallart</span><select name="type" defaultValue={selectedType}><option value="">Alle Fallarten</option>{caseTypes.map((item) => <option value={item.dbValue} key={item.dbValue}>{item.title}</option>)}</select></label>
-            <label><span>Sortierung</span><select name="sort" defaultValue={sort}>{sortModes.map((item) => <option value={item.value} key={item.value}>{item.label}</option>)}</select></label>
-            <div className="dashboard-filter-actions"><button className="button button-primary" type="submit">Anwenden</button>{hasFilters ? <Link className="button button-secondary" href="/dashboard">Zurücksetzen</Link> : null}</div>
+            <label className="dashboard-search-field"><span>{en ? "Search" : "Suche"}</span><input name="q" type="search" defaultValue={q} placeholder={en ? "Title, provider or reference" : "Titel, Anbieter oder Referenz"} maxLength={100} /></label>
+            <label><span>Status</span><select name="status" defaultValue={selectedStatus}><option value="">{en ? "All statuses" : "Alle Status"}</option>{caseStatuses.map((item) => <option value={item.value} key={item.value}>{getLocalizedCaseStatus(item.value, locale).label}</option>)}</select></label>
+            <label><span>{en ? "Case type" : "Fallart"}</span><select name="type" defaultValue={selectedType}><option value="">{en ? "All case types" : "Alle Fallarten"}</option>{localizedTypes.map((item) => <option value={item.dbValue} key={item.dbValue}>{item.title}</option>)}</select></label>
+            <label><span>{en ? "Sort" : "Sortierung"}</span><select name="sort" defaultValue={sort}>{localizedSortModes.map((item) => <option value={item.value} key={item.value}>{item.label}</option>)}</select></label>
+            <div className="dashboard-filter-actions"><button className="button button-primary" type="submit">{en ? "Apply" : "Anwenden"}</button>{hasFilters ? <Link className="button button-secondary" href={localizedPath("/dashboard", locale)}>{en ? "Reset" : "Zurücksetzen"}</Link> : null}</div>
           </form>
         </section>
 
         <div className="panel dashboard-case-panel">
-          <div className="panel-header"><h2>{scope === "archived" ? "Archivierte Fälle" : scope === "all" ? "Alle Fälle" : "Aktive Fälle"}</h2><span>{visibleCases.length} von {allCases.length}</span></div>
+          <div className="panel-header"><h2>{scope === "archived" ? (en ? "Archived cases" : "Archivierte Fälle") : scope === "all" ? (en ? "All cases" : "Alle Fälle") : (en ? "Active cases" : "Aktive Fälle")}</h2><span>{visibleCases.length} {en ? "of" : "von"} {allCases.length}</span></div>
           {allCases.length === 0 ? (
-            <div className="empty-state"><div className="empty-state-icon">+</div><h3>Noch kein Fall angelegt</h3><p>Lege deinen ersten Fall an und sammle Anbieter, Betrag, Chronik und Fristen an einem Ort.</p><Link className="button button-primary" href="/neuer-fall">Ersten Fall anlegen</Link></div>
+            <div className="empty-state"><div className="empty-state-icon">+</div><h3>{en ? "No case yet" : "Noch kein Fall angelegt"}</h3><p>{en ? "Create your first case and keep the provider, amount, timeline and deadlines together." : "Lege deinen ersten Fall an und sammle Anbieter, Betrag, Chronik und Fristen an einem Ort."}</p><Link className="button button-primary" href={localizedPath("/neuer-fall", locale)}>{en ? "Create first case" : "Ersten Fall anlegen"}</Link></div>
           ) : visibleCases.length === 0 ? (
-            <div className="empty-state dashboard-no-results"><div className="empty-state-icon">⌕</div><h3>Keine passenden Fälle</h3><p>Zu deiner Suche und den gewählten Filtern wurde kein Fall gefunden.</p><Link className="button button-secondary" href="/dashboard">Suche und Filter löschen</Link></div>
+            <div className="empty-state dashboard-no-results"><div className="empty-state-icon">⌕</div><h3>{en ? "No matching cases" : "Keine passenden Fälle"}</h3><p>{en ? "No case matches your search and selected filters." : "Zu deiner Suche und den gewählten Filtern wurde kein Fall gefunden."}</p><Link className="button button-secondary" href={localizedPath("/dashboard", locale)}>{en ? "Clear search and filters" : "Suche und Filter löschen"}</Link></div>
           ) : (
             <div className="case-list">
               {visibleCases.map((item) => {
-                const status = getCaseStatus(item.status);
-                const type = getCaseTypeByValue(item.type);
+                const status = getLocalizedCaseStatus(item.status, locale);
+                const type = getLocalizedCaseTypeByValue(item.type, locale);
                 return (
-                  <Link className="case-row dashboard-case-row" href={`/faelle/${item.id}`} key={item.id}>
-                    <div className="case-row-main"><div className="case-avatar"><CaseTypeIcon type={item.type} /></div><div><h3>{item.title}</h3><p>{item.company_name || type?.title || "Ohne Anbieter"}{item.order_reference ? ` · ${item.order_reference}` : ""}</p></div></div>
-                    <div className="dashboard-case-meta"><strong>{formatCurrency(item.amount_cents, item.currency)}</strong><small>{item.next_due_at ? `Frist: ${formatDate(item.next_due_at)}` : "Keine offene Frist"}</small></div>
+                  <Link className="case-row dashboard-case-row" href={localizedPath(`/faelle/${item.id}`, locale)} key={item.id}>
+                    <div className="case-row-main"><div className="case-avatar"><CaseTypeIcon type={item.type} /></div><div><h3>{item.title}</h3><p>{item.company_name || type?.title || (en ? "No provider" : "Ohne Anbieter")}{item.order_reference ? ` · ${item.order_reference}` : ""}</p></div></div>
+                    <div className="dashboard-case-meta"><strong>{formatCurrency(item.amount_cents, item.currency, numberLocale)}</strong><small>{item.next_due_at ? `${en ? "Deadline" : "Frist"}: ${formatDate(item.next_due_at, numberLocale)}` : (en ? "No open deadline" : "Keine offene Frist")}</small></div>
                     <span className={`status status-${status.tone}`}>{status.label}</span>
                     <span className="case-row-arrow" aria-hidden="true">→</span>
                   </Link>

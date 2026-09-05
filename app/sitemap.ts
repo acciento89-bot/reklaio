@@ -11,7 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.9
   }));
 
-  return [
+  const germanPages: MetadataRoute.Sitemap = [
     {
       url: BASE_URL,
       lastModified: new Date("2026-09-03"),
@@ -52,4 +52,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.2
     }
   ];
+  const translatedPublicPaths = new Set(["", "/preise", "/hilfe", "/kontakt", "/impressum", "/datenschutz"]);
+  const englishPages: MetadataRoute.Sitemap = germanPages
+    .filter(item => translatedPublicPaths.has(item.url.slice(BASE_URL.length)))
+    .map(item => ({ ...item, url: item.url === BASE_URL ? `${BASE_URL}/en` : item.url.replace(BASE_URL, `${BASE_URL}/en`) }));
+  return [...germanPages, ...englishPages];
 }

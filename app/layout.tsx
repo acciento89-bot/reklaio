@@ -27,15 +27,19 @@ import { GlobalAppNavigation } from "@/components/global-app-navigation";
 import { GlobalLegalLinks } from "@/components/global-legal-links";
 import { GoogleConsentManager } from "@/components/google-consent-manager";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { getLocale } from "@/lib/i18n";
 
-export const metadata: Metadata = {
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const en = locale === "en";
+  return {
   metadataBase: new URL("https://reklaio.de"),
   title: {
-    default: "Reklaio – Verbraucherfälle strukturiert dokumentieren",
+    default: en ? "Reklaio – Organise consumer complaints" : "Reklaio – Verbraucherfälle strukturiert dokumentieren",
     template: "%s | Reklaio"
   },
-  description:
-    "Reklamationen, Rückzahlungen, Kündigungen, Belege und Fristen in einer nachvollziehbaren digitalen Fallakte organisieren.",
+  description: en ? "Organise complaints, refunds, cancellations, evidence and deadlines in one clear digital case file." : "Reklamationen, Rückzahlungen, Kündigungen, Belege und Fristen in einer nachvollziehbaren digitalen Fallakte organisieren.",
   keywords: [
     "Reklamation schreiben",
     "Reklamationsschreiben",
@@ -57,17 +61,17 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    locale: "de_DE",
-    url: "https://reklaio.de",
+    locale: en ? "en_GB" : "de_DE",
+    url: en ? "https://reklaio.de/en" : "https://reklaio.de",
     siteName: "Reklaio",
-    title: "Reklaio – Dein Fall. Deine Frist. Dein Überblick.",
-    description: "Belege, Chronik, Fristen, Schreiben und empfohlene nächste Schritte in einer vollständigen digitalen Fallakte.",
-    images: [{ url: "/reklaio-banner.svg", width: 2048, height: 682, alt: "Reklaio – Dein Fall. Deine Frist. Dein Überblick." }]
+    title: en ? "Reklaio – Your case. Your deadline. Your overview." : "Reklaio – Dein Fall. Deine Frist. Dein Überblick.",
+    description: en ? "Evidence, timeline, deadlines, letters and recommended next steps in one complete digital case file." : "Belege, Chronik, Fristen, Schreiben und empfohlene nächste Schritte in einer vollständigen digitalen Fallakte.",
+    images: [{ url: "/reklaio-banner.svg", width: 2048, height: 682, alt: en ? "Reklaio – Your case. Your deadline. Your overview." : "Reklaio – Dein Fall. Deine Frist. Dein Überblick." }]
   },
   twitter: {
     card: "summary_large_image",
-    title: "Reklaio – Dein Fall. Deine Frist. Dein Überblick.",
-    description: "Belege, Chronik, Fristen und empfohlene nächste Schritte an einem Ort.",
+    title: en ? "Reklaio – Your case. Your deadline. Your overview." : "Reklaio – Dein Fall. Deine Frist. Dein Überblick.",
+    description: en ? "Evidence, timeline, deadlines and recommended next steps in one place." : "Belege, Chronik, Fristen und empfohlene nächste Schritte an einem Ort.",
     images: ["/reklaio-banner.svg"]
   },
   robots: {
@@ -81,22 +85,25 @@ export const metadata: Metadata = {
       "max-video-preview": -1
     }
   }
-};
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#0b1538",
   colorScheme: "dark"
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const locale = await getLocale();
   return (
-    <html lang="de">
+    <html lang={locale}>
       <body>
         <ServiceWorkerRegistration />
         <GoogleConsentManager />
-        <GlobalAppNavigation />
+        <GlobalAppNavigation locale={locale} />
+        <LanguageSwitcher locale={locale} />
         {children}
-        <GlobalLegalLinks />
+        <GlobalLegalLinks locale={locale} />
       </body>
     </html>
   );

@@ -14,8 +14,8 @@ const resetSchema = z.object({
   confirmPassword: z.string().min(10).max(128)
 });
 
-function resetError(token: string, message: string) {
-  const url = publicUrl("/passwort-zuruecksetzen");
+function resetError(token: string, message: string, locale: "de" | "en" = "de") {
+  const url = publicUrl(locale === "en" ? "/en/passwort-zuruecksetzen" : "/passwort-zuruecksetzen");
   url.searchParams.set("token", token);
   url.searchParams.set("error", message);
   return NextResponse.redirect(url, 303);
@@ -24,6 +24,7 @@ function resetError(token: string, message: string) {
 export async function POST(request: Request) {
   const formData = await request.formData();
   const token = String(formData.get("token") ?? "");
+  const locale = formData.get("locale") === "en" ? "en" : "de";
   const parsed = resetSchema.safeParse({
     token,
     password: formData.get("password"),
@@ -31,11 +32,11 @@ export async function POST(request: Request) {
   });
 
   if (!parsed.success) {
-    return resetError(token, "Das Passwort muss zwischen 10 und 128 Zeichen lang sein.");
+    return resetError(token, locale === "en" ? "The password must be between 10 and 128 characters." : "Das Passwort muss zwischen 10 und 128 Zeichen lang sein.", locale);
   }
 
   if (parsed.data.password !== parsed.data.confirmPassword) {
-    return resetError(token, "Die beiden Passwörter stimmen nicht überein.");
+    return resetError(token, locale === "en" ? "The two passwords do not match." : "Die beiden Passwörter stimmen nicht überein.", locale);
   }
 
   const client = await getDb().connect();
@@ -63,7 +64,7 @@ export async function POST(request: Request) {
     const resetToken = result.rows[0];
     if (!resetToken) {
       await client.query("ROLLBACK");
-      return resetError(token, "Der Reset-Link ist ungültig oder abgelaufen.");
+      return resetError(token, locale === "en" ? "The reset link is invalid or has expired." : "Der Reset-Link ist ungültig oder abgelaufen.", locale);
     }
 
     const passwordHash = await hashPassword(parsed.data.password);
@@ -92,16 +93,17 @@ export async function POST(request: Request) {
     await sendPasswordChangedEmail({
       userId: resetToken.user_id,
       email: resetToken.email,
-      displayName: resetToken.display_name
+      displayName: resetToken.display_name,
+      locale
     }).catch(error => console.error("Password reset notification failed", resetToken.user_id, error));
 
-    const url = publicUrl("/anmelden");
-    url.searchParams.set("notice", "Passwort geändert. Du kannst dich jetzt anmelden.");
+    const url = publicUrl(locale === "en" ? "/en/anmelden" : "/anmelden");
+    url.searchParams.set("notice", locale === "en" ? "Password changed. You can now sign in." : "Passwort geändert. Du kannst dich jetzt anmelden.");
     return NextResponse.redirect(url, 303);
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
     console.error("Password reset failed", error);
-    return resetError(token, "Das Passwort konnte gerade nicht geändert werden.");
+    return resetError(token, locale === "en" ? "The password could not be changed right now." : "Das Passwort konnte gerade nicht geändert werden.", locale);
   } finally {
     client.release();
   }
