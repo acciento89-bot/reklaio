@@ -1,6 +1,7 @@
 import "react-native-gesture-handler";
 import { useEffect } from "react";
 import * as Notifications from "expo-notifications";
+import { NavigationBar } from "expo-navigation-bar";
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { AuthProvider } from "@/src/auth-context";
@@ -44,6 +45,7 @@ export default function RootLayout() {
         <SecurityProvider>
           <AppLockGate>
             <StatusBar style="light" />
+            <NavigationBar style="dark" />
             <NotificationNavigation />
             <Stack
               screenOptions={{

@@ -24,12 +24,15 @@ export default function AppTabsLayout() {
   return (
     <Tabs
       screenOptions={{
+        sceneStyle: { backgroundColor: colors.background },
         headerStyle: { backgroundColor: colors.panelSoft },
         headerTintColor: colors.text,
-        headerTitleStyle: { fontWeight: "800" },
+        headerShadowVisible: false,
+        headerTitleStyle: { fontWeight: "900", letterSpacing: -0.2 },
         tabBarStyle: {
           backgroundColor: colors.panelSoft,
           borderTopColor: colors.line,
+          borderTopWidth: 1,
           height: 72,
           paddingTop: 7,
           paddingBottom: 10
