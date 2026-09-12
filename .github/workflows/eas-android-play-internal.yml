@@ -2,6 +2,11 @@ name: Reklaio Android Play Internal
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'mobile/app.json'
+      - 'mobile/assets/icon.png'
 
 permissions:
   contents: read
@@ -14,7 +19,7 @@ jobs:
   build-and-submit:
     name: Build Android and submit to Google Play internal
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     defaults:
       run:
         working-directory: mobile
@@ -52,8 +57,23 @@ jobs:
       - name: Typecheck mobile app
         run: npm run typecheck
 
+      - name: Validate Google Play release contract and icon identity
+        run: node scripts/google-play-preflight.mjs
+
       - name: Validate Android native project
         run: npx expo prebuild --no-install --platform android
+
+      - name: Verify generated package and canonical launcher source
+        run: |
+          set -euo pipefail
+          grep -R -q 'de.kamilunavo.reklaio' android/app/build.gradle android/app/build.gradle.kts android/app/src/main/AndroidManifest.xml 2>/dev/null
+          test -f assets/icon.png
+          if grep -q '"adaptiveIcon"' app.json; then
+            echo 'Reklaio must use the canonical app icon directly; adaptiveIcon must stay disabled.' >&2
+            exit 1
+          fi
+          grep -q '"icon": "./assets/icon.png"' app.json
+          grep -q '"image": "./assets/icon.png"' app.json
 
       - name: Build and submit to Google Play internal
         run: eas build --platform android --profile production --auto-submit --non-interactive --no-wait
