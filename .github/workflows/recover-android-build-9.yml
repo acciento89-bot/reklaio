@@ -1,0 +1,89 @@
+name: Recover Reklaio Android build 9
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/recover-android-build-9.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  BUILD_ID: 6a36bc3e-e1b2-45fa-9e40-c54d29e38d23
+  PACKAGE_NAME: de.kamilunavo.reklaio
+  EXPECTED_VERSION_CODE: '9'
+  WIF_PROVIDER: projects/1058001477767/locations/global/workloadIdentityPools/github/providers/github-actions
+  GOOGLE_SERVICE_ACCOUNT: navoops@emerald-caster-508318-f2.iam.gserviceaccount.com
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Wait for the existing EAS build only
+        working-directory: mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$EXPO_TOKEN"
+          for attempt in $(seq 1 35); do
+            npx --yes eas-cli@latest build:view "$BUILD_ID" --json --non-interactive > "$RUNNER_TEMP/eas-build.json"
+            status=$(jq -r '.status' "$RUNNER_TEMP/eas-build.json")
+            echo "Existing EAS build status: $status"
+            case "$status" in
+              FINISHED) break ;;
+              ERRORED|CANCELED) cat "$RUNNER_TEMP/eas-build.json"; exit 1 ;;
+            esac
+            if [ "$attempt" -eq 35 ]; then echo 'Timed out waiting for the existing EAS build.' >&2; exit 1; fi
+            sleep 60
+          done
+          url=$(jq -r '.artifacts.buildUrl // .artifacts.applicationArchiveUrl // empty' "$RUNNER_TEMP/eas-build.json")
+          test -n "$url"
+          curl --fail --location --retry 4 --retry-all-errors "$url" -o "$RUNNER_TEMP/reklaio-v9.aab"
+          test -s "$RUNNER_TEMP/reklaio-v9.aab"
+          echo "AAB_PATH=$RUNNER_TEMP/reklaio-v9.aab" >> "$GITHUB_ENV"
+      - id: google-auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.GOOGLE_SERVICE_ACCOUNT }}
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/androidpublisher
+      - name: Upload existing EAS build and verify it in Play
+        env:
+          TOKEN: ${{ steps.google-auth.outputs.access_token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://androidpublisher.googleapis.com/androidpublisher/v3'
+          upload='https://androidpublisher.googleapis.com/upload/androidpublisher/v3'
+          edit=$(curl -fsS -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{}' "$api/applications/$PACKAGE_NAME/edits" | jq -r '.id')
+          bundles=$(curl -fsS -H "Authorization: Bearer $TOKEN" "$api/applications/$PACKAGE_NAME/edits/$edit/bundles")
+          if jq -e --argjson code "$EXPECTED_VERSION_CODE" '.bundles | any(.versionCode == $code)' <<<"$bundles" >/dev/null; then
+            echo "$PACKAGE_NAME versionCode $EXPECTED_VERSION_CODE already exists in Google Play"
+            curl -fsS -X DELETE -H "Authorization: Bearer $TOKEN" "$api/applications/$PACKAGE_NAME/edits/$edit" >/dev/null
+            exit 0
+          fi
+          body=$(mktemp)
+          status=$(curl -sS -o "$body" -w '%{http_code}' -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/octet-stream' --data-binary "@$AAB_PATH" "$upload/applications/$PACKAGE_NAME/edits/$edit/bundles?uploadType=media")
+          if [[ "$status" != 200 ]]; then cat "$body" >&2; curl -sS -X DELETE -H "Authorization: Bearer $TOKEN" "$api/applications/$PACKAGE_NAME/edits/$edit" >/dev/null || true; exit 1; fi
+          test "$(jq -r '.versionCode' "$body")" = "$EXPECTED_VERSION_CODE"
+          commit_body=$(mktemp)
+          status=$(curl -sS -o "$commit_body" -w '%{http_code}' -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{}' "$api/applications/$PACKAGE_NAME/edits/$edit:commit")
+          if [[ "$status" != 2* ]] && grep -Fq 'changesNotSentForReview' "$commit_body"; then
+            status=$(curl -sS -o "$commit_body" -w '%{http_code}' -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{}' "$api/applications/$PACKAGE_NAME/edits/$edit:commit?changesNotSentForReview=true")
+          fi
+          if [[ "$status" != 2* ]]; then cat "$commit_body" >&2; exit 1; fi
+          fresh=$(curl -fsS -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{}' "$api/applications/$PACKAGE_NAME/edits" | jq -r '.id')
+          curl -fsS -H "Authorization: Bearer $TOKEN" "$api/applications/$PACKAGE_NAME/edits/$fresh/bundles" | jq -e --argjson code "$EXPECTED_VERSION_CODE" '.bundles | any(.versionCode == $code)' >/dev/null
+          curl -fsS -X DELETE -H "Authorization: Bearer $TOKEN" "$api/applications/$PACKAGE_NAME/edits/$fresh" >/dev/null
+          echo "$PACKAGE_NAME versionCode $EXPECTED_VERSION_CODE uploaded and verified"
