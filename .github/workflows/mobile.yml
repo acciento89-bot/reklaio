@@ -37,8 +37,39 @@ jobs:
       - name: Validate Expo configuration
         run: npm run config:check
 
+      - name: Guard app, splash and launcher icon parity
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const expo = require('./app.json').expo;
+          const canonical = expo.icon;
+          const refs = {
+            appIcon: expo.icon,
+            splash: expo.splash?.image,
+            androidAdaptiveForeground: expo.android?.adaptiveIcon?.foregroundImage,
+            webFavicon: expo.web?.favicon,
+          };
+          if (!canonical) throw new Error('expo.icon is missing');
+          for (const [name, value] of Object.entries(refs)) {
+            if (value !== canonical) {
+              throw new Error(`${name} must use canonical icon ${canonical}, got ${value}`);
+            }
+          }
+          const file = canonical.replace(/^\.\//, '');
+          if (!fs.existsSync(file)) throw new Error(`Canonical icon file missing: ${file}`);
+          console.log(`Canonical Reklaio artwork locked to ${canonical} for app, splash, Android adaptive icon and favicon.`);
+          NODE
+
       - name: Typecheck mobile app
         run: npm run typecheck
 
       - name: Generate Android and iOS native projects
         run: npx expo prebuild --no-install
+
+      - name: Verify generated Android launcher resources
+        run: |
+          set -euo pipefail
+          test -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          test -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+          grep -Fq '@mipmap/ic_launcher' android/app/src/main/AndroidManifest.xml
+          grep -Fq '@mipmap/ic_launcher_round' android/app/src/main/AndroidManifest.xml
