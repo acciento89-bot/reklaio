@@ -27,7 +27,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-      - name: Wait for the existing EAS build only
+      - name: Locate and wait for the already queued EAS build
         working-directory: mobile
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -36,9 +36,16 @@ jobs:
           set -euo pipefail
           test -n "$EXPO_TOKEN"
           for attempt in $(seq 1 35); do
-            npx --yes eas-cli@latest build:view "$BUILD_ID" --json > "$RUNNER_TEMP/eas-build.json"
-            status=$(jq -r '.status' "$RUNNER_TEMP/eas-build.json")
-            echo "Existing EAS build status: $status"
+            npx --yes eas-cli@latest build:list --platform android --limit 25 --json --non-interactive > "$RUNNER_TEMP/eas-builds.json"
+            jq -e --arg id "$BUILD_ID" --arg code "$EXPECTED_VERSION_CODE" '
+              map(select(.id == $id or ((.appBuildVersion // .buildNumber // "") | tostring) == $code))
+              | sort_by(.createdAt // .created_at // "")
+              | last
+            ' "$RUNNER_TEMP/eas-builds.json" > "$RUNNER_TEMP/eas-build.json"
+            status=$(jq -r '.status // empty' "$RUNNER_TEMP/eas-build.json")
+            found=$(jq -r '.id // empty' "$RUNNER_TEMP/eas-build.json")
+            test -n "$found"
+            echo "Existing EAS build $found status: $status"
             case "$status" in
               FINISHED) break ;;
               ERRORED|CANCELED) cat "$RUNNER_TEMP/eas-build.json"; exit 1 ;;
