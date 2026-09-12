@@ -22,7 +22,15 @@ assert(pkg.version === app.expo?.version, "package.json version must match Expo 
 assert(String(pkg.dependencies?.expo || "").startsWith("~57."), "Expo SDK 57 is required for the API 36 release lane");
 assert(pkg.dependencies?.["react-native-purchases"], "react-native-purchases is missing");
 assert(eas.build?.production?.environment === "production", "EAS production build must use the production environment");
+assert(eas.build?.production?.autoIncrement === true, "Production Android builds must auto-increment the remote version code");
 assert(eas.submit?.production?.android?.track === "internal", "EAS production submit track must start at internal");
+
+// Google Play review must see the same product mark that Android installs.
+assert(app.expo?.icon === "./assets/icon.png", "Canonical Reklaio app icon changed unexpectedly");
+assert(app.expo?.splash?.image === app.expo?.icon, "Splash artwork must use the canonical app icon");
+assert(!app.expo?.android?.adaptiveIcon, "adaptiveIcon must stay disabled so Android uses the canonical app icon without a second foreground composition");
+assert(fs.statSync(path.join(root, "assets/icon.png")).size > 0, "Canonical Reklaio icon is missing");
+
 assert(purchases.includes("EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY"), "Android RevenueCat public-key path is missing");
 assert(purchases.includes('const PRO_ENTITLEMENT_ID = "pro"'), "RevenueCat pro entitlement changed unexpectedly");
 assert(purchases.includes("currentOffering.monthly") || purchases.includes('identifier === "$rc_monthly"'), "Monthly RevenueCat package resolution is missing");
@@ -30,4 +38,4 @@ assert(purchases.includes("PLAY_SUBSCRIPTIONS_URL"), "Google Play subscription m
 assert(api.includes("/api/mobile/v1/subscription/sync"), "Server subscription sync call is missing");
 assert(api.includes("/api/mobile/v1/account/delete"), "Account deletion API call is missing");
 
-console.log("Reklaio Google Play repository preflight passed for 0.4.3.");
+console.log("Reklaio Google Play repository preflight passed for 0.4.3 with canonical launcher icon identity.");
