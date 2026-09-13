@@ -4,19 +4,32 @@ set -euo pipefail
 readonly package_name="de.kamilunavo.reklaio"
 readonly output_dir="$GITHUB_WORKSPACE/mobile/store/google-play/screenshots/de-DE"
 readonly apk_path="$GITHUB_WORKSPACE/mobile/android/app/build/outputs/apk/debug/app-debug.apk"
+readonly ready_text="Sicher anmelden"
 
 current_focus() {
-  adb shell dumpsys window | grep -E "mCurrentFocus|mFocusedApp" || true
+  adb shell dumpsys window | grep "mCurrentFocus" | head -n 1 || true
+}
+
+hide_error_dialogs() {
+  adb shell settings put global hide_error_dialogs 1 || true
+  adb shell settings put global anr_show_background 0 || true
+  adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1 || true
+}
+
+assert_no_system_dialog() {
+  local focus
+  focus="$(current_focus)"
+  if [[ "$focus" != *"$package_name"* ]]; then
+    echo "Unexpected foreground window; refusing to capture: $focus" >&2
+    return 1
+  fi
 }
 
 wait_for_foreground() {
   local attempt
-  local focus
-  for attempt in $(seq 1 30); do
-    focus="$(current_focus)"
-    if [[ "$focus" == *"$package_name"* ]]; then
-      return 0
-    fi
+  for attempt in $(seq 1 45); do
+    if [[ "$(current_focus)" == *"$package_name"* ]]; then return 0; fi
+    hide_error_dialogs
     sleep 1
   done
   echo 'Timed out waiting for Reklaio to become the foreground app.' >&2
@@ -24,33 +37,35 @@ wait_for_foreground() {
   return 1
 }
 
-assert_clean_foreground() {
-  local focus
-  focus="$(current_focus)"
-  if [[ "$focus" != *"$package_name"* ]]; then
-    echo 'Reklaio is not the foreground app; refusing to capture.' >&2
-    printf '%s\n' "$focus" >&2
-    return 1
-  fi
+wait_for_login_ui() {
+  local attempt
+  for attempt in $(seq 1 45); do
+    if adb exec-out uiautomator dump /dev/tty 2>/dev/null | grep -Fq "$ready_text"; then return 0; fi
+    assert_no_system_dialog
+    sleep 1
+  done
+  echo "Timed out waiting for visible Reklaio login text: $ready_text" >&2
+  adb exec-out uiautomator dump /dev/tty >&2 || true
+  return 1
+}
+
+launch_app() {
+  adb shell am force-stop "$package_name"
+  hide_error_dialogs
+  adb shell am start -W -n "$package_name/.MainActivity"
+  wait_for_foreground
+  wait_for_login_ui
+  assert_no_system_dialog
 }
 
 mkdir -p "$output_dir"
 rm -f "$output_dir"/*.png
 adb install -r "$apk_path"
-adb shell am force-stop "$package_name"
-adb shell am start -n "$package_name/.MainActivity"
-
-wait_for_foreground
-sleep 8
-assert_clean_foreground
+launch_app
 adb exec-out screencap -p > "$output_dir/01-sicher-anmelden.png"
 
 adb shell cmd uimode night yes
-adb shell am force-stop "$package_name"
-adb shell am start -n "$package_name/.MainActivity"
-wait_for_foreground
-sleep 8
-assert_clean_foreground
+launch_app
 adb exec-out screencap -p > "$output_dir/02-sicher-anmelden-dunkel.png"
 
 python3 - "$output_dir" <<'PY'

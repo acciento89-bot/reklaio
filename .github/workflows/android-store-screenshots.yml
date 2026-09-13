@@ -44,7 +44,7 @@ jobs:
         working-directory: mobile/android
         run: ./gradlew --no-daemon assembleDebug --stacktrace
 
-      - name: Capture exact current Reklaio UI
+      - name: Enable KVM acceleration\n        run: sudo chmod 666 /dev/kvm\n\n      - name: Capture exact current Reklaio UI
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
