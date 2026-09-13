@@ -3,7 +3,7 @@ set -euo pipefail
 
 readonly package_name="de.kamilunavo.reklaio"
 readonly output_dir="$GITHUB_WORKSPACE/mobile/store/google-play/screenshots/de-DE"
-readonly apk_path="$GITHUB_WORKSPACE/mobile/android/app/build/outputs/apk/debug/app-debug.apk"
+readonly apk_path="$GITHUB_WORKSPACE/mobile/android/app/build/outputs/apk/release/app-release.apk"
 readonly ready_text="Sicher anmelden"
 
 current_focus() {

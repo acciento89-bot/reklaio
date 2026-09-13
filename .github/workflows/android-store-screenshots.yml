@@ -42,7 +42,7 @@ jobs:
 
       - name: Build local debug APK
         working-directory: mobile/android
-        run: ./gradlew --no-daemon assembleDebug --stacktrace
+        run: ./gradlew --no-daemon assembleRelease --stacktrace
 
       - name: Enable KVM acceleration
         run: sudo chmod 666 /dev/kvm
