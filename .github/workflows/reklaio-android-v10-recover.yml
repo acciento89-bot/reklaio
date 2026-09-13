@@ -1,0 +1,124 @@
+name: Recover and publish Reklaio Android v10
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/reklaio-android-v10-recover.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  BUILD_ID: 72b445cb-7542-45ce-bd97-84b46ddab3e8
+  PACKAGE_NAME: de.kamilunavo.reklaio
+  VERSION_CODE: '10'
+  APP_VERSION: 0.4.3
+  EXPECTED_SIGNING_SHA256: E4:AA:F0:0E:6D:97:D1:95:4F:DC:BC:C0:22:3F:71:4D:A3:7F:44:0F:2C:12:F0:AE:0F:72:D1:FC:5F:89:DA:5E
+  WIF_PROVIDER: projects/1058001477767/locations/global/workloadIdentityPools/github/providers/github-actions
+  GOOGLE_SERVICE_ACCOUNT: navoops@emerald-caster-508318-f2.iam.gserviceaccount.com
+
+jobs:
+  recover_verify_publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: 23.2.0
+          token: ${{ secrets.EXPO_TOKEN }}
+      - uses: android-actions/setup-android@v3
+      - name: Download the one already completed v10 build
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          set -euo pipefail
+          eas whoami
+          eas build:download --build-id "$BUILD_ID" --json --non-interactive > "$RUNNER_TEMP/eas-download.json"
+          source_path=$(jq -r 'if type == "array" then .[0].path else .path end // empty' "$RUNNER_TEMP/eas-download.json")
+          test -s "$source_path"
+          cp "$source_path" reklaio-v10.aab
+          mkdir -p release-metadata
+          cp "$RUNNER_TEMP/eas-download.json" release-metadata/eas-download.json
+          printf '%s\n' "$BUILD_ID" > release-metadata/eas-build-id.txt
+          printf '%s\n' "$VERSION_CODE" > release-metadata/version-code.txt
+          sha256sum reklaio-v10.aab | tee release-metadata/aab.sha256
+          echo "AAB_PATH=$PWD/reklaio-v10.aab" >> "$GITHUB_ENV"
+      - name: Preserve the exact recovered AAB before further processing
+        uses: actions/upload-artifact@v4
+        with:
+          name: Reklaio-0.4.3-v10-PlayStore
+          path: |
+            mobile/reklaio-v10.aab
+            mobile/release-metadata/
+          if-no-files-found: error
+          retention-days: 90
+      - name: Validate bundle, package, versionCode and signing certificate
+        run: |
+          set -euo pipefail
+          bundletool_url=$(curl -fsSL https://api.github.com/repos/google/bundletool/releases/latest | jq -r '.assets[] | select(.name | test("bundletool-all-[0-9.]+[.]jar")) | .browser_download_url' | head -1)
+          test -n "$bundletool_url"
+          curl -fsSL --retry 3 "$bundletool_url" -o "$RUNNER_TEMP/bundletool.jar"
+          java -jar "$RUNNER_TEMP/bundletool.jar" validate --bundle="$AAB_PATH"
+          actual_package=$(java -jar "$RUNNER_TEMP/bundletool.jar" dump manifest --bundle="$AAB_PATH" --xpath='/manifest/@package')
+          actual_code=$(java -jar "$RUNNER_TEMP/bundletool.jar" dump manifest --bundle="$AAB_PATH" --xpath='/manifest/@android:versionCode')
+          test "$actual_package" = "$PACKAGE_NAME"
+          test "$actual_code" = "$VERSION_CODE"
+          cert=$(keytool -printcert -jarfile "$AAB_PATH")
+          printf '%s\n' "$cert" | tee release-metadata/signing-certificate.txt
+          grep -Fq "SHA256: $EXPECTED_SIGNING_SHA256" <<<"$cert"
+          echo "Verified $actual_package versionCode $actual_code and Reklaio's currently accepted upload certificate."
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Reklaio-0.4.3-v10-verification
+          path: mobile/release-metadata/
+          if-no-files-found: error
+          retention-days: 90
+      - id: google-auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.GOOGLE_SERVICE_ACCOUNT }}
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/androidpublisher
+      - name: Upload v10 and publish completed internal release
+        working-directory: .
+        env:
+          TOKEN: ${{ steps.google-auth.outputs.access_token }}
+        run: |
+          set -euo pipefail
+          api='https://androidpublisher.googleapis.com/androidpublisher/v3'
+          upload='https://androidpublisher.googleapis.com/upload/androidpublisher/v3'
+          edit=$(curl -fsS -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{}' "$api/applications/$PACKAGE_NAME/edits" | jq -r '.id')
+          body=$(mktemp)
+          status=$(curl -sS -o "$body" -w '%{http_code}' -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/octet-stream' --data-binary "@$AAB_PATH" "$upload/applications/$PACKAGE_NAME/edits/$edit/bundles?uploadType=media")
+          if [[ "$status" != 2* ]]; then
+            cat "$body" >&2
+            curl -sS -X DELETE -H "Authorization: Bearer $TOKEN" "$api/applications/$PACKAGE_NAME/edits/$edit" >/dev/null || true
+            exit 1
+          fi
+          test "$(jq -r '.versionCode' "$body")" = "$VERSION_CODE"
+          track_payload=$(jq -nc --arg code "$VERSION_CODE" --arg version "$APP_VERSION" '{"track":"internal","releases":[{"name":("Reklaio " + $version + " (" + $code + ")"),"status":"completed","versionCodes":[$code]}]}')
+          track_body=$(mktemp)
+          status=$(curl -sS -o "$track_body" -w '%{http_code}' -X PUT -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d "$track_payload" "$api/applications/$PACKAGE_NAME/edits/$edit/tracks/internal")
+          if [[ "$status" != 2* ]]; then cat "$track_body" >&2; exit 1; fi
+          jq -e --arg code "$VERSION_CODE" '.track == "internal" and (.releases | any(.status == "completed" and (.versionCodes | index($code))))' "$track_body" >/dev/null
+          commit_body=$(mktemp)
+          status=$(curl -sS -o "$commit_body" -w '%{http_code}' -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{}' "$api/applications/$PACKAGE_NAME/edits/$edit:commit")
+          if [[ "$status" != 2* ]] && grep -Fq 'changesNotSentForReview' "$commit_body"; then
+            status=$(curl -sS -o "$commit_body" -w '%{http_code}' -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{}' "$api/applications/$PACKAGE_NAME/edits/$edit:commit?changesNotSentForReview=true")
+          fi
+          if [[ "$status" != 2* ]]; then cat "$commit_body" >&2; exit 1; fi
+          fresh=$(curl -fsS -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{}' "$api/applications/$PACKAGE_NAME/edits" | jq -r '.id')
+          curl -fsS -H "Authorization: Bearer $TOKEN" "$api/applications/$PACKAGE_NAME/edits/$fresh/bundles" | jq -e --argjson code "$VERSION_CODE" '.bundles | any(.versionCode == $code)' >/dev/null
+          curl -fsS -H "Authorization: Bearer $TOKEN" "$api/applications/$PACKAGE_NAME/edits/$fresh/tracks/internal" | jq -e --arg code "$VERSION_CODE" '.releases | any(.status == "completed" and (.versionCodes | index($code)))' >/dev/null
+          curl -fsS -X DELETE -H "Authorization: Bearer $TOKEN" "$api/applications/$PACKAGE_NAME/edits/$fresh" >/dev/null
+          echo "$PACKAGE_NAME versionCode $VERSION_CODE is uploaded and published on the completed internal track."

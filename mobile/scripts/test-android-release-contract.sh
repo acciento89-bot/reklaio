@@ -6,6 +6,7 @@ app_json="$root/mobile/app.json"
 mobile_workflow="$root/.github/workflows/mobile.yml"
 recovery_workflow="$root/.github/workflows/recover-android-build-9.yml"
 one_shot_workflow="$root/.github/workflows/reklaio-android-one-shot.yml"
+v10_recovery_workflow="$root/.github/workflows/reklaio-android-v10-recover.yml"
 
 node - "$app_json" <<'NODE'
 const fs = require('node:fs');
@@ -44,5 +45,17 @@ grep -Fq '"track":"internal"' "$one_shot_workflow"
 grep -Fq '"status":"completed"' "$one_shot_workflow"
 grep -Fq 'eas-build-id.txt' "$one_shot_workflow"
 grep -Fq 'version-code.txt' "$one_shot_workflow"
+
+grep -Fq 'BUILD_ID: 72b445cb-7542-45ce-bd97-84b46ddab3e8' "$v10_recovery_workflow"
+grep -Fq 'VERSION_CODE: '\''10'\''' "$v10_recovery_workflow"
+grep -Fq 'eas build:download --build-id "$BUILD_ID" --json --non-interactive' "$v10_recovery_workflow"
+grep -Fq 'name: Reklaio-0.4.3-v10-PlayStore' "$v10_recovery_workflow"
+grep -Fq 'bundletool.jar" validate --bundle="$AAB_PATH"' "$v10_recovery_workflow"
+grep -Fq '"track":"internal"' "$v10_recovery_workflow"
+grep -Fq '"status":"completed"' "$v10_recovery_workflow"
+if grep -Eq '(^|[[:space:]])eas build --platform android' "$v10_recovery_workflow"; then
+  echo 'v10 recovery must never queue another Android build.' >&2
+  exit 1
+fi
 
 echo 'Reklaio Android release contract passed.'
