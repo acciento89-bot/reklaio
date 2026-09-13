@@ -42,7 +42,9 @@ jobs:
         run: |
           set -euo pipefail
           eas whoami
-          eas build:view "$BUILD_ID" --json > "$RUNNER_TEMP/eas-build-view.json"
+          eas build:list --platform android --limit 50 --json --non-interactive > "$RUNNER_TEMP/eas-build-list.json"
+          jq --arg id "$BUILD_ID" 'map(select(.id == $id)) | first // error("expected EAS build not found")' \
+            "$RUNNER_TEMP/eas-build-list.json" > "$RUNNER_TEMP/eas-build-view.json"
           recovered_id=$(jq -r '.id // empty' "$RUNNER_TEMP/eas-build-view.json")
           recovered_status=$(jq -r '.status // empty' "$RUNNER_TEMP/eas-build-view.json")
           recovered_code=$(jq -r '(.appBuildVersion // "") | tostring' "$RUNNER_TEMP/eas-build-view.json")
