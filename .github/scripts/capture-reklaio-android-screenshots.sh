@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
+
+phase="initialization"
+trap 'status=$?; printf "Capture failed: phase=%s line=%s status=%s command=%q\n" "${phase:-unset}" "$LINENO" "$status" "$BASH_COMMAND" >&2; exit "$status"' ERR
+
+mark_phase() {
+  phase="$1"
+  echo "Capture phase: $phase"
+}
 
 readonly package_name="de.kamilunavo.reklaio"
 readonly output_dir="$GITHUB_WORKSPACE/mobile/store/google-play/screenshots/de-DE"
@@ -113,19 +121,29 @@ launch_app() {
   assert_no_system_dialog
 }
 
+mark_phase prepare-output
 mkdir -p "$output_dir"
 rm -f "$output_dir"/*.png
+mark_phase install-apk
 adb install -r "$apk_path"
+mark_phase set-light-mode
 adb shell cmd uimode night no
+mark_phase launch-login
 launch_app
+mark_phase capture-login
 capture_screenshot "$output_dir/01-sicher-anmelden.png"
 
+mark_phase enable-ime
 adb shell settings put secure show_ime_with_hard_keyboard 1
+mark_phase tap-email
 tap_by_text "name@beispiel.de"
+mark_phase wait-keyboard
 wait_for_keyboard
 assert_no_system_dialog
+mark_phase capture-email
 capture_screenshot "$output_dir/02-email-eingabe.png"
 
+mark_phase validate-pngs
 python3 - "$output_dir" <<'PY'
 import hashlib
 import struct
@@ -144,6 +162,7 @@ for path in paths:
 assert len(digests) == 2, 'Screenshots must show distinct real states'
 PY
 
+mark_phase validate-body-difference
 command -v compare >/dev/null
 body_difference="$(compare -metric AE "$output_dir/01-sicher-anmelden.png[1080x2138+0+136]" "$output_dir/02-email-eingabe.png[1080x2138+0+136]" null: 2>&1 || true)"
 python3 - "$body_difference" <<'PY'
