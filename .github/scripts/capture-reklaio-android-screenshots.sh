@@ -68,6 +68,29 @@ tap_by_text() {
   return 1
 }
 
+capture_screenshot() {
+  local target="$1"
+  local temporary="${target}.tmp"
+  local attempt
+  for attempt in $(seq 1 10); do
+    if adb exec-out screencap -p > "$temporary" && python3 - "$temporary" <<'PY'
+import sys
+from pathlib import Path
+data = Path(sys.argv[1]).read_bytes()
+raise SystemExit(0 if data.startswith(b'\x89PNG\r\n\x1a\n') else 1)
+PY
+    then
+      mv "$temporary" "$target"
+      return 0
+    fi
+    rm -f "$temporary"
+    assert_no_system_dialog
+    sleep 1
+  done
+  echo "Timed out capturing a valid Android screenshot: $target" >&2
+  return 1
+}
+
 wait_for_keyboard() {
   local attempt
   for attempt in $(seq 1 30); do
@@ -94,13 +117,13 @@ rm -f "$output_dir"/*.png
 adb install -r "$apk_path"
 adb shell cmd uimode night no
 launch_app
-adb exec-out screencap -p > "$output_dir/01-sicher-anmelden.png"
+capture_screenshot "$output_dir/01-sicher-anmelden.png"
 
 adb shell settings put secure show_ime_with_hard_keyboard 1
 tap_by_text "name@beispiel.de"
 wait_for_keyboard
 assert_no_system_dialog
-adb exec-out screencap -p > "$output_dir/02-email-eingabe.png"
+capture_screenshot "$output_dir/02-email-eingabe.png"
 
 python3 - "$output_dir" <<'PY'
 import hashlib
