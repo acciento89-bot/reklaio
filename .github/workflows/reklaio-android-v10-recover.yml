@@ -42,9 +42,17 @@ jobs:
         run: |
           set -euo pipefail
           eas whoami
-          eas build:list --platform android --limit 50 --json --non-interactive > "$RUNNER_TEMP/eas-build-list.json"
-          jq --arg id "$BUILD_ID" 'map(select(.id == $id)) | first // error("expected EAS build not found")' \
-            "$RUNNER_TEMP/eas-build-list.json" > "$RUNNER_TEMP/eas-build-view.json"
+          query='query BuildById($buildId: ID!) { builds { byId(buildId: $buildId) { id status appBuildVersion appIdentifier appVersion artifacts { buildUrl } } } }'
+          jq -nc --arg query "$query" --arg buildId "$BUILD_ID" \
+            '{query:$query, variables:{buildId:$buildId}}' > "$RUNNER_TEMP/eas-build-query.json"
+          curl -fsS --retry 4 --retry-all-errors \
+            -H "Authorization: Bearer $EXPO_TOKEN" \
+            -H 'Content-Type: application/json' \
+            --data @"$RUNNER_TEMP/eas-build-query.json" \
+            https://api.expo.dev/graphql > "$RUNNER_TEMP/eas-build-response.json"
+          jq -e '(.errors // []) | length == 0' "$RUNNER_TEMP/eas-build-response.json" >/dev/null
+          jq '.data.builds.byId // error("expected EAS build not found")' \
+            "$RUNNER_TEMP/eas-build-response.json" > "$RUNNER_TEMP/eas-build-view.json"
           recovered_id=$(jq -r '.id // empty' "$RUNNER_TEMP/eas-build-view.json")
           recovered_status=$(jq -r '.status // empty' "$RUNNER_TEMP/eas-build-view.json")
           recovered_code=$(jq -r '(.appBuildVersion // "") | tostring' "$RUNNER_TEMP/eas-build-view.json")
