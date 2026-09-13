@@ -77,7 +77,7 @@ jobs:
             echo 'Android must not select a divergent round launcher icon.' >&2
             exit 1
           fi
-          test ! -d android/app/src/main/res/mipmap-anydpi-v26
+          test -z "$(find android/app/src/main/res/mipmap-anydpi-v26 -type f -print -quit 2>/dev/null)"
           for density in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
             test -s "android/app/src/main/res/mipmap-$density/ic_launcher.webp"
           done

@@ -41,7 +41,15 @@ jobs:
           set -euo pipefail
           test -n "$EXPO_TOKEN"
           eas whoami
-          eas build:view "$BUILD_ID" --json > "$RUNNER_TEMP/eas-build.json"
+          if ! eas build:view "$BUILD_ID" --json > "$RUNNER_TEMP/eas-build.json"; then
+            echo "Direct lookup failed; checking the authenticated Reklaio build list." >&2
+            eas build:list --platform android --limit 50 --json --non-interactive > "$RUNNER_TEMP/eas-builds.json"
+            jq '[.[] | {id, status, appBuildVersion, createdAt, gitCommitHash}]' "$RUNNER_TEMP/eas-builds.json" >&2
+            if ! jq -e --arg id "$BUILD_ID" 'map(select(.id == $id)) | first' "$RUNNER_TEMP/eas-builds.json" > "$RUNNER_TEMP/eas-build.json"; then
+              echo "The recorded v9 build ID is not present in the authenticated EAS project." >&2
+              exit 1
+            fi
+          fi
           found=$(jq -r '.id // empty' "$RUNNER_TEMP/eas-build.json")
           status=$(jq -r '.status // empty' "$RUNNER_TEMP/eas-build.json")
           test "$found" = "$BUILD_ID"
