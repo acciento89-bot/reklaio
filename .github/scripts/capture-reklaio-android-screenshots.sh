@@ -49,6 +49,28 @@ wait_for_login_ui() {
   return 1
 }
 
+
+tap_by_text() {
+  local label="$1"
+  local coordinates
+  adb shell uiautomator dump /sdcard/window.xml >/dev/null
+  coordinates="$(adb exec-out cat /sdcard/window.xml | python3 -c 'import re,sys; label=sys.argv[1]; data=sys.stdin.read(); node=next((n for n in re.findall(r"<node [^>]+>", data) if f"text=\"{label}\"" in n), None); assert node, f"Visible text not found: {label}"; x1,y1,x2,y2=map(int,re.search(r"bounds=\"\[(\d+),(\d+)\]\[(\d+),(\d+)\]\"",node).groups()); print((x1+x2)//2,(y1+y2)//2)' "$label")"
+  read -r tap_x tap_y <<<"$coordinates"
+  adb shell input tap "$tap_x" "$tap_y"
+}
+
+wait_for_keyboard() {
+  local attempt
+  for attempt in $(seq 1 30); do
+    if adb shell dumpsys input_method | grep -Fq "mInputShown=true"; then return 0; fi
+    assert_no_system_dialog
+    sleep 1
+  done
+  echo "Timed out waiting for the focused email keyboard." >&2
+  adb shell dumpsys input_method >&2 || true
+  return 1
+}
+
 launch_app() {
   adb shell am force-stop "$package_name"
   hide_error_dialogs
@@ -65,9 +87,11 @@ adb shell cmd uimode night no
 launch_app
 adb exec-out screencap -p > "$output_dir/01-sicher-anmelden.png"
 
-adb shell cmd uimode night yes
-launch_app
-adb exec-out screencap -p > "$output_dir/02-sicher-anmelden-dunkel.png"
+adb shell settings put secure show_ime_with_hard_keyboard 1
+tap_by_text "name@beispiel.de"
+wait_for_keyboard
+assert_no_system_dialog
+adb exec-out screencap -p > "$output_dir/02-email-eingabe.png"
 
 python3 - "$output_dir" <<'PY'
 import hashlib
@@ -85,4 +109,11 @@ for path in paths:
     assert (width, height) == (1080, 2400), (path, width, height)
     digests.add(hashlib.sha256(data).hexdigest())
 assert len(digests) == 2, 'Screenshots must show distinct real states'
+PY
+
+command -v compare >/dev/null
+body_difference="$(compare -metric AE "$output_dir/01-sicher-anmelden.png[1080x2138+0+136]" "$output_dir/02-email-eingabe.png[1080x2138+0+136]" null: 2>&1 || true)"
+python3 - "$body_difference" <<'PY'
+import sys
+assert float(sys.argv[1]) > 0, 'Screenshots must differ inside the app body'
 PY
