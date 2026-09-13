@@ -4,7 +4,7 @@ set -euo pipefail
 readonly package_name="de.kamilunavo.reklaio"
 readonly output_dir="$GITHUB_WORKSPACE/mobile/store/google-play/screenshots/de-DE"
 readonly apk_path="$GITHUB_WORKSPACE/mobile/android/app/build/outputs/apk/release/app-release.apk"
-readonly ready_text="Sicher anmelden"
+readonly ready_text="SICHER ANMELDEN"
 
 current_focus() {
   adb shell dumpsys window | grep "mCurrentFocus" | head -n 1 || true
