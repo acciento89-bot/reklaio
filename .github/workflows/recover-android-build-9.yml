@@ -36,15 +36,10 @@ jobs:
           set -euo pipefail
           test -n "$EXPO_TOKEN"
           for attempt in $(seq 1 35); do
-            npx --yes eas-cli@latest build:list --platform android --limit 25 --json --non-interactive > "$RUNNER_TEMP/eas-builds.json"
-            jq -e --arg id "$BUILD_ID" --arg code "$EXPECTED_VERSION_CODE" '
-              map(select(.id == $id or ((.appBuildVersion // .buildNumber // "") | tostring) == $code))
-              | sort_by(.createdAt // .created_at // "")
-              | last
-            ' "$RUNNER_TEMP/eas-builds.json" > "$RUNNER_TEMP/eas-build.json"
-            status=$(jq -r '.status // empty' "$RUNNER_TEMP/eas-build.json")
+            npx --yes eas-cli@latest build:view "$BUILD_ID" --json --non-interactive > "$RUNNER_TEMP/eas-build.json"
             found=$(jq -r '.id // empty' "$RUNNER_TEMP/eas-build.json")
-            test -n "$found"
+            status=$(jq -r '.status // empty' "$RUNNER_TEMP/eas-build.json")
+            test "$found" = "$BUILD_ID"
             echo "Existing EAS build $found status: $status"
             case "$status" in
               FINISHED) break ;;
@@ -53,6 +48,11 @@ jobs:
             if [ "$attempt" -eq 35 ]; then echo 'Timed out waiting for the existing EAS build.' >&2; exit 1; fi
             sleep 60
           done
+          code=$(jq -r '(.appBuildVersion // .buildNumber // "") | tostring' "$RUNNER_TEMP/eas-build.json")
+          if [ -n "$code" ] && [ "$code" != "$EXPECTED_VERSION_CODE" ]; then
+            echo "Unexpected EAS versionCode: $code (expected $EXPECTED_VERSION_CODE)" >&2
+            exit 1
+          fi
           url=$(jq -r '.artifacts.buildUrl // .artifacts.applicationArchiveUrl // empty' "$RUNNER_TEMP/eas-build.json")
           test -n "$url"
           curl --fail --location --retry 4 --retry-all-errors "$url" -o "$RUNNER_TEMP/reklaio-v9.aab"
