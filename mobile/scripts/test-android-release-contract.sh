@@ -5,6 +5,7 @@ root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 app_json="$root/mobile/app.json"
 mobile_workflow="$root/.github/workflows/mobile.yml"
 recovery_workflow="$root/.github/workflows/recover-android-build-9.yml"
+one_shot_workflow="$root/.github/workflows/reklaio-android-one-shot.yml"
 
 node - "$app_json" <<'NODE'
 const fs = require('node:fs');
@@ -32,5 +33,16 @@ if grep -Eq '(^|[[:space:]])eas build --platform android' "$recovery_workflow"; 
   echo 'Recovery workflow must never queue a new Android build.' >&2
   exit 1
 fi
+
+test "$(grep -Ec '^[[:space:]]*eas build --platform android --profile production --non-interactive --wait --json' "$one_shot_workflow")" -eq 1
+! grep -Fq 'workflow_dispatch:' "$one_shot_workflow"
+grep -Fq 'EXPECTED_SIGNING_SHA256: E4:AA:F0:0E:6D:97:D1:95:4F:DC:BC:C0:22:3F:71:4D:A3:7F:44:0F:2C:12:F0:AE:0F:72:D1:FC:5F:89:DA:5E' "$one_shot_workflow"
+grep -Fq 'apkanalyzer manifest application-id "$AAB_PATH"' "$one_shot_workflow"
+grep -Fq 'apkanalyzer manifest version-code "$AAB_PATH"' "$one_shot_workflow"
+grep -Fq 'name: Reklaio-0.4.3-current-PlayStore' "$one_shot_workflow"
+grep -Fq '"track":"internal"' "$one_shot_workflow"
+grep -Fq '"status":"completed"' "$one_shot_workflow"
+grep -Fq 'eas-build-id.txt' "$one_shot_workflow"
+grep -Fq 'version-code.txt' "$one_shot_workflow"
 
 echo 'Reklaio Android release contract passed.'
