@@ -42,12 +42,19 @@ jobs:
         run: |
           set -euo pipefail
           eas whoami
-          eas build:download --build-id "$BUILD_ID" --json --non-interactive > "$RUNNER_TEMP/eas-download.json"
-          source_path=$(jq -r 'if type == "array" then .[0].path else .path end // empty' "$RUNNER_TEMP/eas-download.json")
-          test -s "$source_path"
-          cp "$source_path" reklaio-v10.aab
+          eas build:view "$BUILD_ID" --json > "$RUNNER_TEMP/eas-build-view.json"
+          recovered_id=$(jq -r '.id // empty' "$RUNNER_TEMP/eas-build-view.json")
+          recovered_status=$(jq -r '.status // empty' "$RUNNER_TEMP/eas-build-view.json")
+          recovered_code=$(jq -r '(.appBuildVersion // "") | tostring' "$RUNNER_TEMP/eas-build-view.json")
+          build_url=$(jq -r '.artifacts.buildUrl // empty' "$RUNNER_TEMP/eas-build-view.json")
+          test "$recovered_id" = "$BUILD_ID"
+          test "$recovered_status" = "FINISHED"
+          test "$recovered_code" = "$VERSION_CODE"
+          test -n "$build_url"
+          curl -L --fail --retry 4 --retry-all-errors "$build_url" -o reklaio-v10.aab
+          test -s reklaio-v10.aab
           mkdir -p release-metadata
-          cp "$RUNNER_TEMP/eas-download.json" release-metadata/eas-download.json
+          cp "$RUNNER_TEMP/eas-build-view.json" release-metadata/eas-build-view.json
           printf '%s\n' "$BUILD_ID" > release-metadata/eas-build-id.txt
           printf '%s\n' "$VERSION_CODE" > release-metadata/version-code.txt
           sha256sum reklaio-v10.aab | tee release-metadata/aab.sha256
