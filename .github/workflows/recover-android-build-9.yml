@@ -36,7 +36,7 @@ jobs:
           set -euo pipefail
           test -n "$EXPO_TOKEN"
           for attempt in $(seq 1 35); do
-            npx --yes eas-cli@latest build:view "$BUILD_ID" --json --non-interactive > "$RUNNER_TEMP/eas-build.json"
+            npx --yes eas-cli@latest build:view "$BUILD_ID" --json > "$RUNNER_TEMP/eas-build.json"
             found=$(jq -r '.id // empty' "$RUNNER_TEMP/eas-build.json")
             status=$(jq -r '.status // empty' "$RUNNER_TEMP/eas-build.json")
             test "$found" = "$BUILD_ID"
