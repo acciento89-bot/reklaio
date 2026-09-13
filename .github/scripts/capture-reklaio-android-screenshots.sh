@@ -53,10 +53,19 @@ wait_for_login_ui() {
 tap_by_text() {
   local label="$1"
   local coordinates
-  adb shell uiautomator dump /sdcard/window.xml >/dev/null
-  coordinates="$(adb exec-out cat /sdcard/window.xml | python3 -c 'import re,sys; label=sys.argv[1]; data=sys.stdin.read(); node=next((n for n in re.findall(r"<node [^>]+>", data) if f"text=\"{label}\"" in n), None); assert node, f"Visible text not found: {label}"; x1,y1,x2,y2=map(int,re.search(r"bounds=\"\[(\d+),(\d+)\]\[(\d+),(\d+)\]\"",node).groups()); print((x1+x2)//2,(y1+y2)//2)' "$label")"
-  read -r tap_x tap_y <<<"$coordinates"
-  adb shell input tap "$tap_x" "$tap_y"
+  local attempt
+  for attempt in $(seq 1 30); do
+    if coordinates="$(adb exec-out uiautomator dump /dev/tty 2>/dev/null | python3 -c 'import re,sys; label=sys.argv[1]; data=sys.stdin.read(); node=next((n for n in re.findall(r"<node [^>]+>", data) if f"text=\"{label}\"" in n), None); assert node, f"Visible text not found: {label}"; x1,y1,x2,y2=map(int,re.search(r"bounds=\"\[(\d+),(\d+)\]\[(\d+),(\d+)\]\"",node).groups()); print((x1+x2)//2,(y1+y2)//2)' "$label")" && [[ -n "$coordinates" ]]; then
+      read -r tap_x tap_y <<<"$coordinates"
+      adb shell input tap "$tap_x" "$tap_y"
+      return 0
+    fi
+    assert_no_system_dialog
+    sleep 1
+  done
+  echo "Timed out waiting for visible tap target: $label" >&2
+  adb exec-out uiautomator dump /dev/tty >&2 || true
+  return 1
 }
 
 wait_for_keyboard() {
