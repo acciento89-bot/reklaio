@@ -57,8 +57,9 @@ tap_by_text() {
   for attempt in $(seq 1 30); do
     if coordinates="$(adb exec-out uiautomator dump /dev/tty 2>/dev/null | python3 -c 'import re,sys; label=sys.argv[1]; data=sys.stdin.read(); node=next((n for n in re.findall(r"<node [^>]+>", data) if f"text=\"{label}\"" in n), None); assert node, f"Visible text not found: {label}"; x1,y1,x2,y2=map(int,re.search(r"bounds=\"\[(\d+),(\d+)\]\[(\d+),(\d+)\]\"",node).groups()); print((x1+x2)//2,(y1+y2)//2)' "$label")" && [[ -n "$coordinates" ]]; then
       read -r tap_x tap_y <<<"$coordinates"
-      adb shell input tap "$tap_x" "$tap_y"
-      return 0
+      if adb shell input tap "$tap_x" "$tap_y"; then
+        return 0
+      fi
     fi
     assert_no_system_dialog
     sleep 1
