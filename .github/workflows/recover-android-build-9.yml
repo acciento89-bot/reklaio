@@ -29,7 +29,7 @@ jobs:
           node-version: 24
       - uses: expo/expo-github-action@v8
         with:
-          eas-version: 24.3.0
+          eas-version: 23.2.0
           token: ${{ secrets.EXPO_TOKEN }}
       - uses: android-actions/setup-android@v3
       - name: Locate the already queued EAS build

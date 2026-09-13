@@ -19,7 +19,7 @@ grep -Fq "if grep -Fq 'android:roundIcon='" "$mobile_workflow"
 grep -Fq 'find android/app/src/main/res/mipmap-anydpi-v26 -type f' "$mobile_workflow"
 
 grep -Fq 'BUILD_ID: 6a36bc3e-e1b2-45fa-9e40-c54d29e38d23' "$recovery_workflow"
-grep -Fq "eas-version: 24.3.0" "$recovery_workflow"
+grep -Fq "eas-version: 23.2.0" "$recovery_workflow"
 grep -Fq 'eas build:view "$BUILD_ID" --json' "$recovery_workflow"
 grep -Fq 'eas build:list --platform android --limit 50 --json --non-interactive' "$recovery_workflow"
 grep -Fq 'eas build:download --build-id "$BUILD_ID" --json --non-interactive' "$recovery_workflow"
