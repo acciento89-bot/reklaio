@@ -61,6 +61,7 @@ launch_app() {
 mkdir -p "$output_dir"
 rm -f "$output_dir"/*.png
 adb install -r "$apk_path"
+adb shell cmd uimode night no
 launch_app
 adb exec-out screencap -p > "$output_dir/01-sicher-anmelden.png"
 
