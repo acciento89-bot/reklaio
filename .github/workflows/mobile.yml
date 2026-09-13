@@ -46,7 +46,6 @@ jobs:
           const refs = {
             appIcon: expo.icon,
             splash: expo.splash?.image,
-            androidAdaptiveForeground: expo.android?.adaptiveIcon?.foregroundImage,
             webFavicon: expo.web?.favicon,
           };
           if (!canonical) throw new Error('expo.icon is missing');
@@ -55,9 +54,12 @@ jobs:
               throw new Error(`${name} must use canonical icon ${canonical}, got ${value}`);
             }
           }
+          if (expo.android?.adaptiveIcon !== undefined) {
+            throw new Error('adaptiveIcon must remain disabled so Android cannot diverge from the iOS icon');
+          }
           const file = canonical.replace(/^\.\//, '');
           if (!fs.existsSync(file)) throw new Error(`Canonical icon file missing: ${file}`);
-          console.log(`Canonical Reklaio artwork locked to ${canonical} for app, splash, Android adaptive icon and favicon.`);
+          console.log(`Canonical Reklaio artwork locked to ${canonical} for iOS, Android launcher, splash and favicon.`);
           NODE
 
       - name: Typecheck mobile app
@@ -69,7 +71,16 @@ jobs:
       - name: Verify generated Android launcher resources
         run: |
           set -euo pipefail
-          test -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
-          test -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
-          grep -Fq '@mipmap/ic_launcher' android/app/src/main/AndroidManifest.xml
-          grep -Fq '@mipmap/ic_launcher_round' android/app/src/main/AndroidManifest.xml
+          manifest=android/app/src/main/AndroidManifest.xml
+          grep -Fq 'android:icon="@mipmap/ic_launcher"' "$manifest"
+          if grep -Fq 'android:roundIcon=' "$manifest"; then
+            echo 'Android must not select a divergent round launcher icon.' >&2
+            exit 1
+          fi
+          test ! -d android/app/src/main/res/mipmap-anydpi-v26
+          for density in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
+            test -s "android/app/src/main/res/mipmap-$density/ic_launcher.webp"
+          done
+
+      - name: Test Android release contract
+        run: bash scripts/test-android-release-contract.sh

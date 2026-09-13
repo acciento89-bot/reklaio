@@ -27,7 +27,12 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-      - name: Locate and wait for the already queued EAS build
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: 24.3.0
+          token: ${{ secrets.EXPO_TOKEN }}
+      - uses: android-actions/setup-android@v3
+      - name: Locate the already queued EAS build
         working-directory: mobile
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -35,29 +40,40 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$EXPO_TOKEN"
-          for attempt in $(seq 1 35); do
-            npx --yes eas-cli@latest build:view "$BUILD_ID" --json > "$RUNNER_TEMP/eas-build.json"
-            found=$(jq -r '.id // empty' "$RUNNER_TEMP/eas-build.json")
-            status=$(jq -r '.status // empty' "$RUNNER_TEMP/eas-build.json")
-            test "$found" = "$BUILD_ID"
-            echo "Existing EAS build $found status: $status"
-            case "$status" in
-              FINISHED) break ;;
-              ERRORED|CANCELED) cat "$RUNNER_TEMP/eas-build.json"; exit 1 ;;
-            esac
-            if [ "$attempt" -eq 35 ]; then echo 'Timed out waiting for the existing EAS build.' >&2; exit 1; fi
-            sleep 60
-          done
+          eas whoami
+          eas build:view "$BUILD_ID" --json > "$RUNNER_TEMP/eas-build.json"
+          found=$(jq -r '.id // empty' "$RUNNER_TEMP/eas-build.json")
+          status=$(jq -r '.status // empty' "$RUNNER_TEMP/eas-build.json")
+          test "$found" = "$BUILD_ID"
+          echo "Existing EAS build $found status: $status"
+          test "$status" = FINISHED
           code=$(jq -r '(.appBuildVersion // .buildNumber // "") | tostring' "$RUNNER_TEMP/eas-build.json")
-          if [ -n "$code" ] && [ "$code" != "$EXPECTED_VERSION_CODE" ]; then
+          if [ "$code" != "$EXPECTED_VERSION_CODE" ]; then
             echo "Unexpected EAS versionCode: $code (expected $EXPECTED_VERSION_CODE)" >&2
             exit 1
           fi
-          url=$(jq -r '.artifacts.buildUrl // .artifacts.applicationArchiveUrl // empty' "$RUNNER_TEMP/eas-build.json")
-          test -n "$url"
-          curl --fail --location --retry 4 --retry-all-errors "$url" -o "$RUNNER_TEMP/reklaio-v9.aab"
-          test -s "$RUNNER_TEMP/reklaio-v9.aab"
-          echo "AAB_PATH=$RUNNER_TEMP/reklaio-v9.aab" >> "$GITHUB_ENV"
+          eas build:download --build-id "$BUILD_ID" --json --non-interactive > "$RUNNER_TEMP/eas-download.json"
+          source_path=$(jq -r '.path // empty' "$RUNNER_TEMP/eas-download.json")
+          test -s "$source_path"
+          cp "$source_path" reklaio-v9.aab
+          test -s reklaio-v9.aab
+          echo "AAB_PATH=$(realpath reklaio-v9.aab)" >> "$GITHUB_ENV"
+      - name: Verify exact AAB version and signing certificate
+        working-directory: mobile
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual=$(apkanalyzer manifest version-code "$AAB_PATH")
+          test "$actual" = "$EXPECTED_VERSION_CODE"
+          echo "Verified AAB versionCode: $actual"
+          sha256sum "$AAB_PATH"
+          keytool -printcert -jarfile "$AAB_PATH"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Reklaio-0.4.3-v9-PlayStore
+          path: mobile/reklaio-v9.aab
+          if-no-files-found: error
+          retention-days: 30
       - id: google-auth
         uses: google-github-actions/auth@v3
         with:
@@ -77,13 +93,17 @@ jobs:
           bundles=$(curl -fsS -H "Authorization: Bearer $TOKEN" "$api/applications/$PACKAGE_NAME/edits/$edit/bundles")
           if jq -e --argjson code "$EXPECTED_VERSION_CODE" '.bundles | any(.versionCode == $code)' <<<"$bundles" >/dev/null; then
             echo "$PACKAGE_NAME versionCode $EXPECTED_VERSION_CODE already exists in Google Play"
-            curl -fsS -X DELETE -H "Authorization: Bearer $TOKEN" "$api/applications/$PACKAGE_NAME/edits/$edit" >/dev/null
-            exit 0
+          else
+            body=$(mktemp)
+            status=$(curl -sS -o "$body" -w '%{http_code}' -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/octet-stream' --data-binary "@$AAB_PATH" "$upload/applications/$PACKAGE_NAME/edits/$edit/bundles?uploadType=media")
+            if [[ "$status" != 200 ]]; then cat "$body" >&2; curl -sS -X DELETE -H "Authorization: Bearer $TOKEN" "$api/applications/$PACKAGE_NAME/edits/$edit" >/dev/null || true; exit 1; fi
+            test "$(jq -r '.versionCode' "$body")" = "$EXPECTED_VERSION_CODE"
           fi
-          body=$(mktemp)
-          status=$(curl -sS -o "$body" -w '%{http_code}' -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/octet-stream' --data-binary "@$AAB_PATH" "$upload/applications/$PACKAGE_NAME/edits/$edit/bundles?uploadType=media")
-          if [[ "$status" != 200 ]]; then cat "$body" >&2; curl -sS -X DELETE -H "Authorization: Bearer $TOKEN" "$api/applications/$PACKAGE_NAME/edits/$edit" >/dev/null || true; exit 1; fi
-          test "$(jq -r '.versionCode' "$body")" = "$EXPECTED_VERSION_CODE"
+          track_payload=$(jq -nc --arg code "$EXPECTED_VERSION_CODE" '{"track":"internal","releases":[{"name":"Reklaio 0.4.3","status":"completed","versionCodes":[$code]}]}')
+          track_body=$(mktemp)
+          status=$(curl -sS -o "$track_body" -w '%{http_code}' -X PUT -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d "$track_payload" "$api/applications/$PACKAGE_NAME/edits/$edit/tracks/internal")
+          if [[ "$status" != 2* ]]; then cat "$track_body" >&2; curl -sS -X DELETE -H "Authorization: Bearer $TOKEN" "$api/applications/$PACKAGE_NAME/edits/$edit" >/dev/null || true; exit 1; fi
+          jq -e --arg code "$EXPECTED_VERSION_CODE" '.track == "internal" and (.releases | any(.status == "completed" and (.versionCodes | index($code))))' "$track_body" >/dev/null
           commit_body=$(mktemp)
           status=$(curl -sS -o "$commit_body" -w '%{http_code}' -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{}' "$api/applications/$PACKAGE_NAME/edits/$edit:commit")
           if [[ "$status" != 2* ]] && grep -Fq 'changesNotSentForReview' "$commit_body"; then
@@ -92,5 +112,6 @@ jobs:
           if [[ "$status" != 2* ]]; then cat "$commit_body" >&2; exit 1; fi
           fresh=$(curl -fsS -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{}' "$api/applications/$PACKAGE_NAME/edits" | jq -r '.id')
           curl -fsS -H "Authorization: Bearer $TOKEN" "$api/applications/$PACKAGE_NAME/edits/$fresh/bundles" | jq -e --argjson code "$EXPECTED_VERSION_CODE" '.bundles | any(.versionCode == $code)' >/dev/null
+          curl -fsS -H "Authorization: Bearer $TOKEN" "$api/applications/$PACKAGE_NAME/edits/$fresh/tracks/internal" | jq -e --arg code "$EXPECTED_VERSION_CODE" '.releases | any(.status == "completed" and (.versionCodes | index($code)))' >/dev/null
           curl -fsS -X DELETE -H "Authorization: Bearer $TOKEN" "$api/applications/$PACKAGE_NAME/edits/$fresh" >/dev/null
-          echo "$PACKAGE_NAME versionCode $EXPECTED_VERSION_CODE uploaded and verified"
+          echo "$PACKAGE_NAME versionCode $EXPECTED_VERSION_CODE uploaded to the completed internal track and verified"
