@@ -16,7 +16,7 @@ function assert(condition, message) {
 }
 
 assert(app.expo?.android?.package === "de.kamilunavo.reklaio", "Unexpected Android package");
-assert(Number(app.expo?.android?.versionCode) >= 7, "Android versionCode must be >= 7");
+assert(Number(app.expo?.android?.versionCode) >= 11, "Android versionCode must be >= 11 after the Play v10 splash fix");
 assert(app.expo?.version === "0.4.3", "Unexpected Reklaio app version");
 assert(pkg.version === app.expo?.version, "package.json version must match Expo app version");
 assert(String(pkg.dependencies?.expo || "").startsWith("~57."), "Expo SDK 57 is required for the API 36 release lane");
@@ -28,6 +28,10 @@ assert(eas.submit?.production?.android?.track === "internal", "EAS production su
 // Google Play review must see the same product mark that Android installs.
 assert(app.expo?.icon === "./assets/icon.png", "Canonical Reklaio app icon changed unexpectedly");
 assert(app.expo?.splash?.image === app.expo?.icon, "Splash artwork must use the canonical app icon");
+const splashPlugin = app.expo?.plugins?.find((entry) => Array.isArray(entry) && entry[0] === "expo-splash-screen")?.[1];
+assert(splashPlugin?.image === app.expo?.icon, "Expo splash config plugin must use the canonical app icon");
+assert(splashPlugin?.backgroundColor === "#070D25", "Expo splash background must match Reklaio");
+assert(splashPlugin?.imageWidth === 192 && splashPlugin?.resizeMode === "contain", "Splash artwork must fit the Android launch canvas without cropping");
 assert(!app.expo?.android?.adaptiveIcon, "adaptiveIcon must stay disabled so Android uses the canonical app icon without a second foreground composition");
 assert(fs.statSync(path.join(root, "assets/icon.png")).size > 0, "Canonical Reklaio icon is missing");
 

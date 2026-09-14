@@ -26,7 +26,7 @@
     },
     "android": {
       "package": "de.kamilunavo.reklaio",
-      "versionCode": 7,
+      "versionCode": 11,
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -34,6 +34,15 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/icon.png",
+          "imageWidth": 192,
+          "resizeMode": "contain",
+          "backgroundColor": "#070D25"
+        }
+      ],
       [
         "expo-navigation-bar",
         {

@@ -65,8 +65,13 @@ jobs:
       - name: Typecheck mobile app
         run: npm run typecheck
 
-      - name: Generate Android and iOS native projects
-        run: npx expo prebuild --no-install
+      - name: Generate Android native project
+        run: npx expo prebuild --platform android --no-install --clean
+
+      - name: Verify generated Android splash pixels and active launch theme
+        run: |
+          python3 -m pip install 'Pillow==11.3.0'
+          python3 scripts/check-android-splash.py
 
       - name: Verify generated Android launcher resources
         run: |
