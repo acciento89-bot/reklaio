@@ -1,0 +1,93 @@
+name: Recover and verify Reklaio Android v10 (no Play upload)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/reklaio-android-v10-recover-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  BUILD_ID: 72b445cb-7542-45ce-bd97-84b46ddab3e8
+  PACKAGE_NAME: de.kamilunavo.reklaio
+  VERSION_CODE: '10'
+  APP_VERSION: 0.4.3
+  EXPECTED_SIGNING_SHA256: E4:AA:F0:0E:6D:97:D1:95:4F:DC:BC:C0:22:3F:71:4D:A3:7F:44:0F:2C:12:F0:AE:0F:72:D1:FC:5F:89:DA:5E
+
+jobs:
+  recover_verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: 23.2.0
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: Download the already completed v10 build
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          set -euo pipefail
+          eas whoami
+          query='query BuildById($buildId: ID!) { builds { byId(buildId: $buildId) { id status appBuildVersion appIdentifier appVersion artifacts { buildUrl } } } }'
+          jq -nc --arg query "$query" --arg buildId "$BUILD_ID" \
+            '{query:$query, variables:{buildId:$buildId}}' > "$RUNNER_TEMP/eas-build-query.json"
+          curl -fsS --retry 4 --retry-all-errors \
+            -H "Authorization: Bearer $EXPO_TOKEN" \
+            -H 'Content-Type: application/json' \
+            --data @"$RUNNER_TEMP/eas-build-query.json" \
+            https://api.expo.dev/graphql > "$RUNNER_TEMP/eas-build-response.json"
+          jq -e '(.errors // []) | length == 0' "$RUNNER_TEMP/eas-build-response.json" >/dev/null
+          jq '.data.builds.byId // error("expected EAS build not found")' \
+            "$RUNNER_TEMP/eas-build-response.json" > "$RUNNER_TEMP/eas-build-view.json"
+          recovered_id=$(jq -r '.id // empty' "$RUNNER_TEMP/eas-build-view.json")
+          recovered_status=$(jq -r '.status // empty' "$RUNNER_TEMP/eas-build-view.json")
+          recovered_code=$(jq -r '(.appBuildVersion // "") | tostring' "$RUNNER_TEMP/eas-build-view.json")
+          recovered_package=$(jq -r '.appIdentifier // empty' "$RUNNER_TEMP/eas-build-view.json")
+          build_url=$(jq -r '.artifacts.buildUrl // empty' "$RUNNER_TEMP/eas-build-view.json")
+          test "$recovered_id" = "$BUILD_ID"
+          test "$recovered_status" = "FINISHED"
+          test "$recovered_code" = "$VERSION_CODE"
+          test "$recovered_package" = "$PACKAGE_NAME"
+          test -n "$build_url"
+          curl -L --fail --retry 4 --retry-all-errors "$build_url" -o reklaio-v10.aab
+          test -s reklaio-v10.aab
+          mkdir -p release-metadata
+          cp "$RUNNER_TEMP/eas-build-view.json" release-metadata/eas-build-view.json
+          printf '%s\n' "$BUILD_ID" > release-metadata/eas-build-id.txt
+          printf '%s\n' "$VERSION_CODE" > release-metadata/version-code.txt
+          sha256sum reklaio-v10.aab | tee release-metadata/aab.sha256
+          echo "AAB_PATH=$PWD/reklaio-v10.aab" >> "$GITHUB_ENV"
+      - name: Validate bundle identity, version and signing certificate
+        run: |
+          set -euo pipefail
+          bundletool_url=$(curl -fsSL https://api.github.com/repos/google/bundletool/releases/latest | jq -r '.assets[] | select(.name | test("bundletool-all-[0-9.]+[.]jar")) | .browser_download_url' | head -1)
+          test -n "$bundletool_url"
+          curl -fsSL --retry 3 "$bundletool_url" -o "$RUNNER_TEMP/bundletool.jar"
+          java -jar "$RUNNER_TEMP/bundletool.jar" validate --bundle="$AAB_PATH"
+          actual_package=$(java -jar "$RUNNER_TEMP/bundletool.jar" dump manifest --bundle="$AAB_PATH" --xpath='/manifest/@package')
+          actual_code=$(java -jar "$RUNNER_TEMP/bundletool.jar" dump manifest --bundle="$AAB_PATH" --xpath='/manifest/@android:versionCode')
+          test "$actual_package" = "$PACKAGE_NAME"
+          test "$actual_code" = "$VERSION_CODE"
+          cert=$(keytool -printcert -jarfile "$AAB_PATH")
+          printf '%s\n' "$cert" | tee release-metadata/signing-certificate.txt
+          grep -Fq "SHA256: $EXPECTED_SIGNING_SHA256" <<<"$cert"
+          printf 'Verified %s versionCode %s; no Google Play write was performed.\n' "$actual_package" "$actual_code" | tee release-metadata/verification.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Reklaio-0.4.3-v10-verified-aab
+          path: |
+            mobile/reklaio-v10.aab
+            mobile/release-metadata/
+          if-no-files-found: error
+          retention-days: 90
