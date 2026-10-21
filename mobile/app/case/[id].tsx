@@ -164,6 +164,10 @@ export default function CaseDetailScreen() {
         </Pressable>
       </View>
 
+      <Pressable accessibilityRole="button" onPress={() => router.push(`/remedies/${currentCase.id}`)} style={styles.secondaryButton}>
+        <Text style={styles.secondaryButtonText}>Gewünschte Lösungen und Teilerfüllungen</Text>
+      </Pressable>
+
       <Text style={styles.eyebrow}>{typeLabels[currentCase.type] || "Verbraucherfall"}</Text>
       <Text style={styles.heading}>{currentCase.title}</Text>
       <Text style={styles.company}>{currentCase.companyName || "Noch kein Anbieter eingetragen"}</Text>

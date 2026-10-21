@@ -33,6 +33,7 @@
       "favicon": "./assets/icon.png"
     },
     "plugins": [
+      "./plugins/with-space-safe-ios.cjs",
       "expo-router",
       [
         "expo-navigation-bar",
