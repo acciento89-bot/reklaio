@@ -1,6 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Redirect, Tabs } from "expo-router";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/src/auth-context";
 import { colors } from "@/src/theme";
 
@@ -10,6 +11,8 @@ function TabLabel({ label, focused }: { label: string; focused: boolean }) {
 
 export default function AppTabsLayout() {
   const { status } = useAuth();
+  const insets = useSafeAreaInsets();
+  const bottomPadding = Math.max(insets.bottom, 10);
 
   if (status === "loading") {
     return (
@@ -33,9 +36,9 @@ export default function AppTabsLayout() {
           backgroundColor: colors.panelSoft,
           borderTopColor: colors.line,
           borderTopWidth: 1,
-          height: 72,
+          height: 62 + bottomPadding,
           paddingTop: 7,
-          paddingBottom: 10
+          paddingBottom: bottomPadding
         },
         tabBarShowLabel: true,
         tabBarActiveTintColor: colors.accentSoft,

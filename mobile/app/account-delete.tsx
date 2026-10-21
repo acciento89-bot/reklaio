@@ -14,12 +14,13 @@ import {
 import { Stack, useRouter } from "expo-router";
 import { deleteAccountRequest } from "@/src/api";
 import { useAuth } from "@/src/auth-context";
+import { purgeLocalRemedies } from "@/src/remedy-local-storage";
 import { usePurchases } from "@/src/purchases-context";
 import { colors, radius, spacing } from "@/src/theme";
 
 export default function AccountDeleteScreen() {
   const router = useRouter();
-  const { token, logout } = useAuth();
+  const { token, user, logout } = useAuth();
   const { openSubscriptionManagement } = usePurchases();
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -31,14 +32,20 @@ export default function AccountDeleteScreen() {
   async function deleteAccount() {
     if (!token || !canSubmit || submitting) return;
 
+    const deletingOwnerID = user?.id;
     setSubmitting(true);
     setError(null);
     try {
       await deleteAccountRequest(token, password, confirmation);
+      let localCleanupFailed = false;
+      if (deletingOwnerID) {
+        await purgeLocalRemedies(deletingOwnerID).catch(() => { localCleanupFailed = true; });
+      }
       await logout().catch(() => undefined);
       Alert.alert(
         "Konto gelöscht",
-        "Dein Reklaio-Konto und die damit verbundenen Fallakten wurden gelöscht. Ein Apple- oder Google-Abonnement muss separat im jeweiligen Store gekündigt werden."
+        "Dein Reklaio-Konto und die damit verbundenen Fallakten wurden gelöscht. Ein Apple- oder Google-Abonnement muss separat im jeweiligen Store gekündigt werden." +
+        (localCleanupFailed ? " Die lokalen Lösungsnotizen konnten auf diesem Gerät nicht vollständig entfernt werden. Entferne bei Bedarf die App-Daten über die Geräteeinstellungen." : "")
       );
       router.replace("/login");
     } catch (cause) {
