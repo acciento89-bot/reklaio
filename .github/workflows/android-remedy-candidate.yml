@@ -23,6 +23,7 @@ jobs:
         with: {packages: platform-tools}
       - run: npm ci
       - run: npm run typecheck
+      - run: python3 -m unittest discover -s ../.github/reklaio-release/tests -v
       - run: node --test tests/*.test.mjs
       - run: node scripts/google-play-preflight.mjs
       - name: Read only the existing Android production SDK configuration
