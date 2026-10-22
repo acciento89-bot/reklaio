@@ -1,0 +1,73 @@
+name: Reklaio 0.5 Android candidate (manual, no store upload)
+on:
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency:
+  group: reklaio-portfolio-candidate
+  cancel-in-progress: false
+jobs:
+  candidate:
+    if: github.event_name == 'workflow_dispatch' && github.repository == 'acciento89-bot/reklaio'
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    defaults:
+      run: {working-directory: mobile, shell: bash}
+    steps:
+      - uses: actions/checkout@v5
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v5
+        with: {node-version: '24', cache: npm, cache-dependency-path: mobile/package-lock.json}
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - uses: android-actions/setup-android@v3
+        with: {packages: platform-tools}
+      - run: npm ci
+      - run: npm run typecheck
+      - run: python3 -m unittest discover -s ../.github/reklaio-release/tests -v
+      - run: node --test tests/*.test.mjs
+      - run: node scripts/google-play-preflight.mjs
+      - name: Read only the existing Android production SDK configuration
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$EXPO_TOKEN"
+          npx --yes eas-cli@23.2.0 env:pull production --non-interactive --path "$RUNNER_TEMP/reklaio-production.env" > "$RUNNER_TEMP/reklaio-env-pull.log" 2>&1 || { echo 'Existing EAS production environment is unavailable; no candidate built.'; exit 1; }
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const path = process.env.RUNNER_TEMP + '/reklaio-production.env';
+          const values = require('node:util').parseEnv(fs.readFileSync(path, 'utf8'));
+          const key = values.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY;
+          if (!/^goog_[A-Za-z0-9]{10,}$/.test(key || '') || /your|example|placeholder/i.test(key)) throw new Error('A real existing Android SDK key is required');
+          fs.appendFileSync(process.env.GITHUB_ENV, 'EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY=' + key + '\n');
+          fs.appendFileSync(process.env.GITHUB_ENV, 'EXPO_PUBLIC_API_URL=https://reklaio.de\n');
+          fs.unlinkSync(path);
+          console.log('Existing production Android SDK configuration verified; no values printed.');
+          NODE
+      - name: Generate only Android and remove disposable release signing
+        run: |
+          set -euo pipefail
+          npx expo prebuild --platform android --no-install
+          python3 ../.github/reklaio-release/prepare_unsigned.py android/app/build.gradle
+          node - <<'NODE'
+          const a = require('./app.json').expo;
+          if (a.version !== '0.5.0' || a.android.versionCode !== 11 || a.android.package !== 'de.kamilunavo.reklaio') throw new Error('Wrong candidate identity');
+          NODE
+      - name: Build one exact Android candidate
+        run: |
+          set -euo pipefail
+          ./android/gradlew -p android --no-daemon --max-workers=1 bundleRelease
+          mkdir -p ../candidate
+          cp android/app/build/outputs/bundle/release/app-release.aab ../candidate/app-release.aab
+          printf '%s\n' "$GITHUB_SHA" > ../candidate/source-commit.txt
+          (cd ../candidate && sha256sum app-release.aab > app-release.aab.sha256)
+      - name: Remove temporary environment material
+        if: always()
+        run: rm -f "$RUNNER_TEMP/reklaio-production.env" "$RUNNER_TEMP/reklaio-env-pull.log"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reklaio-0.5.0-11-android-release
+          path: candidate/
+          if-no-files-found: error
+          retention-days: 30
