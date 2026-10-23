@@ -1,0 +1,61 @@
+name: Reklaio existing iOS public SDK configuration (manual read only)
+on:
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency:
+  group: reklaio-ios-public-sdk-config
+  cancel-in-progress: false
+jobs:
+  read-existing-config:
+    if: github.event_name == 'workflow_dispatch' && github.repository == 'acciento89-bot/reklaio'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run: {working-directory: mobile, shell: bash}
+    steps:
+      - uses: actions/checkout@v5
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v5
+        with: {node-version: '24'}
+      - name: Verify exact existing owned project
+        run: |
+          node - <<'NODE'
+          const a=require('./app.json').expo;
+          if(a.extra.eas.projectId!=='0ebb2297-f882-4211-8367-638c782aa0de'||a.ios.bundleIdentifier!=='de.kamilunavo.reklaio')throw Error('Wrong existing project');
+          NODE
+      - name: Read only the existing iOS public SDK variable
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$EXPO_TOKEN"
+          npx --yes eas-cli@23.2.0 env:get production --variable-name EXPO_PUBLIC_REVENUECAT_IOS_API_KEY --scope project --format short --non-interactive > "$RUNNER_TEMP/reklaio-ios-public-sdk.raw" 2> "$RUNNER_TEMP/reklaio-ios-public-sdk.err" || { echo 'Existing project SDK configuration could not be read; no credentials or access changed.'; exit 1; }
+          python3 - <<'PY'
+          import os,re,json
+          from pathlib import Path
+          scratch=Path(os.environ['RUNNER_TEMP'])
+          keys=set(re.findall(r'\bappl_[A-Za-z0-9]{10,}\b',(scratch/'reklaio-ios-public-sdk.raw').read_text()))
+          if len(keys)!=1: raise SystemExit('One actual existing Apple public SDK key required; values not printed.')
+          key=keys.pop()
+          if any(x in key.lower() for x in ['placeholder','example','yourkey']): raise SystemExit('Placeholder rejected.')
+          data={'sourceSha':os.environ['GITHUB_SHA'],'projectId':'0ebb2297-f882-4211-8367-638c782aa0de','bundle':'de.kamilunavo.reklaio','publicIOSSDKKey':key}
+          (scratch/'reklaio-ios-public-sdk.json').write_text(json.dumps(data))
+          print('Existing Apple public SDK configuration verified. No private API keys or login credentials exported.')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ReklaioExistingIOSPublicSDK
+          path: ${{ runner.temp }}/reklaio-ios-public-sdk.json
+          retention-days: 1
+          if-no-files-found: error
+      - name: Remove exact temporary CLI output
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          scratch=Path(os.environ['RUNNER_TEMP'])
+          for name in ['reklaio-ios-public-sdk.raw','reklaio-ios-public-sdk.err','reklaio-ios-public-sdk.json']:
+              (scratch/name).unlink(missing_ok=True)
+          PY
