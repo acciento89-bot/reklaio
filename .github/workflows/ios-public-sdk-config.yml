@@ -40,7 +40,7 @@ jobs:
           text='\n'.join((scratch/name).read_text() for name in ['reklaio-ios-public-sdk.raw','reklaio-ios-public-sdk.err']).lower()
           if any(x in text for x in ['not authorized','required permissions','invalid token','user account is required','not logged']): category='EAS_ACCESS_DENIED'
           elif any(x in text for x in ['not found','could not find','does not exist','no environment variable']): category='IOS_VARIABLE_MISSING'
-          elif any(x in text for x in ['not readable','secret visibility','cannot read secret']): category='IOS_VARIABLE_NOT_READABLE'
+          elif any(x in text for x in ['not readable','secret visibility','cannot read secret','secret variable and cannot be displayed']): category='IOS_VARIABLE_NOT_READABLE'
           else: category='CLI_REQUEST_FAILED'
           print('Existing public SDK read failed: '+category+'. No account/access/credential changes made.')
           PYERR
