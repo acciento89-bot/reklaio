@@ -13,6 +13,9 @@ const PRO_ENTITLEMENT_ID = "pro";
 const APPLE_SUBSCRIPTIONS_URL = "https://apps.apple.com/account/subscriptions";
 const PLAY_SUBSCRIPTIONS_URL = "https://play.google.com/store/account/subscriptions";
 
+// Explicit local QA builds isolate providers; release builds always keep normal billing.
+const PROVIDERS_DISABLED_FOR_QA = __DEV__ && process.env.EXPO_PUBLIC_REKLAIO_PROVIDER_DISABLED_QA === "1";
+
 let sdkConfigured = false;
 let configuredUserId: string | null = null;
 
@@ -37,6 +40,7 @@ type PurchasesContextValue = {
 const PurchasesContext = createContext<PurchasesContextValue | null>(null);
 
 function platformApiKey() {
+  if (PROVIDERS_DISABLED_FOR_QA) return null;
   if (Platform.OS === "ios") return process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY?.trim() || null;
   if (Platform.OS === "android") return process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY?.trim() || null;
   return null;
@@ -163,6 +167,7 @@ export function PurchasesProvider({ children }: { children: ReactNode }) {
   }, [currentOffering]);
 
   const purchaseMonthly = useCallback(async () => {
+    if (PROVIDERS_DISABLED_FOR_QA) throw new Error("Kaufanbieter sind für diese lokale Prüfung ausgeschaltet.");
     if (!monthlyPackage) throw new Error("Das Reklaio-Pro-Abo ist im App Store noch nicht verfügbar.");
     setLoading(true);
     setError(null);
@@ -188,6 +193,7 @@ export function PurchasesProvider({ children }: { children: ReactNode }) {
   }, [monthlyPackage, synchronizeServer]);
 
   const restore = useCallback(async () => {
+    if (PROVIDERS_DISABLED_FOR_QA) throw new Error("Kaufanbieter sind für diese lokale Prüfung ausgeschaltet.");
     setLoading(true);
     setError(null);
     try {
@@ -209,6 +215,7 @@ export function PurchasesProvider({ children }: { children: ReactNode }) {
 
   const managementUrl = customerInfo?.managementURL ?? null;
   const openSubscriptionManagement = useCallback(async () => {
+    if (PROVIDERS_DISABLED_FOR_QA) return;
     const fallback = Platform.OS === "ios" ? APPLE_SUBSCRIPTIONS_URL : PLAY_SUBSCRIPTIONS_URL;
     await Linking.openURL(managementUrl || fallback);
   }, [managementUrl]);

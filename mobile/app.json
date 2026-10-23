@@ -73,7 +73,8 @@
             "enableSceneSupport": true
           }
         }
-      ]
+      ],
+      "./plugins/with-provider-isolated-qa.cjs"
     ],
     "experiments": {
       "typedRoutes": false

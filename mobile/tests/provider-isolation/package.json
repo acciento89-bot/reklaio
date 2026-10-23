@@ -1,0 +1,1 @@
+{"name":"reklaio-provider-isolation-probe","private":true,"version":"1.0.0","scripts":{"test":"node --test provider.test.cjs"},"devDependencies":{"react":"19.2.3","react-test-renderer":"19.2.3"}}
