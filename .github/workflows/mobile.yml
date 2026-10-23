@@ -84,3 +84,8 @@ jobs:
 
       - name: Test Android release contract
         run: bash scripts/test-android-release-contract.sh
+
+      - name: Test local tracker and provider-isolation boundaries
+        run: |
+          npm ci --prefix tests/provider-isolation --ignore-scripts
+          node --experimental-strip-types --test tests/*.test.mjs tests/build-paths/*.test.cjs tests/provider-isolation/provider.test.cjs

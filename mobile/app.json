@@ -65,6 +65,15 @@
           "configureAndroidBackup": true,
           "faceIDPermission": "Erlaube Reklaio, Face ID zum Schutz deiner Fallakte zu verwenden."
         }
+      ],
+      "./plugins/with-provider-isolated-qa.cjs",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "enableSceneSupport": true
+          }
+        }
       ]
     ],
     "experiments": {
