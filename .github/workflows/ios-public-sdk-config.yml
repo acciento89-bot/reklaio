@@ -30,7 +30,22 @@ jobs:
           set -euo pipefail
           umask 077
           test -n "$EXPO_TOKEN"
-          npx --yes eas-cli@23.2.0 env:get production --variable-name EXPO_PUBLIC_REVENUECAT_IOS_API_KEY --scope project --format short --non-interactive > "$RUNNER_TEMP/reklaio-ios-public-sdk.raw" 2> "$RUNNER_TEMP/reklaio-ios-public-sdk.err" || { echo 'Existing project SDK configuration could not be read; no credentials or access changed.'; exit 1; }
+          sdk_read_status=0
+          npx --yes eas-cli@23.2.0 env:get production --variable-name EXPO_PUBLIC_REVENUECAT_IOS_API_KEY --scope project --format short --non-interactive > "$RUNNER_TEMP/reklaio-ios-public-sdk.raw" 2> "$RUNNER_TEMP/reklaio-ios-public-sdk.err" || sdk_read_status=$?
+          if [ "$sdk_read_status" -ne 0 ]; then
+            python3 - <<'PYERR'
+          import os
+          from pathlib import Path
+          scratch=Path(os.environ['RUNNER_TEMP'])
+          text='\n'.join((scratch/name).read_text() for name in ['reklaio-ios-public-sdk.raw','reklaio-ios-public-sdk.err']).lower()
+          if any(x in text for x in ['not authorized','required permissions','invalid token','user account is required','not logged']): category='EAS_ACCESS_DENIED'
+          elif any(x in text for x in ['not found','could not find','does not exist','no environment variable']): category='IOS_VARIABLE_MISSING'
+          elif any(x in text for x in ['not readable','secret visibility','cannot read secret']): category='IOS_VARIABLE_NOT_READABLE'
+          else: category='CLI_REQUEST_FAILED'
+          print('Existing public SDK read failed: '+category+'. No account/access/credential changes made.')
+          PYERR
+            exit 1
+          fi
           python3 - <<'PY'
           import os,re,json
           from pathlib import Path
