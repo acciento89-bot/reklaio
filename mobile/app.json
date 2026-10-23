@@ -66,6 +66,7 @@
           "faceIDPermission": "Erlaube Reklaio, Face ID zum Schutz deiner Fallakte zu verwenden."
         }
       ],
+      "./plugins/with-provider-isolated-qa.cjs",
       [
         "expo-build-properties",
         {
@@ -73,8 +74,7 @@
             "enableSceneSupport": true
           }
         }
-      ],
-      "./plugins/with-provider-isolated-qa.cjs"
+      ]
     ],
     "experiments": {
       "typedRoutes": false
