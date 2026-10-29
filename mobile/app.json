@@ -3,7 +3,7 @@
     "name": "Reklaio",
     "slug": "reklaio",
     "owner": "kamilunavo",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "backgroundColor": "#070D25",
     "orientation": "portrait",
     "scheme": "reklaio",
@@ -26,7 +26,7 @@
     },
     "android": {
       "package": "de.kamilunavo.reklaio",
-      "versionCode": 11,
+      "versionCode": 12,
       "predictiveBackGestureEnabled": false
     },
     "web": {

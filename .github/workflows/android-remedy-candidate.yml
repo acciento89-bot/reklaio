@@ -7,7 +7,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   candidate:
-    if: github.event_name == 'workflow_dispatch' && github.repository == 'acciento89-bot/reklaio'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && github.repository == 'acciento89-bot/reklaio'
     runs-on: ubuntu-latest
     timeout-minutes: 50
     defaults:
@@ -52,7 +52,7 @@ jobs:
           python3 ../.github/reklaio-release/prepare_unsigned.py android/app/build.gradle
           node - <<'NODE'
           const a = require('./app.json').expo;
-          if (a.version !== '0.5.0' || a.android.versionCode !== 11 || a.android.package !== 'de.kamilunavo.reklaio') throw new Error('Wrong candidate identity');
+          if (a.version !== '0.6.0' || a.android.versionCode !== 12 || a.android.package !== 'de.kamilunavo.reklaio') throw new Error('Wrong candidate identity');
           NODE
       - name: Build one exact Android candidate
         run: |
@@ -67,7 +67,7 @@ jobs:
         run: rm -f "$RUNNER_TEMP/reklaio-production.env" "$RUNNER_TEMP/reklaio-env-pull.log"
       - uses: actions/upload-artifact@v4
         with:
-          name: reklaio-0.5.0-11-android-release
+          name: reklaio-0.6.0-12-android-release
           path: candidate/
           if-no-files-found: error
           retention-days: 30
