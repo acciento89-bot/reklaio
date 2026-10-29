@@ -3,6 +3,9 @@ import { ActivityIndicator, StyleSheet, Text as NativeText, TextInput as NativeT
 import { useFonts } from 'expo-font';
 import type { PropsWithChildren, ElementRef } from 'react';
 import type { StyleProp, TextProps, TextInputProps, TextStyle } from 'react-native';
+// Bundle the original font license as a local asset alongside the font files.
+require('../assets/fonts/enriqueta/OFL.txt');
+
 const Ready = createContext(false);
 const fontAssets = {
   enriquetaRegular: require('../assets/fonts/enriqueta/Enriqueta-Regular.ttf'),
