@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   card: {
     padding: spacing.lg,
     borderRadius: radius.lg,
-    backgroundColor: "rgba(16, 26, 61, 0.96)",
+    backgroundColor: colors.panel,
     borderWidth: 1,
     borderColor: colors.line,
     shadowColor: "#000000",

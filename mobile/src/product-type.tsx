@@ -5,6 +5,8 @@ import type { PropsWithChildren, ElementRef } from 'react';
 import type { StyleProp, TextProps, TextInputProps, TextStyle } from 'react-native';
 // Bundle the original font license as a local asset alongside the font files.
 require('../assets/fonts/enriqueta/OFL.txt');
+require('../assets/licenses/Ionicons-MIT.txt');
+require('../assets/licenses/MaterialSymbols-Apache-2.0.txt');
 
 const Ready = createContext(false);
 const fontAssets = {
