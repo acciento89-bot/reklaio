@@ -1,10 +1,9 @@
+import { Text, TextInput } from './product-type';
 import { useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
   StyleSheet,
-  Text,
-  TextInput,
   View
 } from "react-native";
 import {

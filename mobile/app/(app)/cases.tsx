@@ -1,3 +1,4 @@
+import { Text } from '../../src/product-type';
 import { useCallback, useState } from "react";
 import { useFocusEffect, useRouter } from "expo-router";
 import {
@@ -6,7 +7,6 @@ import {
   Pressable,
   RefreshControl,
   StyleSheet,
-  Text,
   View
 } from "react-native";
 import { ApiError, casesRequest, type MobileCase } from "@/src/api";
@@ -195,16 +195,16 @@ const styles = StyleSheet.create({
   emptyTitle: { color: colors.text, fontSize: 20, fontWeight: "800", marginBottom: spacing.sm },
   emptyButton: { minHeight: 48, alignItems: "center", justifyContent: "center", borderRadius: radius.sm, borderWidth: 1, borderColor: colors.line, marginTop: spacing.lg },
   emptyButtonText: { color: colors.text, fontWeight: "800" },
-  card: { padding: spacing.md, marginBottom: spacing.md, borderRadius: radius.md, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.panel },
+  card: { borderLeftWidth: 4, borderLeftColor: colors.accent, padding: spacing.md, marginBottom: spacing.md, borderRadius: radius.md, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.panel },
   cardPressed: { opacity: 0.82, transform: [{ scale: 0.995 }] },
   cardTop: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: spacing.md },
   cardTitleWrap: { flex: 1 },
-  cardTitle: { color: colors.text, fontSize: 19, fontWeight: "800" },
+  cardTitle: { color: colors.text, fontSize: 23, fontWeight: "800" },
   company: { color: colors.muted, marginTop: spacing.xs },
-  status: { color: colors.accentSoft, fontSize: 12, fontWeight: "800", paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: 999, backgroundColor: "rgba(143,199,187,0.1)", overflow: "hidden" },
-  metaGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginTop: spacing.lg },
-  metaItem: { minWidth: "30%", flexGrow: 1, padding: spacing.sm, borderRadius: radius.sm, backgroundColor: colors.panelSoft },
-  metaLabel: { color: colors.muted, fontSize: 12 },
-  metaValue: { color: colors.text, fontWeight: "700", marginTop: 4 },
+  status: { color: colors.accentSoft, fontSize: 12, fontWeight: "800", paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: 2, backgroundColor: colors.panelSoft, overflow: "hidden" },
+  metaGrid: { gap: 0, marginTop: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line },
+  metaItem: { paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.line, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  metaLabel: { flex: 1, marginRight: 12, color: colors.muted, fontSize: 14 },
+  metaValue: { flexShrink: 1, textAlign: "right", color: colors.text, fontWeight: "700", fontSize: 16 },
   openHint: { color: colors.accentSoft, fontSize: 13, fontWeight: "800", textAlign: "right", marginTop: spacing.md }
 });

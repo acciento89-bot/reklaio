@@ -1,3 +1,4 @@
+import { Text, TextInput } from '../src/product-type';
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import {
@@ -7,8 +8,6 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  Text,
-  TextInput,
   View
 } from "react-native";
 import { ApiError } from "@/src/api";

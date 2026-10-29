@@ -1,6 +1,7 @@
+import { Text } from '../../src/product-type';
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Redirect, Tabs } from "expo-router";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/src/auth-context";
 import { colors } from "@/src/theme";
@@ -31,7 +32,7 @@ export default function AppTabsLayout() {
         headerStyle: { backgroundColor: colors.panelSoft },
         headerTintColor: colors.text,
         headerShadowVisible: false,
-        headerTitleStyle: { fontWeight: "900", letterSpacing: -0.2 },
+        headerTitleStyle: { fontFamily: "enriquetaBold", fontWeight: "normal", letterSpacing: 0 },
         tabBarStyle: {
           backgroundColor: colors.panelSoft,
           borderTopColor: colors.line,
@@ -41,6 +42,7 @@ export default function AppTabsLayout() {
           paddingBottom: bottomPadding
         },
         tabBarShowLabel: true,
+        tabBarLabelStyle: { fontFamily: "enriquetaRegular", fontWeight: "normal", fontSize: 12 },
         tabBarActiveTintColor: colors.accentSoft,
         tabBarInactiveTintColor: colors.muted
       }}

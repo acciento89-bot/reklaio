@@ -1,4 +1,5 @@
 import "react-native-gesture-handler";
+import { ProductFontGate } from "@/src/product-type";
 import { useEffect } from "react";
 import * as Notifications from "expo-notifications";
 import { NavigationBar } from "expo-navigation-bar";
@@ -40,11 +41,11 @@ function NotificationNavigation() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
+    <ProductFontGate><AuthProvider>
       <PurchasesProvider>
         <SecurityProvider>
           <AppLockGate>
-            <StatusBar style="light" />
+            <StatusBar style="dark" />
             <NavigationBar style="dark" />
             <NotificationNavigation />
             <Stack
@@ -57,6 +58,6 @@ export default function RootLayout() {
           </AppLockGate>
         </SecurityProvider>
       </PurchasesProvider>
-    </AuthProvider>
+    </AuthProvider></ProductFontGate>
   );
 }

@@ -1,3 +1,4 @@
+import { Text } from '../../src/product-type';
 import { useCallback, useMemo, useState } from "react";
 import { useFocusEffect } from "expo-router";
 import {
@@ -5,7 +6,6 @@ import {
   FlatList,
   RefreshControl,
   StyleSheet,
-  Text,
   View
 } from "react-native";
 import { ApiError, deadlinesRequest, type MobileDeadline } from "@/src/api";

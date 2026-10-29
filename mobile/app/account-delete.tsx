@@ -1,3 +1,4 @@
+import { Text, TextInput } from '../src/product-type';
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -7,8 +8,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   View
 } from "react-native";
 import { Stack, useRouter } from "expo-router";

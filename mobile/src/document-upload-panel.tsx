@@ -1,5 +1,6 @@
+import { Text } from './product-type';
 import { useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View, ActivityIndicator } from "react-native";
+import { Alert, Pressable, StyleSheet, View, ActivityIndicator } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import {

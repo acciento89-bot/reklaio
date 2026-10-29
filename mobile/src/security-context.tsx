@@ -1,3 +1,4 @@
+import { Text } from './product-type';
 import * as LocalAuthentication from "expo-local-authentication";
 import * as SecureStore from "expo-secure-store";
 import {
@@ -15,7 +16,6 @@ import {
   AppState,
   Pressable,
   StyleSheet,
-  Text,
   View
 } from "react-native";
 import { ApiError, deadlinesRequest } from "@/src/api";

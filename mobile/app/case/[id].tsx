@@ -1,3 +1,4 @@
+import { Text } from '../../src/product-type';
 import { useCallback, useState } from "react";
 import { Redirect, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import {
@@ -7,7 +8,6 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
-  Text,
   View
 } from "react-native";
 import { ApiError, caseRequest, type MobileCaseDetail } from "@/src/api";

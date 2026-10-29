@@ -1,3 +1,4 @@
+import { Text, TextInput } from '../../src/product-type';
 import { useEffect, useMemo, useState } from "react";
 import { Redirect, useRouter } from "expo-router";
 import {
@@ -7,8 +8,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   View
 } from "react-native";
 import {
